@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https: wss: data: blob:; media-src 'self' blob:;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; connect-src 'self' wss: https:; media-src 'self' blob:; img-src 'self' data: https:;">
     <title>VideoConsulta - SoyBienmedico</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -892,11 +892,16 @@
                     return;
                 }
                 
+                // Cerrar conexión anterior si existe
+                if (peerConnection) {
+                    peerConnection.close();
+                }
+                
                 peerConnection = new RTCPeerConnection(configuration);
                 
-                // Agregar tracks del stream local
+                // Agregar tracks del stream local del MÉDICO
                 localStream.getTracks().forEach(track => {
-                    console.log('📤 Agregando track:', track.kind);
+                    console.log('📤 Agregando track del MÉDICO:', track.kind, 'habilitado:', track.enabled);
                     peerConnection.addTrack(track, localStream);
                 });
 
@@ -921,15 +926,24 @@
                 // Manejar ICE candidates
                 peerConnection.onicecandidate = (event) => {
                     if (event.candidate) {
-                        console.log('🧊 Enviando ICE candidate');
+                        console.log('🧊 Enviando ICE candidate del médico');
                         socket.emit('ice-candidate', roomId, event.candidate);
                     }
                 };
 
-                // Crear y enviar oferta
-                const offer = await peerConnection.createOffer();
+                // Evento para monitorear conexión
+                peerConnection.onconnectionstatechange = () => {
+                    console.log('🔗 Estado de conexión peer:', peerConnection.connectionState);
+                };
+
+                // Crear y enviar oferta con opciones explícitas
+                const offer = await peerConnection.createOffer({
+                    offerToReceiveAudio: true,
+                    offerToReceiveVideo: true
+                });
                 await peerConnection.setLocalDescription(offer);
-                console.log('📤 Enviando oferta al room:', roomId);
+                console.log('📤 Enviando oferta del MÉDICO al room:', roomId);
+                console.log('🎥 Oferta incluye tracks:', localStream.getTracks().map(t => t.kind));
                 socket.emit('offer', roomId, offer);
 
             } catch (error) {
@@ -937,26 +951,38 @@
             }
         }
 
-        // Manejar oferta recibida
+        // Manejar oferta recibida (cuando el médico recibe respuesta)
         async function handleOffer(offer) {
             try {
+                console.log('📥 Respuesta recibida del paciente');
                 if (!peerConnection) {
+                    console.log('🔧 Creando nueva peer connection para manejar respuesta');
                     peerConnection = new RTCPeerConnection(configuration);
                     
-                    localStream.getTracks().forEach(track => {
-                        peerConnection.addTrack(track, localStream);
-                    });
+                    // Asegurar que agregamos nuestro stream local
+                    if (localStream) {
+                        localStream.getTracks().forEach(track => {
+                            console.log('📤 Re-agregando track del médico:', track.kind);
+                            peerConnection.addTrack(track, localStream);
+                        });
+                    }
 
+                    // Manejar stream remoto
                     peerConnection.ontrack = (event) => {
+                        console.log('📥 Stream del paciente recibido en handleOffer:', event.streams.length);
                         remoteStream = event.streams[0];
                         const patientVideo = document.getElementById('patientVideo');
                         patientVideo.srcObject = remoteStream;
                         patientVideo.style.display = 'block';
+                        patientVideo.muted = false;
                         document.getElementById('patientPlaceholder').style.display = 'none';
+                        console.log('✅ Video del paciente configurado en handleOffer');
                     };
 
+                    // Manejar ICE candidates
                     peerConnection.onicecandidate = (event) => {
                         if (event.candidate) {
+                            console.log('🧊 Enviando ICE candidate desde handleOffer');
                             socket.emit('ice-candidate', roomId, event.candidate);
                         }
                     };
@@ -965,10 +991,11 @@
                 await peerConnection.setRemoteDescription(offer);
                 const answer = await peerConnection.createAnswer();
                 await peerConnection.setLocalDescription(answer);
+                console.log('📤 Enviando respuesta desde médico');
                 socket.emit('answer', roomId, answer);
 
             } catch (error) {
-                console.error('Error manejando oferta:', error);
+                console.error('❌ Error manejando oferta en médico:', error);
             }
         }
 
@@ -1388,9 +1415,13 @@
             try {
                 console.log('🎥 Inicializando video del médico...');
                 localStream = await navigator.mediaDevices.getUserMedia({
-                    video: true,
-                    audio: true
+                    video: { width: 1280, height: 720 },
+                    audio: { echoCancellation: true, noiseSuppression: true }
                 });
+
+                console.log('📹 Stream obtenido:', localStream);
+                console.log('🎤 Tracks de audio:', localStream.getAudioTracks().length);
+                console.log('📷 Tracks de video:', localStream.getVideoTracks().length);
 
                 const doctorVideo = document.getElementById('doctorVideo');
                 doctorVideo.srcObject = localStream;
@@ -1402,6 +1433,11 @@
                 
                 console.log('✅ Video del médico inicializado correctamente');
                 console.log('👋 Esperando que se conecte un paciente...');
+
+                // Verificar que el video se reproduce
+                doctorVideo.onloadedmetadata = () => {
+                    console.log('🎬 Metadata del video del médico cargada');
+                };
 
             } catch (error) {
                 console.error('❌ Error accediendo a la cámara:', error);

@@ -631,6 +631,7 @@
         async function handleOffer(offer) {
             try {
                 console.log('📥 Oferta recibida del médico');
+                console.log('🔍 Contenido de la oferta:', offer);
                 
                 if (!localStream) {
                     console.error('❌ No hay stream local del paciente disponible');
@@ -641,13 +642,14 @@
                 
                 // Agregar tracks del stream local
                 localStream.getTracks().forEach(track => {
-                    console.log('📤 Agregando track del paciente:', track.kind);
+                    console.log('📤 Agregando track del paciente:', track.kind, 'habilitado:', track.enabled);
                     peerConnection.addTrack(track, localStream);
                 });
 
                 // Manejar stream remoto (video del médico)
                 peerConnection.ontrack = (event) => {
                     console.log('📥 Stream del médico recibido:', event.streams.length);
+                    console.log('🎪 Tracks en stream del médico:', event.streams[0].getTracks().map(t => t.kind));
                     remoteStream = event.streams[0];
                     const doctorVideo = document.getElementById('doctorVideo');
                     doctorVideo.srcObject = remoteStream;
@@ -670,15 +672,21 @@
                 // Manejar ICE candidates
                 peerConnection.onicecandidate = (event) => {
                     if (event.candidate) {
-                        console.log('🧊 Enviando ICE candidate');
+                        console.log('🧊 Enviando ICE candidate del paciente');
                         socket.emit('ice-candidate', roomId, event.candidate);
                     }
+                };
+
+                // Evento para monitorear conexión
+                peerConnection.onconnectionstatechange = () => {
+                    console.log('🔗 Estado de conexión peer (paciente):', peerConnection.connectionState);
                 };
 
                 await peerConnection.setRemoteDescription(offer);
                 const answer = await peerConnection.createAnswer();
                 await peerConnection.setLocalDescription(answer);
                 console.log('📤 Enviando respuesta al médico');
+                console.log('🎥 Respuesta incluye tracks:', localStream.getTracks().map(t => t.kind));
                 socket.emit('answer', roomId, answer);
 
             } catch (error) {
