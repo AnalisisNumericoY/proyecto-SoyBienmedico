@@ -24,8 +24,8 @@
     },
     {
       "id": "CITA003",
-      "paciente_id": "pac001",
-      "medico_id": "med001",
+      "paciente_id": "PAC001",
+      "medico_id": "DOC001",
       "fecha": "2025-08-05",
       "hora": "16:00",
       "estado": "programada",

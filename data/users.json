@@ -3,27 +3,27 @@
     {
       "id": "admin001",
       "username": "admin",
-      "password": "$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi",
+      "password": "$2a$10$CwTycUXWue0Thq9StjUM0uWTrCgGNaNHZQ6uOm.3rG7F3E0zGFYOS",
       "role": "admin",
       "email": "admin@soyBienmedico.com",
       "created_at": "2024-01-01T00:00:00Z"
     },
     {
       "id": "med001",
-      "username": "dr.garcia",
-      "password": "$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi",
+      "username": "doctor123",
+      "password": "$2a$10$CwTycUXWue0Thq9StjUM0uWTrCgGNaNHZQ6uOm.3rG7F3E0zGFYOS",
       "role": "medico",
       "medico_id": "DOC001",
-      "email": "dr.garcia@ejemplo.com",
+      "email": "doctor@ejemplo.com",
       "created_at": "2024-01-01T00:00:00Z"
     },
     {
       "id": "pac001",
-      "username": "juan.perez",
-      "password": "$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi",
+      "username": "paciente123",
+      "password": "$2a$10$CwTycUXWue0Thq9StjUM0uWTrCgGNaNHZQ6uOm.3rG7F3E0zGFYOS",
       "role": "paciente",
       "paciente_id": "PAC001",
-      "email": "juan.perez@ejemplo.com",
+      "email": "paciente@ejemplo.com",
       "created_at": "2024-01-01T00:00:00Z"
     },
     {
