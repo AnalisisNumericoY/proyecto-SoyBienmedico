@@ -2,10 +2,10 @@
   "medicos": [
     {
       "id": "DOC001",
-      "nombre": "Dr. Juan Carlos Pérez",
+      "nombre": "Dr. García Fernández",
       "identificacion": "12345678",
       "registro_medico": "RM123456",
-      "correo_electronico": "doctor@ejemplo.com",
+      "correo_electronico": "dr.garcia@ejemplo.com",
       "telefono": "+57 300 123 4567",
       "especialidad": "Medicina General",
       "created_at": "2024-01-01T00:00:00Z",
@@ -13,7 +13,7 @@
     },
     {
       "id": "MED1754364198593",
-      "nombre": "Antonio Atehortua",
+      "nombre": "Dr. Antonio Atehortua",
       "identificacion": "1021934955",
       "registro_medico": "1021934955",
       "correo_electronico": "sabel0380@gmail.com",

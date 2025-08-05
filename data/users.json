@@ -10,20 +10,20 @@
     },
     {
       "id": "med001",
-      "username": "doctor123",
+      "username": "dr.garcia",
       "password": "$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi",
       "role": "medico",
       "medico_id": "DOC001",
-      "email": "doctor@ejemplo.com",
+      "email": "dr.garcia@ejemplo.com",
       "created_at": "2024-01-01T00:00:00Z"
     },
     {
       "id": "pac001",
-      "username": "paciente123",
+      "username": "juan.perez",
       "password": "$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi",
       "role": "paciente",
       "paciente_id": "PAC001",
-      "email": "paciente@ejemplo.com",
+      "email": "juan.perez@ejemplo.com",
       "created_at": "2024-01-01T00:00:00Z"
     },
     {
