@@ -33,14 +33,54 @@ const saveJsonFile = async (filePath, data) => {
   }
 };
 
-// DEBUG ENDPOINT - Loads all data for dashboard
-router.get('/debug/data', verifyToken, async (req, res) => {
+// GET ALL MEDICOS
+router.get('/medicos', async (req, res) => {
   try {
+    const medicosData = await loadJsonFile(MEDICOS_FILE);
+    res.json({
+      success: true,
+      medicos: medicosData.medicos || []
+    });
+  } catch (error) {
+    console.error('Error loading medicos:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error interno del servidor'
+    });
+  }
+});
+
+// GET ALL PACIENTES
+router.get('/pacientes', async (req, res) => {
+  try {
+    const pacientesData = await loadJsonFile(PACIENTES_FILE);
+    res.json({
+      success: true,
+      pacientes: pacientesData.pacientes || []
+    });
+  } catch (error) {
+    console.error('Error loading pacientes:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error interno del servidor'
+    });
+  }
+});
+
+// DEBUG ENDPOINT - Loads all data for dashboard (temporary without auth for testing)
+router.get('/debug/data', async (req, res) => {
+  try {
+    console.log('Loading debug data...');
+    
     const citasData = await loadJsonFile(CITAS_FILE);
     const medicosData = await loadJsonFile(MEDICOS_FILE);
     const pacientesData = await loadJsonFile(PACIENTES_FILE);
     const historiasData = await loadJsonFile(HISTORIAS_FILE);
     const usersData = await loadJsonFile(USERS_FILE);
+
+    console.log('Citas loaded:', citasData.citas?.length || 0);
+    console.log('Medicos loaded:', medicosData.medicos?.length || 0);
+    console.log('Pacientes loaded:', pacientesData.pacientes?.length || 0);
 
     res.json({
       success: true,
@@ -55,7 +95,8 @@ router.get('/debug/data', verifyToken, async (req, res) => {
     console.error('Error loading debug data:', error);
     res.status(500).json({
       success: false,
-      message: 'Error interno del servidor'
+      message: 'Error interno del servidor',
+      error: error.message
     });
   }
 });
