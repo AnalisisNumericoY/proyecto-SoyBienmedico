@@ -463,11 +463,11 @@
             // Cargar información de la consulta
             await loadConsultationInfo();
 
-            // Conectar Socket.io
-            await initializeSocket();
-
-            // Inicializar video
+            // Inicializar video PRIMERO
             await initializeVideo();
+
+            // Conectar Socket.io DESPUÉS del video
+            await initializeSocket();
 
             // Iniciar timer
             startCallTimer();
@@ -566,14 +566,15 @@
                 
                 // Configurar eventos de Socket.io
                 socket.on('user-connected', (userId) => {
-                    console.log('Usuario conectado:', userId);
+                    console.log('👤 Usuario conectado al room:', userId);
                     if (userId.startsWith('medico-')) {
+                        console.log('🏥 Médico detectado en la sala');
                         document.getElementById('doctorPlaceholder').innerHTML = `
                             <i class="fas fa-user-md" style="color: #007bff;"></i>
-                            <span style="color: #007bff;">Dr. ${medicoData.nombre} conectado</span>
+                            <span style="color: #007bff;">Dr. ${medicoData.nombre} conectado - Esperando video...</span>
                         `;
                         
-                        document.getElementById('consultationStatus').textContent = 'En consulta activa';
+                        document.getElementById('consultationStatus').textContent = 'Médico conectado - Iniciando video';
                         updateConnectionStatus('En consulta');
                     }
                 });
@@ -609,6 +610,12 @@
         async function handleOffer(offer) {
             try {
                 console.log('📥 Oferta recibida del médico');
+                
+                if (!localStream) {
+                    console.error('❌ No hay stream local del paciente disponible');
+                    return;
+                }
+                
                 peerConnection = new RTCPeerConnection(configuration);
                 
                 // Agregar tracks del stream local
@@ -626,6 +633,16 @@
                     doctorVideo.style.display = 'block';
                     document.getElementById('doctorPlaceholder').style.display = 'none';
                     console.log('✅ Video del médico configurado');
+                    
+                    // Actualizar estado
+                    document.getElementById('consultationStatus').textContent = 'Videollamada activa';
+                    updateConnectionStatus('Video activo');
+                    
+                    // Actualizar placeholder
+                    document.getElementById('doctorPlaceholder').innerHTML = `
+                        <i class="fas fa-user-md" style="color: #007bff;"></i>
+                        <span style="color: #007bff;">Dr. ${medicoData.nombre} en video</span>
+                    `;
                 };
 
                 // Manejar ICE candidates
@@ -643,7 +660,7 @@
                 socket.emit('answer', roomId, answer);
 
             } catch (error) {
-                console.error('Error manejando oferta:', error);
+                console.error('❌ Error manejando oferta:', error);
             }
         }
 
@@ -668,6 +685,7 @@
         // Inicializar video
         async function initializeVideo() {
             try {
+                console.log('🎥 Inicializando video del paciente...');
                 localStream = await navigator.mediaDevices.getUserMedia({
                     video: true,
                     audio: true
@@ -676,15 +694,23 @@
                 const patientVideo = document.getElementById('patientVideo');
                 patientVideo.srcObject = localStream;
                 patientVideo.style.display = 'block';
+                patientVideo.muted = true; // Evitar feedback del propio audio
                 document.getElementById('patientPlaceholder').style.display = 'none';
 
                 isCallActive = true;
                 
-                console.log('✅ Video del paciente inicializado. Esperando médico...');
+                console.log('✅ Video del paciente inicializado correctamente');
+                console.log('👋 Esperando que el médico inicie la videollamada...');
 
             } catch (error) {
-                console.error('Error accediendo a la cámara:', error);
-                alert('Error al acceder a la cámara/micrófono. Verifique los permisos.');
+                console.error('❌ Error accediendo a la cámara:', error);
+                alert('Error al acceder a la cámara/micrófono. Verifique los permisos del navegador.');
+                
+                // Mostrar placeholder con error
+                document.getElementById('patientPlaceholder').innerHTML = `
+                    <i class="fas fa-exclamation-triangle" style="color: #dc3545;"></i>
+                    <span style="color: #dc3545;">Error de cámara - Verifique permisos</span>
+                `;
             }
         }
 

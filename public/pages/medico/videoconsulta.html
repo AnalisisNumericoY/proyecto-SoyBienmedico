@@ -708,11 +708,11 @@
             // Inicializar contadores de caracteres después de cargar la info
             initializeCharacterCounters();
 
-            // Conectar Socket.io
-            await initializeSocket();
-
-            // Inicializar video
+            // Inicializar video PRIMERO
             await initializeVideo();
+
+            // Conectar Socket.io DESPUÉS del video
+            await initializeSocket();
 
             // Inicializar canvas para firma
             initializeSignatureCanvas();
@@ -832,15 +832,16 @@
                 
                 // Configurar eventos de Socket.io
                 socket.on('user-connected', (userId) => {
-                    console.log('Usuario conectado:', userId);
+                    console.log('👤 Usuario conectado al room:', userId);
                     if (userId.startsWith('paciente-')) {
+                        console.log('🏥 Paciente detectado, creando oferta WebRTC...');
                         document.getElementById('patientPlaceholder').innerHTML = `
                             <i class="fas fa-user" style="color: #28a745;"></i>
-                            <span style="color: #28a745;">Paciente conectado</span>
+                            <span style="color: #28a745;">Paciente conectado - Iniciando video...</span>
                         `;
                         
-                        // Iniciar llamada WebRTC
-                        createOffer();
+                        // Crear oferta WebRTC cuando el paciente se conecta
+                        setTimeout(() => createOffer(), 1000); // Pequeño delay para asegurar que todo esté listo
                     }
                 });
 
@@ -872,6 +873,12 @@
         async function createOffer() {
             try {
                 console.log('🔄 Creando oferta WebRTC...');
+                
+                if (!localStream) {
+                    console.error('❌ No hay stream local disponible');
+                    return;
+                }
+                
                 peerConnection = new RTCPeerConnection(configuration);
                 
                 // Agregar tracks del stream local
@@ -889,6 +896,12 @@
                     patientVideo.style.display = 'block';
                     document.getElementById('patientPlaceholder').style.display = 'none';
                     console.log('✅ Video del paciente configurado');
+                    
+                    // Actualizar placeholder del paciente
+                    document.getElementById('patientPlaceholder').innerHTML = `
+                        <i class="fas fa-user" style="color: #28a745;"></i>
+                        <span style="color: #28a745;">Paciente en video</span>
+                    `;
                 };
 
                 // Manejar ICE candidates
@@ -906,7 +919,7 @@
                 socket.emit('offer', roomId, offer);
 
             } catch (error) {
-                console.error('Error creando oferta:', error);
+                console.error('❌ Error creando oferta:', error);
             }
         }
 
@@ -1359,6 +1372,7 @@
         // Inicializar video
         async function initializeVideo() {
             try {
+                console.log('🎥 Inicializando video del médico...');
                 localStream = await navigator.mediaDevices.getUserMedia({
                     video: true,
                     audio: true
@@ -1372,27 +1386,18 @@
 
                 isCallActive = true;
                 
-                console.log('✅ Video del médico inicializado. Esperando paciente...');
-
-                // Configurar WebRTC peer connection
-                await setupPeerConnection();
+                console.log('✅ Video del médico inicializado correctamente');
+                console.log('👋 Esperando que se conecte un paciente...');
 
             } catch (error) {
-                console.error('Error accediendo a la cámara:', error);
-                alert('Error al acceder a la cámara/micrófono. Verifique los permisos.');
+                console.error('❌ Error accediendo a la cámara:', error);
+                alert('Error al acceder a la cámara/micrófono. Verifique los permisos del navegador.');
                 
-                // Si no hay cámara, mostrar videos simulados
-                setTimeout(() => {
-                    document.getElementById('doctorPlaceholder').innerHTML = `
-                        <i class="fas fa-user-md" style="color: #007bff;"></i>
-                        <span style="color: #007bff;">Video simulado - Dr.</span>
-                    `;
-                    
-                    document.getElementById('patientPlaceholder').innerHTML = `
-                        <i class="fas fa-user" style="color: #28a745;"></i>
-                        <span style="color: #28a745;">Video simulado - Paciente</span>
-                    `;
-                }, 2000);
+                // Mostrar placeholder con error
+                document.getElementById('doctorPlaceholder').innerHTML = `
+                    <i class="fas fa-exclamation-triangle" style="color: #dc3545;"></i>
+                    <span style="color: #dc3545;">Error de cámara - Verifique permisos</span>
+                `;
             }
         }
 
