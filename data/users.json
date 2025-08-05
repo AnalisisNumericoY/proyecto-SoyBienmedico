@@ -1,0 +1,52 @@
+{
+  "users": [
+    {
+      "id": "admin001",
+      "username": "admin",
+      "password": "$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi",
+      "role": "admin",
+      "email": "admin@soyBienmedico.com",
+      "created_at": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": "med001",
+      "username": "doctor123",
+      "password": "$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi",
+      "role": "medico",
+      "medico_id": "DOC001",
+      "email": "doctor@ejemplo.com",
+      "created_at": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": "pac001",
+      "username": "paciente123",
+      "password": "$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi",
+      "role": "paciente",
+      "paciente_id": "PAC001",
+      "email": "paciente@ejemplo.com",
+      "created_at": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": "user_PAC1754364002715",
+      "username": "paciente_71770529",
+      "password": "$2a$10$.k4E4Y8uqBN66wnK2QPQ8uu34zjCq1/YtoEtSgFZhORzQd9qHmqSG",
+      "role": "paciente",
+      "email": "especializacion.riesgos.udea@gmail.com",
+      "medico_id": null,
+      "paciente_id": "PAC1754364002715",
+      "created_at": "2025-08-05T03:20:03.145Z",
+      "active": true
+    },
+    {
+      "id": "user_MED1754364198593",
+      "username": "medico_1021934955",
+      "password": "$2a$10$8wBRVRH3WEFPMi1nT/hf5.M8SAs7Eta4w9U.o1UobgQffE5SF9pIC",
+      "role": "medico",
+      "email": "sabel0380@gmail.com",
+      "medico_id": "MED1754364198593",
+      "paciente_id": null,
+      "created_at": "2025-08-05T03:23:18.968Z",
+      "active": true
+    }
+  ]
+}

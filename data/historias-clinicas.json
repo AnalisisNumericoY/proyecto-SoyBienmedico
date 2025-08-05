@@ -1,0 +1,58 @@
+{
+  "historias": [
+    {
+      "id": "HC001",
+      "cita_id": "CITA001",
+      "paciente_id": "PAC001",
+      "medico_id": "DOC001",
+      "fecha_consulta": "2024-02-15T10:00:00Z",
+      "registro_medico_doctor": "RM123456",
+      "datos_paciente": {
+        "identificacion": "87654321",
+        "nombre_completo": "María González López",
+        "rh": "O+",
+        "telefono": "+57 310 987 6543"
+      },
+      "consulta": {
+        "motivo_consulta": "",
+        "objeto_tele_orientacion": "",
+        "antecedentes": "",
+        "tabaquismo": "NO",
+        "presion_sistolica": 0,
+        "presion_diastolica": 0,
+        "peso_kg": 0,
+        "talla_cm": 0,
+        "actividad_fisica": "",
+        "conducta": "",
+        "especialidad_requiere": "",
+        "canalizaciones": ""
+      },
+      "pdf_path": "",
+      "firma_medico": "",
+      "created_at": "2024-02-15T10:00:00Z"
+    },
+    {
+      "id": "HC1754365704718",
+      "cita_id": "CITA1754364115426",
+      "paciente_id": "PAC1754364002715",
+      "medico_id": "DOC001",
+      "fecha_consulta": "2025-08-05T03:48:24.696Z",
+      "motivo_consulta": "Seguimiento de salud",
+      "sintomas_actuales": "",
+      "tiempo_evolucion": "",
+      "intensidad_dolor": "",
+      "presion_arterial": "",
+      "frecuencia_cardiaca": null,
+      "temperatura": null,
+      "saturacion_oxigeno": null,
+      "examen_fisico": "",
+      "diagnostico_principal": "",
+      "diagnostico_secundario": "",
+      "medicamentos": "",
+      "recomendaciones": "",
+      "proxima_consulta": "",
+      "examenes": "",
+      "created_at": "2025-08-05T03:48:24.721Z"
+    }
+  ]
+}

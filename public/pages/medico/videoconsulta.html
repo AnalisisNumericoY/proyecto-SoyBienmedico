@@ -1,0 +1,1639 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VideoConsulta - SoyBienmedico</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1a1a;
+            color: #fff;
+            overflow: hidden;
+        }
+
+        .video-container {
+            position: relative;
+            height: 100vh;
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 10px;
+            padding: 10px;
+        }
+
+        .main-video-area {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .video-grid {
+            flex: 1;
+            display: grid;
+            grid-template-rows: 2fr 1fr;
+            gap: 10px;
+        }
+
+        .video-panel {
+            background: #2d2d2d;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .video-panel video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .video-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            font-size: 1.2rem;
+        }
+
+        .video-placeholder i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .patient-video {
+            border: 3px solid #28a745;
+        }
+
+        .doctor-video {
+            border: 3px solid #007bff;
+        }
+
+        .video-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 10px;
+        }
+
+        .control-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-mute {
+            background: #6c757d;
+        }
+
+        .btn-mute.active {
+            background: #dc3545;
+        }
+
+        .btn-video {
+            background: #6c757d;
+        }
+
+        .btn-video.active {
+            background: #dc3545;
+        }
+
+        .btn-pause {
+            background: #ffc107;
+        }
+
+        .btn-pause.active {
+            background: #e0a800;
+        }
+
+        .btn-end {
+            background: #dc3545;
+        }
+
+        .btn-screen {
+            background: #007bff;
+        }
+
+        .control-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .medical-form-panel {
+            background: white;
+            color: #333;
+            border-radius: 10px;
+            overflow-y: auto;
+            padding: 20px;
+            max-height: 100vh;
+        }
+
+        .form-header {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            padding: 15px;
+            margin: -20px -20px 20px -20px;
+            border-radius: 10px 10px 0 0;
+        }
+
+        .form-header h2 {
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .patient-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .patient-info h3 {
+            color: #28a745;
+            margin-bottom: 10px;
+        }
+
+        .form-section {
+            margin-bottom: 25px;
+        }
+
+        .form-section h4 {
+            color: #28a745;
+            margin-bottom: 15px;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #e9ecef;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #495057;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #28a745;
+        }
+
+        .form-group textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .vital-signs {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .btn-save {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .btn-save:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(40, 167, 69, 0.3);
+        }
+
+        .connection-status {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 15px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 100;
+        }
+
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #28a745;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .timer {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+            z-index: 100;
+        }
+
+        @media (max-width: 1200px) {
+            .video-container {
+                grid-template-columns: 1fr;
+                grid-template-rows: 60vh 1fr;
+            }
+
+            .medical-form-panel {
+                max-height: 40vh;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .video-container {
+                padding: 5px;
+                gap: 5px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .vital-signs {
+                grid-template-columns: 1fr;
+            }
+
+            .video-controls {
+                padding: 10px;
+                gap: 10px;
+            }
+
+            .control-btn {
+                width: 50px;
+                height: 50px;
+                font-size: 1.2rem;
+            }
+
+            .connection-status {
+                top: 10px;
+                left: 10px;
+                padding: 8px 12px;
+                font-size: 0.9rem;
+            }
+
+            .timer {
+                top: 10px;
+                right: 10px;
+                padding: 8px 12px;
+                font-size: 0.9rem;
+            }
+
+            .medical-form-panel {
+                padding: 15px;
+            }
+
+            .form-header {
+                margin: -15px -15px 15px -15px;
+                padding: 12px;
+            }
+
+            .form-header h2 {
+                font-size: 1.2rem;
+            }
+        }
+
+        /* Estilos para botones y formularios */
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+            padding: 20px;
+            border-top: 2px solid #e9ecef;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        .btn-save:hover {
+            background: linear-gradient(135deg, #218838, #1abc9c);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(40, 167, 69, 0.4);
+        }
+
+        #firmaCanvas:hover {
+            border-color: #007bff;
+        }
+
+        .signature-note {
+            font-size: 12px;
+            color: #666;
+            font-style: italic;
+            margin-top: 8px;
+        }
+
+        .character-count {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+            display: block;
+        }
+
+        .character-count.warning {
+            color: #ffc107;
+        }
+
+        .character-count.error {
+            color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <div class="video-container">
+        <!-- Área principal de video -->
+        <div class="main-video-area">
+            <div class="video-grid">
+                <!-- Video del paciente -->
+                <div class="video-panel patient-video">
+                    <video id="patientVideo" autoplay muted style="display: none;"></video>
+                    <div id="patientPlaceholder" class="video-placeholder">
+                        <i class="fas fa-user"></i>
+                        <span>Esperando al paciente...</span>
+                    </div>
+                </div>
+                
+                <!-- Video del médico -->
+                <div class="video-panel doctor-video">
+                    <video id="doctorVideo" autoplay muted style="display: none;"></video>
+                    <div id="doctorPlaceholder" class="video-placeholder">
+                        <i class="fas fa-user-md"></i>
+                        <span>Tu video aparecerá aquí</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Controles de video -->
+            <div class="video-controls">
+                <button class="control-btn btn-mute" id="muteBtn" title="Silenciar micrófono">
+                    <i class="fas fa-microphone"></i>
+                </button>
+                <button class="control-btn btn-video" id="videoBtn" title="Activar/Desactivar cámara">
+                    <i class="fas fa-video"></i>
+                </button>
+                <button class="control-btn btn-screen" id="screenBtn" title="Compartir pantalla">
+                    <i class="fas fa-desktop"></i>
+                </button>
+                <button class="control-btn btn-pause" id="pauseBtn" title="Pausar consulta (mantener formulario)">
+                    <i class="fas fa-pause"></i>
+                </button>
+                <button class="control-btn btn-end" id="endBtn" title="Finalizar llamada completamente">
+                    <i class="fas fa-phone-slash"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Panel del formulario médico -->
+        <div class="medical-form-panel">
+            <div class="form-header">
+                <h2>
+                    <i class="fas fa-file-medical-alt"></i>
+                    Historia Clínica
+                </h2>
+            </div>
+
+            <!-- Información del paciente -->
+            <div class="patient-info" id="patientInfo">
+                <h3>Información del Paciente</h3>
+                <div id="patientDetails">Cargando información...</div>
+            </div>
+
+            <!-- Formulario médico -->
+            <form id="medicalForm">
+                <!-- Datos de la consulta -->
+                <div class="form-section">
+                    <h4><i class="fas fa-calendar-alt"></i> Datos de la Consulta</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="fechaConsulta">Fecha de la consulta</label>
+                            <input type="date" id="fechaConsulta" name="fecha_consulta" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="registroMedicoDoctor">Registro Médico del Doctor</label>
+                            <input type="text" id="registroMedicoDoctor" name="registro_medico_doctor" 
+                                   placeholder="Ingrese su número de registro médico" required>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Identificación del paciente -->
+                <div class="form-section">
+                    <h4><i class="fas fa-id-card"></i> Identificación del Paciente</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="identificacionPaciente">Identificación del paciente</label>
+                            <input type="text" id="identificacionPaciente" name="identificacion_paciente" 
+                                   placeholder="Número de documento del paciente" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="nombreCompletoPaciente">Nombre completo del paciente</label>
+                            <input type="text" id="nombreCompletoPaciente" name="nombre_completo_paciente" 
+                                   placeholder="Nombre completo" readonly>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Motivo de consulta -->
+                <div class="form-section">
+                    <h4><i class="fas fa-clipboard-list"></i> Motivo de Consulta</h4>
+                    <div class="form-group">
+                        <label for="motivoConsulta">Motivo de consulta (máximo 5000 palabras)</label>
+                        <textarea id="motivoConsulta" name="motivo_consulta" rows="6" 
+                                maxlength="5000"
+                                placeholder="Describa detalladamente el motivo principal de la consulta..."></textarea>
+                        <small class="character-count">0 / 5000 caracteres</small>
+                    </div>
+                </div>
+
+                <!-- Objeto de la teleorientación -->
+                <div class="form-section">
+                    <h4><i class="fas fa-bullseye"></i> Objeto de la Teleorientación</h4>
+                    <div class="form-group">
+                        <label for="objetoTeleorientacion">Objeto de la teleorientación (máximo 5000 palabras)</label>
+                        <textarea id="objetoTeleorientacion" name="objeto_teleorientacion" rows="6" 
+                                maxlength="5000"
+                                placeholder="Describa el objetivo específico de esta teleorientación..."></textarea>
+                        <small class="character-count">0 / 5000 caracteres</small>
+                    </div>
+                </div>
+
+                <!-- Antecedentes -->
+                <div class="form-section">
+                    <h4><i class="fas fa-history"></i> Antecedentes</h4>
+                    <div class="form-group">
+                        <label for="antecedentes">Antecedentes médicos (máximo 5000 palabras)</label>
+                        <textarea id="antecedentes" name="antecedentes" rows="6" 
+                                maxlength="5000"
+                                placeholder="Describa los antecedentes médicos relevantes del paciente..."></textarea>
+                        <small class="character-count">0 / 5000 caracteres</small>
+                    </div>
+                </div>
+
+                <!-- Signos vitales y medidas -->
+                <div class="form-section">
+                    <h4><i class="fas fa-heartbeat"></i> Signos Vitales y Medidas</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="tabaquismo">Tabaquismo</label>
+                            <select id="tabaquismo" name="tabaquismo">
+                                <option value="">Seleccionar...</option>
+                                <option value="Si">Sí</option>
+                                <option value="No">No</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="presionSistolica">Presión arterial sistólica (mmHg)</label>
+                            <input type="number" id="presionSistolica" name="presion_sistolica" 
+                                   placeholder="ej: 120" min="60" max="250">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="presionDiastolica">Presión arterial diastólica (mmHg)</label>
+                            <input type="number" id="presionDiastolica" name="presion_diastolica" 
+                                   placeholder="ej: 80" min="40" max="150">
+                        </div>
+                        <div class="form-group">
+                            <label for="peso">Peso (KG)</label>
+                            <input type="number" step="0.1" id="peso" name="peso" 
+                                   placeholder="ej: 70.5" min="20" max="300">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="talla">Talla (CM)</label>
+                            <input type="number" id="talla" name="talla" 
+                                   placeholder="ej: 170" min="100" max="250">
+                        </div>
+                        <div class="form-group">
+                            <label for="actividadFisica">Actividad Física</label>
+                            <input type="text" id="actividadFisica" name="actividad_fisica" 
+                                   placeholder="Describa la actividad física del paciente">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Conducta -->
+                <div class="form-section">
+                    <h4><i class="fas fa-user-check"></i> Conducta</h4>
+                    <div class="form-group">
+                        <label for="conducta">Conducta médica (máximo 5000 palabras)</label>
+                        <textarea id="conducta" name="conducta" rows="6" 
+                                maxlength="5000"
+                                placeholder="Describa la conducta médica recomendada..."></textarea>
+                        <small class="character-count">0 / 5000 caracteres</small>
+                    </div>
+                </div>
+
+                <!-- Especialidad requerida -->
+                <div class="form-section">
+                    <h4><i class="fas fa-user-md"></i> Especialidad Requerida</h4>
+                    <div class="form-group">
+                        <label for="especialidadRequerida">Especialidad que requiere</label>
+                        <input type="text" id="especialidadRequerida" name="especialidad_requerida" 
+                               placeholder="ej: Cardiología, Neurología, etc.">
+                    </div>
+                </div>
+
+                <!-- Firma digital del médico -->
+                <div class="form-section">
+                    <h4><i class="fas fa-signature"></i> Firma Digital del Médico</h4>
+                    <div class="form-group">
+                        <label for="firmaCanvas">Firma del médico (dibuje su firma abajo)</label>
+                        <canvas id="firmaCanvas" width="380" height="150" style="border: 2px solid #e9ecef; border-radius: 6px; background: white; cursor: crosshair;"></canvas>
+                        <div style="margin-top: 10px;">
+                            <button type="button" class="btn" style="background: #6c757d; color: white; padding: 8px 15px; border: none; border-radius: 4px; margin-right: 10px;" onclick="clearSignature()">
+                                <i class="fas fa-eraser"></i> Limpiar Firma
+                            </button>
+                            <small style="color: #666;">Dibuje su firma usando el mouse o pantalla táctil</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" onclick="console.log('🖱️ Botón Guardar Historia Clínica clickeado'); guardarHistoriaClinica()" class="btn-save">
+                        <i class="fas fa-save"></i> Guardar Historia Clínica y Generar PDF
+                    </button>
+                    <button type="button" onclick="console.log('🖱️ Botón Finalizar Consulta clickeado'); finalizarConsulta()" class="btn-secondary">
+                        <i class="fas fa-times"></i> Finalizar Consulta
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Indicadores de estado -->
+    <div class="connection-status">
+        <div class="status-indicator"></div>
+        <span>Conectado</span>
+    </div>
+
+    <div class="timer" id="callTimer">
+        00:00:00
+    </div>
+
+    <!-- Incluir jsPDF para generación de PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- Incluir Socket.io para videollamadas en tiempo real -->
+    <script src="/socket.io/socket.io.js"></script>
+    
+    <script>
+        let localStream = null;
+        let remoteStream = null;
+        let peerConnection = null;
+        let isCallActive = false;
+        let isMuted = false;
+        let isVideoOff = false;
+        let callStartTime = null;
+        let timerInterval = null;
+        let citaId = null;
+        let pacienteData = null;
+        let medicoData = null;
+
+        // Variables para firma digital
+        let firmaCanvas = null;
+        let firmaCtx = null;
+        let isDrawing = false;
+
+        // Variables para Socket.io y WebRTC
+        let socket = null;
+        let roomId = null;
+
+        // Configuración WebRTC
+        const configuration = {
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' }
+            ]
+        };
+
+        // Inicializar aplicación
+        window.addEventListener('load', async function() {
+            // Obtener ID de cita desde URL
+            const urlParams = new URLSearchParams(window.location.search);
+            citaId = urlParams.get('cita');
+            
+            if (!citaId) {
+                alert('No se especificó una cita válida');
+                window.location.href = '/pages/medico/dashboard.html';
+                return;
+            }
+
+            // El roomId será el ID de la cita
+            roomId = citaId;
+
+            // Verificar autenticación
+            if (!checkAuth()) {
+                return;
+            }
+
+            // Cargar información del paciente
+            await loadPatientInfo();
+
+            // Inicializar contadores de caracteres después de cargar la info
+            initializeCharacterCounters();
+
+            // Conectar Socket.io
+            await initializeSocket();
+
+            // Inicializar video
+            await initializeVideo();
+
+            // Inicializar canvas para firma
+            initializeSignatureCanvas();
+
+            // Iniciar timer
+            startCallTimer();
+
+            // Marcar cita como en curso
+            await updateAppointmentStatus('en_curso');
+        });
+
+        // Verificar autenticación
+        function checkAuth() {
+            const token = localStorage.getItem('token');
+            const user = localStorage.getItem('user');
+            
+            if (!token || !user) {
+                window.location.href = '/';
+                return false;
+            }
+
+            const userData = JSON.parse(user);
+            if (userData.role !== 'medico') {
+                alert('Acceso denegado. Se requieren permisos de médico.');
+                window.location.href = '/';
+                return false;
+            }
+
+            return true;
+        }
+
+        // Cargar información del paciente
+        async function loadPatientInfo() {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/debug/data', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // Encontrar la cita
+                    const cita = data.citas?.find(c => c.id === citaId);
+                    if (!cita) {
+                        throw new Error('Cita no encontrada');
+                    }
+
+                    // Encontrar el paciente
+                    pacienteData = data.pacientes?.find(p => p.id === cita.paciente_id);
+                    if (!pacienteData) {
+                        throw new Error('Paciente no encontrado');
+                    }
+
+                    // Encontrar el médico
+                    const user = JSON.parse(localStorage.getItem('user'));
+                    medicoData = data.medicos?.find(m => m.id === user.medicoId);
+                    if (!medicoData) {
+                        throw new Error('Médico no encontrado');
+                    }
+
+                    // Mostrar información del paciente
+                    document.getElementById('patientDetails').innerHTML = `
+                        <p><strong>Nombre:</strong> ${pacienteData.nombre} ${pacienteData.apellidos}</p>
+                        <p><strong>Documento:</strong> ${pacienteData.tipo_documento} ${pacienteData.numero_documento}</p>
+                        <p><strong>Edad:</strong> ${calculateAge(pacienteData.fecha_nacimiento)} años</p>
+                        <p><strong>Sexo:</strong> ${pacienteData.sexo}</p>
+                        <p><strong>Tipo de sangre:</strong> ${pacienteData.rh}</p>
+                        <p><strong>EPS:</strong> ${pacienteData.eps || 'No especificada'}</p>
+                        <p><strong>Motivo de cita:</strong> ${cita.motivo || 'Consulta general'}</p>
+                    `;
+
+                    // Pre-llenar campos del formulario
+                    document.getElementById('fechaConsulta').value = new Date().toISOString().split('T')[0];
+                    document.getElementById('registroMedicoDoctor').value = medicoData?.numero_registro || '';
+                    document.getElementById('identificacionPaciente').value = pacienteData.numero_documento;
+                    document.getElementById('nombreCompletoPaciente').value = `${pacienteData.nombre} ${pacienteData.apellidos}`;
+                    
+                    // Pre-llenar motivo de consulta si existe
+                    if (cita.motivo) {
+                        document.getElementById('motivoConsulta').value = cita.motivo;
+                    }
+
+                    console.log('Información del paciente cargada y formulario pre-llenado');
+
+                    console.log('Información del paciente cargada y formulario pre-llenado');
+                } else {
+                    throw new Error('Error al cargar los datos');
+                }
+            } catch (error) {
+                console.error('Error al cargar información del paciente:', error);
+                alert('Error al cargar la información del paciente: ' + error.message);
+            }
+        }
+
+        // Función para calcular la edad
+        function calculateAge(birthDate) {
+            const today = new Date();
+            const birth = new Date(birthDate);
+            let age = today.getFullYear() - birth.getFullYear();
+            const monthDiff = today.getMonth() - birth.getMonth();
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+                age--;
+            }
+            return age;
+        }
+
+        // Inicializar Socket.io y WebRTC
+        async function initializeSocket() {
+            try {
+                socket = io();
+                
+                // Unirse a la sala de videollamada
+                socket.emit('join-room', roomId, 'medico-' + medicoData.id);
+                
+                // Configurar eventos de Socket.io
+                socket.on('user-connected', (userId) => {
+                    console.log('Usuario conectado:', userId);
+                    if (userId.startsWith('paciente-')) {
+                        document.getElementById('patientPlaceholder').innerHTML = `
+                            <i class="fas fa-user" style="color: #28a745;"></i>
+                            <span style="color: #28a745;">Paciente conectado</span>
+                        `;
+                        
+                        // Iniciar llamada WebRTC
+                        createOffer();
+                    }
+                });
+
+                socket.on('user-disconnected', (userId) => {
+                    console.log('Usuario desconectado:', userId);
+                    if (userId.startsWith('paciente-')) {
+                        document.getElementById('patientPlaceholder').innerHTML = `
+                            <i class="fas fa-user"></i>
+                            <span>Esperando al paciente...</span>
+                        `;
+                        
+                        // Ocultar video del paciente
+                        document.getElementById('patientVideo').style.display = 'none';
+                        document.getElementById('patientPlaceholder').style.display = 'flex';
+                    }
+                });
+
+                // WebRTC signaling
+                socket.on('offer', handleOffer);
+                socket.on('answer', handleAnswer);
+                socket.on('ice-candidate', handleIceCandidate);
+
+            } catch (error) {
+                console.error('Error inicializando Socket.io:', error);
+            }
+        }
+
+        // Crear oferta WebRTC
+        async function createOffer() {
+            try {
+                peerConnection = new RTCPeerConnection(configuration);
+                
+                // Agregar tracks del stream local
+                localStream.getTracks().forEach(track => {
+                    peerConnection.addTrack(track, localStream);
+                });
+
+                // Manejar stream remoto
+                peerConnection.ontrack = (event) => {
+                    remoteStream = event.streams[0];
+                    const patientVideo = document.getElementById('patientVideo');
+                    patientVideo.srcObject = remoteStream;
+                    patientVideo.style.display = 'block';
+                    document.getElementById('patientPlaceholder').style.display = 'none';
+                };
+
+                // Manejar ICE candidates
+                peerConnection.onicecandidate = (event) => {
+                    if (event.candidate) {
+                        socket.emit('ice-candidate', roomId, event.candidate);
+                    }
+                };
+
+                // Crear y enviar oferta
+                const offer = await peerConnection.createOffer();
+                await peerConnection.setLocalDescription(offer);
+                socket.emit('offer', roomId, offer);
+
+            } catch (error) {
+                console.error('Error creando oferta:', error);
+            }
+        }
+
+        // Manejar oferta recibida
+        async function handleOffer(offer) {
+            try {
+                if (!peerConnection) {
+                    peerConnection = new RTCPeerConnection(configuration);
+                    
+                    localStream.getTracks().forEach(track => {
+                        peerConnection.addTrack(track, localStream);
+                    });
+
+                    peerConnection.ontrack = (event) => {
+                        remoteStream = event.streams[0];
+                        const patientVideo = document.getElementById('patientVideo');
+                        patientVideo.srcObject = remoteStream;
+                        patientVideo.style.display = 'block';
+                        document.getElementById('patientPlaceholder').style.display = 'none';
+                    };
+
+                    peerConnection.onicecandidate = (event) => {
+                        if (event.candidate) {
+                            socket.emit('ice-candidate', roomId, event.candidate);
+                        }
+                    };
+                }
+
+                await peerConnection.setRemoteDescription(offer);
+                const answer = await peerConnection.createAnswer();
+                await peerConnection.setLocalDescription(answer);
+                socket.emit('answer', roomId, answer);
+
+            } catch (error) {
+                console.error('Error manejando oferta:', error);
+            }
+        }
+
+        // Manejar respuesta recibida
+        async function handleAnswer(answer) {
+            try {
+                await peerConnection.setRemoteDescription(answer);
+            } catch (error) {
+                console.error('Error manejando respuesta:', error);
+            }
+        }
+
+        // Manejar ICE candidate
+        async function handleIceCandidate(candidate) {
+            try {
+                await peerConnection.addIceCandidate(candidate);
+            } catch (error) {
+                console.error('Error agregando ICE candidate:', error);
+            }
+        }
+
+        // Inicializar canvas para firma digital
+        function initializeSignatureCanvas() {
+            firmaCanvas = document.getElementById('firmaCanvas');
+            firmaCtx = firmaCanvas.getContext('2d');
+            
+            // Configurar estilo del canvas
+            firmaCtx.strokeStyle = '#000';
+            firmaCtx.lineWidth = 2;
+            firmaCtx.lineCap = 'round';
+            
+            // Event listeners para mouse
+            firmaCanvas.addEventListener('mousedown', startDrawing);
+            firmaCanvas.addEventListener('mousemove', draw);
+            firmaCanvas.addEventListener('mouseup', stopDrawing);
+            firmaCanvas.addEventListener('mouseout', stopDrawing);
+            
+            // Event listeners para touch (móvil)
+            firmaCanvas.addEventListener('touchstart', handleTouch);
+            firmaCanvas.addEventListener('touchmove', handleTouch);
+            firmaCanvas.addEventListener('touchend', stopDrawing);
+        }
+
+        function startDrawing(e) {
+            isDrawing = true;
+            const rect = firmaCanvas.getBoundingClientRect();
+            firmaCtx.beginPath();
+            firmaCtx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            const rect = firmaCanvas.getBoundingClientRect();
+            firmaCtx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+            firmaCtx.stroke();
+        }
+
+        function stopDrawing() {
+            isDrawing = false;
+        }
+
+        function handleTouch(e) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const mouseEvent = new MouseEvent(e.type === 'touchstart' ? 'mousedown' : 
+                                             e.type === 'touchmove' ? 'mousemove' : 'mouseup', {
+                clientX: touch.clientX,
+                clientY: touch.clientY
+            });
+            firmaCanvas.dispatchEvent(mouseEvent);
+        }
+
+        function clearSignature() {
+            firmaCtx.clearRect(0, 0, firmaCanvas.width, firmaCanvas.height);
+        }
+
+        // Inicializar contadores de caracteres
+        function initializeCharacterCounters() {
+            const textareas = document.querySelectorAll('textarea[maxlength]');
+            
+            textareas.forEach(textarea => {
+                const counterElement = textarea.nextElementSibling;
+                if (counterElement && counterElement.classList.contains('character-count')) {
+                    
+                    // Función para actualizar contador
+                    function updateCounter() {
+                        const currentLength = textarea.value.length;
+                        const maxLength = textarea.getAttribute('maxlength');
+                        
+                        counterElement.textContent = `${currentLength} / ${maxLength} caracteres`;
+                        
+                        // Cambiar color según el uso
+                        counterElement.classList.remove('warning', 'error');
+                        if (currentLength > maxLength * 0.9) {
+                            counterElement.classList.add('error');
+                        } else if (currentLength > maxLength * 0.8) {
+                            counterElement.classList.add('warning');
+                        }
+                    }
+                    
+                    // Actualizar en tiempo real
+                    textarea.addEventListener('input', updateCounter);
+                    textarea.addEventListener('paste', () => setTimeout(updateCounter, 10));
+                    
+                    // Inicializar contador
+                    updateCounter();
+                }
+            });
+        }
+
+        // Calcular edad
+        function calculateAge(birthDate) {
+            const today = new Date();
+            const birth = new Date(birthDate);
+            let age = today.getFullYear() - birth.getFullYear();
+            const monthDiff = today.getMonth() - birth.getMonth();
+            
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+                age--;
+            }
+            
+            return age;
+        }
+
+        // Generar PDF de la historia clínica
+        function generatePDF(historiaData) {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Configuración del documento
+            const pageWidth = doc.internal.pageSize.width;
+            const margin = 20;
+            let yPosition = 30;
+            
+            // Título
+            doc.setFontSize(18);
+            doc.setFont(undefined, 'bold');
+            doc.text('HISTORIA CLÍNICA DIGITAL - TELEORIENTACIÓN', pageWidth / 2, yPosition, { align: 'center' });
+            yPosition += 15;
+            
+            // Información del centro médico
+            doc.setFontSize(12);
+            doc.setFont(undefined, 'normal');
+            doc.text('SoyBienmedico - Plataforma de Telemedicina', pageWidth / 2, yPosition, { align: 'center' });
+            yPosition += 10;
+            doc.text(`Fecha de consulta: ${historiaData.fecha_consulta || new Date().toLocaleDateString('es-ES')}`, pageWidth / 2, yPosition, { align: 'center' });
+            yPosition += 20;
+            
+            // Información del paciente
+            doc.setFontSize(14);
+            doc.setFont(undefined, 'bold');
+            doc.text('INFORMACIÓN DEL PACIENTE', margin, yPosition);
+            yPosition += 10;
+            
+            doc.setFontSize(10);
+            doc.setFont(undefined, 'normal');
+            doc.text(`Identificación: ${historiaData.identificacion_paciente}`, margin, yPosition);
+            yPosition += 6;
+            doc.text(`Nombre completo: ${historiaData.nombre_completo_paciente}`, margin, yPosition);
+            yPosition += 6;
+            doc.text(`Edad: ${calculateAge(pacienteData.fecha_nacimiento)} años`, margin, yPosition);
+            yPosition += 6;
+            doc.text(`Sexo: ${pacienteData.sexo}`, margin, yPosition);
+            yPosition += 6;
+            doc.text(`Tipo de sangre: ${pacienteData.rh}`, margin, yPosition);
+            yPosition += 6;
+            doc.text(`EPS: ${pacienteData.eps || 'No especificada'}`, margin, yPosition);
+            yPosition += 15;
+            
+            // Información del médico
+            doc.setFontSize(14);
+            doc.setFont(undefined, 'bold');
+            doc.text('INFORMACIÓN DEL MÉDICO', margin, yPosition);
+            yPosition += 10;
+            
+            doc.setFontSize(10);
+            doc.setFont(undefined, 'normal');
+            doc.text(`Nombre: Dr. ${medicoData.nombre}`, margin, yPosition);
+            yPosition += 6;
+            doc.text(`Registro Médico: ${historiaData.registro_medico_doctor}`, margin, yPosition);
+            yPosition += 6;
+            doc.text(`Especialidad: ${medicoData.especialidad || 'Medicina General'}`, margin, yPosition);
+            yPosition += 15;
+            
+            // Motivo de consulta
+            if (historiaData.motivo_consulta) {
+                doc.setFontSize(12);
+                doc.setFont(undefined, 'bold');
+                doc.text('MOTIVO DE CONSULTA', margin, yPosition);
+                yPosition += 8;
+                doc.setFont(undefined, 'normal');
+                doc.setFontSize(10);
+                const motivoLines = doc.splitTextToSize(historiaData.motivo_consulta, pageWidth - 2 * margin);
+                doc.text(motivoLines, margin, yPosition);
+                yPosition += motivoLines.length * 5 + 10;
+            }
+            
+            // Objeto de la teleorientación
+            if (historiaData.objeto_teleorientacion) {
+                doc.setFontSize(12);
+                doc.setFont(undefined, 'bold');
+                doc.text('OBJETO DE LA TELEORIENTACIÓN', margin, yPosition);
+                yPosition += 8;
+                doc.setFont(undefined, 'normal');
+                doc.setFontSize(10);
+                const objetoLines = doc.splitTextToSize(historiaData.objeto_teleorientacion, pageWidth - 2 * margin);
+                doc.text(objetoLines, margin, yPosition);
+                yPosition += objetoLines.length * 5 + 10;
+            }
+            
+            // Antecedentes
+            if (historiaData.antecedentes) {
+                doc.setFontSize(12);
+                doc.setFont(undefined, 'bold');
+                doc.text('ANTECEDENTES MÉDICOS', margin, yPosition);
+                yPosition += 8;
+                doc.setFont(undefined, 'normal');
+                doc.setFontSize(10);
+                const antecedentesLines = doc.splitTextToSize(historiaData.antecedentes, pageWidth - 2 * margin);
+                doc.text(antecedentesLines, margin, yPosition);
+                yPosition += antecedentesLines.length * 5 + 10;
+            }
+            
+            // Signos vitales y medidas antropométricas
+            let hasSignosVitales = historiaData.presion_sistolica || historiaData.presion_diastolica || 
+                                   historiaData.peso || historiaData.talla || historiaData.tabaquismo;
+                                   
+            if (hasSignosVitales) {
+                // Verificar si necesitamos nueva página
+                if (yPosition > 220) {
+                    doc.addPage();
+                    yPosition = 30;
+                }
+                
+                doc.setFontSize(12);
+                doc.setFont(undefined, 'bold');
+                doc.text('SIGNOS VITALES Y MEDIDAS ANTROPOMÉTRICAS', margin, yPosition);
+                yPosition += 8;
+                doc.setFont(undefined, 'normal');
+                doc.setFontSize(10);
+                
+                if (historiaData.tabaquismo) {
+                    doc.text(`Tabaquismo: ${historiaData.tabaquismo}`, margin, yPosition);
+                    yPosition += 6;
+                }
+                if (historiaData.presion_sistolica && historiaData.presion_diastolica) {
+                    doc.text(`Presión Arterial: ${historiaData.presion_sistolica}/${historiaData.presion_diastolica} mmHg`, margin, yPosition);
+                    yPosition += 6;
+                } else if (historiaData.presion_sistolica) {
+                    doc.text(`Presión Sistólica: ${historiaData.presion_sistolica} mmHg`, margin, yPosition);
+                    yPosition += 6;
+                } else if (historiaData.presion_diastolica) {
+                    doc.text(`Presión Diastólica: ${historiaData.presion_diastolica} mmHg`, margin, yPosition);
+                    yPosition += 6;
+                }
+                if (historiaData.peso) {
+                    doc.text(`Peso: ${historiaData.peso} Kg`, margin, yPosition);
+                    yPosition += 6;
+                }
+                if (historiaData.talla) {
+                    doc.text(`Talla: ${historiaData.talla} cm`, margin, yPosition);
+                    yPosition += 6;
+                }
+                if (historiaData.actividad_fisica) {
+                    doc.text(`Actividad Física: ${historiaData.actividad_fisica}`, margin, yPosition);
+                    yPosition += 6;
+                }
+                yPosition += 10;
+            }
+            
+            // Conducta médica
+            if (historiaData.conducta) {
+                // Verificar si necesitamos nueva página
+                if (yPosition > 200) {
+                    doc.addPage();
+                    yPosition = 30;
+                }
+                
+                doc.setFontSize(12);
+                doc.setFont(undefined, 'bold');
+                doc.text('CONDUCTA MÉDICA', margin, yPosition);
+                yPosition += 8;
+                doc.setFont(undefined, 'normal');
+                doc.setFontSize(10);
+                const conductaLines = doc.splitTextToSize(historiaData.conducta, pageWidth - 2 * margin);
+                doc.text(conductaLines, margin, yPosition);
+                yPosition += conductaLines.length * 5 + 10;
+            }
+            
+            // Especialidad requerida
+            if (historiaData.especialidad_requerida) {
+                doc.setFontSize(12);
+                doc.setFont(undefined, 'bold');
+                doc.text('ESPECIALIDAD REQUERIDA', margin, yPosition);
+                yPosition += 8;
+                doc.setFont(undefined, 'normal');
+                doc.setFontSize(10);
+                doc.text(historiaData.especialidad_requerida, margin, yPosition);
+                yPosition += 15;
+            }
+            
+            // Verificar si necesitamos una nueva página para la firma
+            if (yPosition > 200) {
+                doc.addPage();
+                yPosition = 30;
+            }
+            
+            // Firma digital
+            yPosition += 20;
+            doc.setFontSize(12);
+            doc.setFont(undefined, 'bold');
+            doc.text('FIRMA DEL MÉDICO', margin, yPosition);
+            yPosition += 10;
+            
+            // Agregar firma del canvas si existe
+            if (firmaCanvas && historiaData.firma_digital) {
+                doc.addImage(historiaData.firma_digital, 'PNG', margin, yPosition, 100, 30);
+                yPosition += 35;
+            }
+            
+            doc.setFont(undefined, 'normal');
+            doc.setFontSize(10);
+            doc.text(`Dr. ${medicoData.nombre}`, margin, yPosition);
+            yPosition += 5;
+            doc.text(`Registro Médico: ${historiaData.registro_medico_doctor}`, margin, yPosition);
+            yPosition += 5;
+            doc.text(`Fecha: ${historiaData.fecha_consulta} ${historiaData.hora_consulta}`, margin, yPosition);
+            
+            // Pie de página
+            doc.setFontSize(8);
+            doc.text('Documento generado por SoyBienmedico - Plataforma de Telemedicina', pageWidth / 2, 285, { align: 'center' });
+            
+            // Guardar PDF
+            const fileName = `Teleorientacion_${pacienteData.numero_documento}_${historiaData.fecha_consulta}.pdf`;
+            doc.save(fileName);
+            
+            return fileName;
+        }
+
+        // Guardar historia clínica
+        async function guardarHistoriaClinica() {
+            try {
+                console.log('🔄 Iniciando guardado de historia clínica...');
+                
+                // Obtener datos del formulario usando los nuevos IDs
+                const historiaData = {
+                    paciente_id: pacienteData.id,
+                    medico_id: medicoData.id,
+                    cita_id: citaId,
+                    
+                    // Datos de la consulta
+                    fecha_consulta: document.getElementById('fechaConsulta').value,
+                    registro_medico_doctor: document.getElementById('registroMedicoDoctor').value,
+                    
+                    // Identificación del paciente
+                    identificacion_paciente: document.getElementById('identificacionPaciente').value,
+                    nombre_completo_paciente: document.getElementById('nombreCompletoPaciente').value,
+                    
+                    // Campos principales del formulario
+                    motivo_consulta: document.getElementById('motivoConsulta').value,
+                    objeto_teleorientacion: document.getElementById('objetoTeleorientacion').value,
+                    antecedentes: document.getElementById('antecedentes').value,
+                    
+                    // Signos vitales y medidas
+                    tabaquismo: document.getElementById('tabaquismo').value,
+                    presion_sistolica: document.getElementById('presionSistolica').value,
+                    presion_diastolica: document.getElementById('presionDiastolica').value,
+                    peso: document.getElementById('peso').value,
+                    talla: document.getElementById('talla').value,
+                    actividad_fisica: document.getElementById('actividadFisica').value,
+                    
+                    // Conducta y especialidad
+                    conducta: document.getElementById('conducta').value,
+                    especialidad_requerida: document.getElementById('especialidadRequerida').value,
+                    
+                    // Firma digital
+                    firma_digital: firmaCanvas ? firmaCanvas.toDataURL() : null,
+                    
+                    // Metadatos
+                    hora_consulta: new Date().toLocaleTimeString('es-ES'),
+                    timestamp: new Date().toISOString()
+                };
+                
+                console.log('📝 Datos recopilados:', historiaData);
+                
+                // Validar campos obligatorios
+                if (!historiaData.registro_medico_doctor || !historiaData.motivo_consulta) {
+                    alert('Por favor complete los campos obligatorios:\n- Registro médico del doctor\n- Motivo de consulta');
+                    return;
+                }
+                
+                console.log('✅ Validación completada, generando PDF...');
+                
+                // Generar PDF con los nuevos campos
+                const fileName = generatePDF(historiaData);
+                
+                // Actualizar estado de la cita a "completada"
+                await updateAppointmentStatus('completada');
+                
+                alert(`✅ Historia clínica guardada exitosamente!\n\n📄 PDF generado: ${fileName}\n\n💾 El archivo se ha descargado a su carpeta de Descargas.`);
+                
+                // Preguntar si desea finalizar la consulta
+                const continuar = confirm('¿Desea finalizar la consulta ahora?');
+                
+                if (continuar) {
+                    finalizarConsulta();
+                }
+                
+            } catch (error) {
+                console.error('❌ Error:', error);
+                alert('Error al guardar la historia clínica: ' + error.message);
+            }
+        }
+
+        // Inicializar video
+        async function initializeVideo() {
+            try {
+                localStream = await navigator.mediaDevices.getUserMedia({
+                    video: true,
+                    audio: true
+                });
+
+                const doctorVideo = document.getElementById('doctorVideo');
+                doctorVideo.srcObject = localStream;
+                doctorVideo.style.display = 'block';
+                doctorVideo.muted = true; // Evitar feedback del propio audio
+                document.getElementById('doctorPlaceholder').style.display = 'none';
+
+                isCallActive = true;
+                
+                console.log('✅ Video del médico inicializado. Esperando paciente...');
+
+                // Para testing: Simular conexión del paciente después de 3 segundos
+                setTimeout(() => {
+                    console.log('🧪 Simulando conexión del paciente para testing...');
+                    
+                    // Solo simular evento de paciente conectado (SIN video duplicado)
+                    document.getElementById('patientPlaceholder').innerHTML = `
+                        <i class="fas fa-user" style="color: #28a745;"></i>
+                        <span style="color: #28a745;">Paciente conectado (simulado)</span>
+                    `;
+                    
+                    console.log('✅ Simulación de paciente activada (esperando conexión real)');
+                }, 3000);
+
+            } catch (error) {
+                console.error('Error accediendo a la cámara:', error);
+                alert('Error al acceder a la cámara/micrófono. Verifique los permisos.');
+                
+                // Si no hay cámara, mostrar videos simulados
+                setTimeout(() => {
+                    document.getElementById('doctorPlaceholder').innerHTML = `
+                        <i class="fas fa-user-md" style="color: #007bff;"></i>
+                        <span style="color: #007bff;">Video simulado - Dr.</span>
+                    `;
+                    
+                    document.getElementById('patientPlaceholder').innerHTML = `
+                        <i class="fas fa-user" style="color: #28a745;"></i>
+                        <span style="color: #28a745;">Video simulado - Paciente</span>
+                    `;
+                }, 2000);
+            }
+        }
+
+        // Remover función de simulación
+        // function simulatePatientConnection() - Ya no necesaria
+
+        // Controles de video
+        document.getElementById('muteBtn').addEventListener('click', function() {
+            if (localStream) {
+                const audioTracks = localStream.getAudioTracks();
+                if (audioTracks.length > 0) {
+                    audioTracks[0].enabled = !audioTracks[0].enabled;
+                    isMuted = !isMuted;
+                    
+                    this.classList.toggle('active', isMuted);
+                    this.innerHTML = isMuted ? 
+                        '<i class="fas fa-microphone-slash"></i>' : 
+                        '<i class="fas fa-microphone"></i>';
+                }
+            }
+        });
+
+        document.getElementById('videoBtn').addEventListener('click', function() {
+            if (localStream) {
+                const videoTracks = localStream.getVideoTracks();
+                if (videoTracks.length > 0) {
+                    videoTracks[0].enabled = !videoTracks[0].enabled;
+                    isVideoOff = !isVideoOff;
+                    
+                    this.classList.toggle('active', isVideoOff);
+                    this.innerHTML = isVideoOff ? 
+                        '<i class="fas fa-video-slash"></i>' : 
+                        '<i class="fas fa-video"></i>';
+                }
+            }
+        });
+
+        document.getElementById('screenBtn').addEventListener('click', async function() {
+            try {
+                const screenStream = await navigator.mediaDevices.getDisplayMedia({
+                    video: true,
+                    audio: true
+                });
+                
+                // Aquí se implementaría el compartir pantalla
+                alert('Función de compartir pantalla en desarrollo');
+                
+            } catch (error) {
+                console.error('Error al compartir pantalla:', error);
+            }
+        });
+
+        document.getElementById('pauseBtn').addEventListener('click', function() {
+            pauseCall();
+        });
+
+        document.getElementById('endBtn').addEventListener('click', function() {
+            endCall();
+        });
+
+        // Pausar llamada (mantener formulario abierto)
+        function pauseCall() {
+            if (confirm('¿Desea pausar la videollamada? El formulario permanecerá abierto para continuar editando.')) {
+                // Detener streams de video
+                if (localStream) {
+                    localStream.getTracks().forEach(track => track.stop());
+                }
+                
+                // Ocultar videos y mostrar placeholders
+                document.getElementById('doctorVideo').style.display = 'none';
+                document.getElementById('doctorPlaceholder').style.display = 'flex';
+                document.getElementById('doctorPlaceholder').innerHTML = `
+                    <i class="fas fa-pause" style="color: #ffc107;"></i>
+                    <span style="color: #ffc107;">Llamada pausada</span>
+                `;
+                
+                document.getElementById('patientPlaceholder').innerHTML = `
+                    <i class="fas fa-pause" style="color: #ffc107;"></i>
+                    <span style="color: #ffc107;">Llamada pausada</span>
+                `;
+                
+                // Cambiar estado de conexión
+                document.querySelector('.connection-status span').textContent = 'Pausado';
+                document.querySelector('.status-indicator').style.background = '#ffc107';
+                
+                // Pausar timer pero no detenerlo
+                isCallActive = false;
+                
+                // Actualizar estado de cita
+                updateAppointmentStatus('pausada');
+                
+                alert('✅ Llamada pausada. Puede continuar editando el formulario médico.');
+            }
+        }
+
+        // Finalizar llamada
+        function endCall() {
+            if (confirm('¿Está seguro de que desea finalizar la consulta?')) {
+                // Detener streams
+                if (localStream) {
+                    localStream.getTracks().forEach(track => track.stop());
+                }
+                
+                // Detener timer
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                }
+                
+                // Marcar cita como completada
+                updateAppointmentStatus('completada');
+                
+                // Regresar al dashboard
+                window.location.href = '/pages/medico/dashboard.html';
+            }
+        }
+
+        // Timer de llamada
+        function startCallTimer() {
+            callStartTime = new Date();
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+
+        function updateTimer() {
+            if (callStartTime) {
+                const now = new Date();
+                const elapsed = Math.floor((now - callStartTime) / 1000);
+                
+                const hours = Math.floor(elapsed / 3600);
+                const minutes = Math.floor((elapsed % 3600) / 60);
+                const seconds = elapsed % 60;
+                
+                const timeString = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                document.getElementById('callTimer').textContent = timeString;
+            }
+        }
+
+        // Actualizar estado de cita
+        async function updateAppointmentStatus(status) {
+            try {
+                console.log(`🔄 Actualizando estado de cita a: ${status}`);
+                const token = localStorage.getItem('token');
+                await fetch(`/medico/cita/${citaId}/estado`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ estado: status })
+                });
+            } catch (error) {
+                console.error('Error actualizando estado de cita:', error);
+            }
+        }
+
+        // Finalizar consulta (desde el botón del formulario)
+        function finalizarConsulta() {
+            if (confirm('¿Está seguro de que desea finalizar la consulta?\n\n⚠️ ADVERTENCIA: Se perderán los datos no guardados del formulario.')) {
+                console.log('🏁 Finalizando consulta desde formulario...');
+                
+                // Detener video y audio
+                if (localStream) {
+                    localStream.getTracks().forEach(track => track.stop());
+                }
+                
+                // Cerrar conexión de video
+                if (peerConnection) {
+                    peerConnection.close();
+                }
+                
+                // Detener timer
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                }
+                
+                // Notificar al servidor que la consulta terminó
+                if (socket && roomId) {
+                    socket.emit('leave-room', roomId);
+                    socket.disconnect();
+                }
+                
+                // Actualizar estado de cita
+                updateAppointmentStatus('completada');
+                
+                // Redirigir al dashboard del médico
+                setTimeout(() => {
+                    window.location.href = '/pages/medico/dashboard.html';
+                }, 1000);
+            }
+        }
+
+        // Manejar envío del formulario médico
+        document.getElementById('medicalForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const historiaClinica = Object.fromEntries(formData);
+            
+            // Agregar información adicional
+            historiaClinica.cita_id = citaId;
+            historiaClinica.paciente_id = pacienteData.id;
+            historiaClinica.fecha_consulta = new Date().toISOString();
+            historiaClinica.medico_id = JSON.parse(localStorage.getItem('user')).medicoId;
+            
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/medico/historia-clinica', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(historiaClinica)
+                });
+
+                if (response.ok) {
+                    alert('✅ Historia clínica guardada exitosamente');
+                    
+                    // Preguntar si quiere finalizar la consulta
+                    if (confirm('¿Desea finalizar la consulta ahora?')) {
+                        endCall();
+                    }
+                } else {
+                    throw new Error('Error al guardar la historia clínica');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('❌ Error al guardar la historia clínica: ' + error.message);
+            }
+        });
+
+        // Prevenir salida accidental
+        window.addEventListener('beforeunload', function(e) {
+            if (isCallActive) {
+                e.preventDefault();
+                e.returnValue = 'Hay una consulta en curso. ¿Está seguro de que desea salir?';
+            }
+        });
+    </script>
+</body>
+</html>

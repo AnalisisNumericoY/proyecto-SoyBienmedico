@@ -1,0 +1,42 @@
+{
+  "pacientes": [
+    {
+      "id": "PAC001",
+      "fecha_registro": "2024-01-01T00:00:00Z",
+      "tipo_documento": "Cédula de ciudadanía",
+      "numero_documento": "87654321",
+      "nombre": "María",
+      "apellidos": "González López",
+      "sexo": "mujer",
+      "fecha_nacimiento": "1990-05-15",
+      "ocupacion": "empleado",
+      "telefono": "+57 310 987 6543",
+      "estado_civil": "soltero(a)",
+      "email": "paciente@ejemplo.com",
+      "eps": "Sura",
+      "regimen_salud": "Contributivo",
+      "direccion": "Calle 123 #45-67",
+      "barrio": "Centro",
+      "rh": "O+"
+    },
+    {
+      "id": "PAC1754364002715",
+      "fecha_registro": "2025-08-05T03:20:02.718Z",
+      "tipo_documento": "Cédula de ciudadanía",
+      "numero_documento": "71770529",
+      "nombre": "Jose Antonio",
+      "apellidos": "Solano",
+      "sexo": "hombre",
+      "fecha_nacimiento": "2000-09-16",
+      "ocupacion": "empleado",
+      "telefono": "3002431319",
+      "estado_civil": "casado(a)",
+      "email": "especializacion.riesgos.udea@gmail.com",
+      "eps": "sura",
+      "regimen_salud": "",
+      "direccion": "carrera 80 A No 34-36",
+      "barrio": "",
+      "rh": "A+"
+    }
+  ]
+}

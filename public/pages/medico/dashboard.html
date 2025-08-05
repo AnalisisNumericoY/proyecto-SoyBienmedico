@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Médico - SoyBienmedico</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            color: #333;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logout-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+        }
+
+        .card h3 {
+            color: #28a745;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .stats-card {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #28a745;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .appointment-card {
+            border-left: 4px solid #28a745;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+
+        .appointment-time {
+            font-weight: bold;
+            color: #28a745;
+        }
+
+        .appointment-patient {
+            font-size: 1.1rem;
+            margin: 0.5rem 0;
+        }
+
+        .appointment-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 1rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #218838;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .no-appointments {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+        }
+
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid #fcc;
+            margin: 1rem 0;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 1rem;
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .container {
+                padding: 0 1rem;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .appointment-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>
+            <i class="fas fa-user-md"></i>
+            Panel de Médico
+        </h1>
+        <div class="user-info">
+            <span id="userName">Cargando...</span>
+            <button class="logout-btn" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i>
+                Cerrar Sesión
+            </button>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Estadísticas -->
+        <div class="dashboard-grid">
+            <div class="card stats-card">
+                <h3><i class="fas fa-calendar-check"></i> Citas Hoy</h3>
+                <div class="stat-number" id="citasHoy">0</div>
+                <div class="stat-label">Citas programadas hoy</div>
+            </div>
+
+            <div class="card stats-card">
+                <h3><i class="fas fa-calendar-alt"></i> Total Citas</h3>
+                <div class="stat-number" id="totalCitas">0</div>
+                <div class="stat-label">Citas programadas</div>
+            </div>
+
+            <div class="card stats-card">
+                <h3><i class="fas fa-users"></i> Pacientes</h3>
+                <div class="stat-number" id="totalPacientes">0</div>
+                <div class="stat-label">Pacientes atendidos</div>
+            </div>
+
+            <div class="card stats-card">
+                <h3><i class="fas fa-file-medical"></i> Historias</h3>
+                <div class="stat-number" id="totalHistorias">0</div>
+                <div class="stat-label">Historias clínicas</div>
+            </div>
+        </div>
+
+        <!-- Citas de Hoy -->
+        <div class="card">
+            <h3><i class="fas fa-calendar-day"></i> Citas de Hoy</h3>
+            <div id="citasHoyList">
+                <div class="loading">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    Cargando citas...
+                </div>
+            </div>
+        </div>
+
+        <!-- Próximas Citas -->
+        <div class="card">
+            <h3><i class="fas fa-calendar-alt"></i> Próximas Citas</h3>
+            <div id="proximasCitas">
+                <div class="loading">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    Cargando próximas citas...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+
+        // Verificar autenticación
+        function checkAuth() {
+            const token = localStorage.getItem('token');
+            const user = localStorage.getItem('user');
+            
+            if (!token || !user) {
+                window.location.href = '/';
+                return false;
+            }
+
+            currentUser = JSON.parse(user);
+            if (currentUser.role !== 'medico') {
+                alert('Acceso denegado. Se requieren permisos de médico.');
+                window.location.href = '/';
+                return false;
+            }
+
+            document.getElementById('userName').textContent = currentUser.username;
+            return true;
+        }
+
+        // Cargar datos del médico
+        async function loadMedicoData() {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/debug/data', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // Filtrar citas del médico actual
+                    const misCitas = data.citas?.filter(cita => 
+                        cita.medico_id === currentUser.medicoId
+                    ) || [];
+
+                    // Contar pacientes únicos
+                    const pacientesUnicos = new Set(misCitas.map(cita => cita.paciente_id));
+                    
+                    // Filtrar historias del médico
+                    const misHistorias = data.historias?.filter(historia => 
+                        historia.medico_id === currentUser.medicoId
+                    ) || [];
+
+                    // Obtener fecha de hoy
+                    const hoy = new Date().toISOString().split('T')[0];
+                    const citasHoy = misCitas.filter(cita => cita.fecha === hoy);
+
+                    // Actualizar estadísticas
+                    document.getElementById('citasHoy').textContent = citasHoy.length;
+                    document.getElementById('totalCitas').textContent = misCitas.length;
+                    document.getElementById('totalPacientes').textContent = pacientesUnicos.size;
+                    document.getElementById('totalHistorias').textContent = misHistorias.length;
+
+                    // Mostrar citas
+                    mostrarCitasHoy(citasHoy, data.pacientes);
+                    mostrarProximasCitas(misCitas, data.pacientes);
+                } else {
+                    throw new Error('Error al cargar datos');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('citasHoyList').innerHTML = 
+                    '<div class="error">Error al cargar las citas</div>';
+                document.getElementById('proximasCitas').innerHTML = 
+                    '<div class="error">Error al cargar las citas</div>';
+            }
+        }
+
+        // Mostrar citas de hoy
+        function mostrarCitasHoy(citas, pacientes) {
+            const container = document.getElementById('citasHoyList');
+            
+            if (citas.length === 0) {
+                container.innerHTML = '<div class="no-appointments">No hay citas programadas para hoy</div>';
+                return;
+            }
+
+            container.innerHTML = citas.map(cita => {
+                const paciente = pacientes?.find(p => p.id === cita.paciente_id);
+                const pacienteNombre = paciente ? 
+                    `${paciente.nombre} ${paciente.apellidos}` : 
+                    'Paciente no encontrado';
+
+                return `
+                    <div class="appointment-card">
+                        <div class="appointment-time">${cita.hora}</div>
+                        <div class="appointment-patient">${pacienteNombre}</div>
+                        <div>Motivo: ${cita.motivo || 'Consulta general'}</div>
+                        <div>Estado: <span style="color: ${getStatusColor(cita.estado)}">${cita.estado}</span></div>
+                        <div class="appointment-actions">
+                            <button class="btn btn-primary" onclick="iniciarConsulta('${cita.id}')">
+                                <i class="fas fa-video"></i> Iniciar Consulta
+                            </button>
+                            <button class="btn btn-secondary" onclick="verDetalles('${cita.id}')">
+                                <i class="fas fa-info-circle"></i> Ver Detalles
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Mostrar próximas citas
+        function mostrarProximasCitas(todasCitas, pacientes) {
+            const container = document.getElementById('proximasCitas');
+            const hoy = new Date().toISOString().split('T')[0];
+            
+            // Filtrar citas futuras (excluyendo hoy)
+            const citasFuturas = todasCitas
+                .filter(cita => cita.fecha > hoy)
+                .sort((a, b) => new Date(a.fecha + ' ' + a.hora) - new Date(b.fecha + ' ' + b.hora))
+                .slice(0, 5);
+
+            if (citasFuturas.length === 0) {
+                container.innerHTML = '<div class="no-appointments">No hay citas futuras programadas</div>';
+                return;
+            }
+
+            container.innerHTML = citasFuturas.map(cita => {
+                const paciente = pacientes?.find(p => p.id === cita.paciente_id);
+                const pacienteNombre = paciente ? 
+                    `${paciente.nombre} ${paciente.apellidos}` : 
+                    'Paciente no encontrado';
+
+                return `
+                    <div class="appointment-card">
+                        <div class="appointment-time">${cita.fecha} - ${cita.hora}</div>
+                        <div class="appointment-patient">${pacienteNombre}</div>
+                        <div>Motivo: ${cita.motivo || 'Consulta general'}</div>
+                        <div>Estado: <span style="color: ${getStatusColor(cita.estado)}">${cita.estado}</span></div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Obtener color según estado
+        function getStatusColor(estado) {
+            switch(estado) {
+                case 'programada': return '#28a745';
+                case 'en_curso': return '#007bff';
+                case 'completada': return '#6c757d';
+                case 'cancelada': return '#dc3545';
+                default: return '#333';
+            }
+        }
+
+        // Funciones de acción
+        function iniciarConsulta(citaId) {
+            // Confirmar inicio de consulta
+            if (confirm('¿Está listo para iniciar la videoconsulta con el paciente?')) {
+                // Redirigir a la página de videoconsulta
+                window.location.href = `/pages/medico/videoconsulta.html?cita=${citaId}`;
+            }
+        }
+
+        function verDetalles(citaId) {
+            alert(`Ver detalles de cita ${citaId}. Esta funcionalidad estará disponible en la próxima versión.`);
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/';
+        }
+
+        // Inicializar página
+        window.addEventListener('load', function() {
+            if (checkAuth()) {
+                loadMedicoData();
+            }
+        });
+    </script>
+</body>
+</html>
