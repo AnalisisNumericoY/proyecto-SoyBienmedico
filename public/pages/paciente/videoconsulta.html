@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https: wss: data: blob:; media-src 'self' blob:;">
     <title>VideoConsulta Paciente - SoyBienmedico</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -36,8 +37,7 @@
 
         .video-grid {
             flex: 1;
-            display: grid;
-            grid-template-rows: 2fr 1fr;
+            display: flex;
             gap: 10px;
         }
 
@@ -101,22 +101,31 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
         }
 
         .btn-mute {
-            background: #6c757d;
+            background: #28a745;
         }
 
         .btn-mute.active {
             background: #dc3545;
+            animation: pulse-red 1s infinite;
         }
 
         .btn-video {
-            background: #6c757d;
+            background: #007bff;
         }
 
         .btn-video.active {
             background: #dc3545;
+            animation: pulse-red 1s infinite;
+        }
+
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
         }
 
         .btn-end {
@@ -313,21 +322,21 @@
         <!-- Área principal de video -->
         <div class="main-video-area">
             <div class="video-grid">
-                <!-- Video del médico -->
-                <div class="video-panel doctor-video">
-                    <video id="doctorVideo" autoplay muted style="display: none;"></video>
+                <!-- Video principal del médico -->
+                <div class="video-panel doctor-video" style="flex: 1; position: relative;">
+                    <video id="doctorVideo" autoplay style="display: none; width: 100%; height: 100%;"></video>
                     <div id="doctorPlaceholder" class="video-placeholder">
-                        <i class="fas fa-user-md"></i>
+                        <i class="fas fa-user-md" style="font-size: 4rem;"></i>
                         <span>Esperando al médico...</span>
                     </div>
-                </div>
-                
-                <!-- Video del paciente (yo) -->
-                <div class="video-panel patient-video">
-                    <video id="patientVideo" autoplay muted style="display: none;"></video>
-                    <div id="patientPlaceholder" class="video-placeholder">
-                        <i class="fas fa-user"></i>
-                        <span>Tu video aparecerá aquí</span>
+                    
+                    <!-- Video pequeño del paciente en esquina -->
+                    <div style="position: absolute; top: 15px; right: 15px; width: 250px; height: 180px; border: 3px solid #28a745; border-radius: 12px; overflow: hidden; background: #2d2d2d;">
+                        <video id="patientVideo" autoplay muted style="display: none; width: 100%; height: 100%; object-fit: cover;"></video>
+                        <div id="patientPlaceholder" class="video-placeholder" style="width: 100%; height: 100%; font-size: 0.9rem;">
+                            <i class="fas fa-user" style="font-size: 2.5rem;"></i>
+                            <span>Tu video</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -346,8 +355,9 @@
                 <button class="control-btn" id="dashboardBtn" title="Regresar al Dashboard" style="background: #6c757d;">
                     <i class="fas fa-home"></i>
                 </button>
-                <div style="color: #666; font-size: 0.9rem; margin-left: 20px;">
-                    ℹ️ Solo el médico puede finalizar la consulta oficial
+                <div style="color: #ccc; font-size: 0.9rem; margin-left: 20px; display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-info-circle"></i>
+                    <span>🎤 Micrófono | 📹 Cámara | 📞 Salir | 🏠 Dashboard</span>
                 </div>
             </div>
         </div>
@@ -635,18 +645,19 @@
                     peerConnection.addTrack(track, localStream);
                 });
 
-                // Manejar stream remoto
+                // Manejar stream remoto (video del médico)
                 peerConnection.ontrack = (event) => {
                     console.log('📥 Stream del médico recibido:', event.streams.length);
                     remoteStream = event.streams[0];
                     const doctorVideo = document.getElementById('doctorVideo');
                     doctorVideo.srcObject = remoteStream;
                     doctorVideo.style.display = 'block';
+                    doctorVideo.muted = false; // El médico SÍ debe escucharse
                     document.getElementById('doctorPlaceholder').style.display = 'none';
-                    console.log('✅ Video del médico configurado');
+                    console.log('✅ Video del médico configurado - GRANDE en pantalla principal');
                     
                     // Actualizar estado
-                    document.getElementById('consultationStatus').textContent = 'Videollamada activa';
+                    document.getElementById('consultationStatus').textContent = 'Videollamada activa con Dr. ' + medicoData.nombre;
                     updateConnectionStatus('Video activo');
                     
                     // Actualizar placeholder
