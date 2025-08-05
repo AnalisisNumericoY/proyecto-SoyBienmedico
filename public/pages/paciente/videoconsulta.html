@@ -608,25 +608,30 @@
         // Manejar oferta WebRTC recibida
         async function handleOffer(offer) {
             try {
+                console.log('📥 Oferta recibida del médico');
                 peerConnection = new RTCPeerConnection(configuration);
                 
                 // Agregar tracks del stream local
                 localStream.getTracks().forEach(track => {
+                    console.log('📤 Agregando track del paciente:', track.kind);
                     peerConnection.addTrack(track, localStream);
                 });
 
                 // Manejar stream remoto
                 peerConnection.ontrack = (event) => {
+                    console.log('📥 Stream del médico recibido:', event.streams.length);
                     remoteStream = event.streams[0];
                     const doctorVideo = document.getElementById('doctorVideo');
                     doctorVideo.srcObject = remoteStream;
                     doctorVideo.style.display = 'block';
                     document.getElementById('doctorPlaceholder').style.display = 'none';
+                    console.log('✅ Video del médico configurado');
                 };
 
                 // Manejar ICE candidates
                 peerConnection.onicecandidate = (event) => {
                     if (event.candidate) {
+                        console.log('🧊 Enviando ICE candidate');
                         socket.emit('ice-candidate', roomId, event.candidate);
                     }
                 };
@@ -634,6 +639,7 @@
                 await peerConnection.setRemoteDescription(offer);
                 const answer = await peerConnection.createAnswer();
                 await peerConnection.setLocalDescription(answer);
+                console.log('📤 Enviando respuesta al médico');
                 socket.emit('answer', roomId, answer);
 
             } catch (error) {

@@ -871,25 +871,30 @@
         // Crear oferta WebRTC
         async function createOffer() {
             try {
+                console.log('🔄 Creando oferta WebRTC...');
                 peerConnection = new RTCPeerConnection(configuration);
                 
                 // Agregar tracks del stream local
                 localStream.getTracks().forEach(track => {
+                    console.log('📤 Agregando track:', track.kind);
                     peerConnection.addTrack(track, localStream);
                 });
 
                 // Manejar stream remoto
                 peerConnection.ontrack = (event) => {
+                    console.log('📥 Stream remoto recibido:', event.streams.length);
                     remoteStream = event.streams[0];
                     const patientVideo = document.getElementById('patientVideo');
                     patientVideo.srcObject = remoteStream;
                     patientVideo.style.display = 'block';
                     document.getElementById('patientPlaceholder').style.display = 'none';
+                    console.log('✅ Video del paciente configurado');
                 };
 
                 // Manejar ICE candidates
                 peerConnection.onicecandidate = (event) => {
                     if (event.candidate) {
+                        console.log('🧊 Enviando ICE candidate');
                         socket.emit('ice-candidate', roomId, event.candidate);
                     }
                 };
@@ -897,6 +902,7 @@
                 // Crear y enviar oferta
                 const offer = await peerConnection.createOffer();
                 await peerConnection.setLocalDescription(offer);
+                console.log('📤 Enviando oferta al room:', roomId);
                 socket.emit('offer', roomId, offer);
 
             } catch (error) {
@@ -1368,18 +1374,8 @@
                 
                 console.log('✅ Video del médico inicializado. Esperando paciente...');
 
-                // Para testing: Simular conexión del paciente después de 3 segundos
-                setTimeout(() => {
-                    console.log('🧪 Simulando conexión del paciente para testing...');
-                    
-                    // Solo simular evento de paciente conectado (SIN video duplicado)
-                    document.getElementById('patientPlaceholder').innerHTML = `
-                        <i class="fas fa-user" style="color: #28a745;"></i>
-                        <span style="color: #28a745;">Paciente conectado (simulado)</span>
-                    `;
-                    
-                    console.log('✅ Simulación de paciente activada (esperando conexión real)');
-                }, 3000);
+                // Configurar WebRTC peer connection
+                await setupPeerConnection();
 
             } catch (error) {
                 console.error('Error accediendo a la cámara:', error);
@@ -1397,6 +1393,32 @@
                         <span style="color: #28a745;">Video simulado - Paciente</span>
                     `;
                 }, 2000);
+            }
+        }
+
+        // Configurar WebRTC connection
+        async function setupPeerConnection() {
+            try {
+                // Inicializar Socket.io si no está ya inicializado
+                if (!socket) {
+                    await initializeSocket();
+                }
+
+                console.log('📞 Médico configurando WebRTC...');
+                
+                // Escuchar cuando un usuario se conecta al room
+                socket.on('user-connected', async (userId) => {
+                    console.log('� Usuario conectado al room:', userId);
+                    
+                    // Si es un paciente, crear la oferta
+                    if (userId.includes('paciente-')) {
+                        console.log('🏥 Paciente detectado, creando oferta WebRTC...');
+                        await createOffer();
+                    }
+                });
+
+            } catch (error) {
+                console.error('Error configurando peer connection:', error);
             }
         }
 
