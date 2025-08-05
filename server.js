@@ -17,8 +17,11 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: "*",
-    methods: ["GET", "POST"]
+    origin: process.env.NODE_ENV === 'production' 
+      ? ["https://your-railway-app.up.railway.app"] 
+      : "*",
+    methods: ["GET", "POST"],
+    credentials: true
   }
 });
 
@@ -99,9 +102,10 @@ app.use((req, res) => {
   });
 });
 
-server.listen(PORT, () => {
-  console.log(`Servidor ejecutándose en puerto ${PORT}`);
-  console.log(`Visita: http://localhost:${PORT}`);
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Servidor ejecutándose en puerto ${PORT}`);
+  console.log(`📱 Modo: ${process.env.NODE_ENV}`);
+  console.log(`🌐 Plataforma de telemedicina SoyBienmedico iniciada`);
 });
 
 module.exports = { app, io };
