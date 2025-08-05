@@ -44,6 +44,7 @@ app.use('/admin', adminRoutes);
 app.use('/medico', medicoRoutes);
 app.use('/paciente', pacienteRoutes);
 app.use('/api', apiRoutes);
+app.use('/debug', apiRoutes); // Add debug route alias
 
 // Serve main page
 app.get('/', (req, res) => {

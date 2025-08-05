@@ -8,6 +8,8 @@ const router = express.Router();
 const CITAS_FILE = path.join(__dirname, '../data/citas.json');
 const MEDICOS_FILE = path.join(__dirname, '../data/medicos.json');
 const PACIENTES_FILE = path.join(__dirname, '../data/pacientes.json');
+const HISTORIAS_FILE = path.join(__dirname, '../data/historias-clinicas.json');
+const USERS_FILE = path.join(__dirname, '../data/users.json');
 
 // Helper function to load JSON file
 const loadJsonFile = async (filePath) => {
@@ -30,6 +32,33 @@ const saveJsonFile = async (filePath, data) => {
     return false;
   }
 };
+
+// DEBUG ENDPOINT - Loads all data for dashboard
+router.get('/debug/data', verifyToken, async (req, res) => {
+  try {
+    const citasData = await loadJsonFile(CITAS_FILE);
+    const medicosData = await loadJsonFile(MEDICOS_FILE);
+    const pacientesData = await loadJsonFile(PACIENTES_FILE);
+    const historiasData = await loadJsonFile(HISTORIAS_FILE);
+    const usersData = await loadJsonFile(USERS_FILE);
+
+    res.json({
+      success: true,
+      citas: citasData.citas || [],
+      medicos: medicosData.medicos || [],
+      pacientes: pacientesData.pacientes || [],
+      historias: historiasData.historias || [],
+      users: usersData.users || []
+    });
+
+  } catch (error) {
+    console.error('Error loading debug data:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error interno del servidor'
+    });
+  }
+});
 
 // GET CITA BY ROOM ID (for video calls)
 router.get('/cita/room/:roomId', verifyToken, async (req, res) => {
