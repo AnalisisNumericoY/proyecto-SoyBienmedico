@@ -80,13 +80,17 @@
         }
 
         .video-controls {
+            position: sticky;
+            bottom: 0;
+            z-index: 1000;
             display: flex;
             justify-content: center;
             align-items: center;
             gap: 20px;
             padding: 20px;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.9);
             border-radius: 10px;
+            flex-shrink: 0;
         }
 
         .control-btn {
