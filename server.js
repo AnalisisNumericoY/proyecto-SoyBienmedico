@@ -18,7 +18,7 @@ const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
     origin: process.env.NODE_ENV === 'production' 
-      ? ["https://your-railway-app.up.railway.app"] 
+      ? ["https://proyecto-soybienmedico-production.up.railway.app"]
       : "*",
     methods: ["GET", "POST"],
     credentials: true
@@ -28,7 +28,12 @@ const io = socketIo(server, {
 const PORT = process.env.PORT || 3000;
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: process.env.NODE_ENV === 'production' 
+    ? "https://proyecto-soybienmedico-production.up.railway.app"
+    : "*",
+  credentials: true
+}));
 app.use(bodyParser.json({ limit: '10mb' }));
 app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
