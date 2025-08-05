@@ -44,7 +44,59 @@ app.use('/admin', adminRoutes);
 app.use('/medico', medicoRoutes);
 app.use('/paciente', pacienteRoutes);
 app.use('/api', apiRoutes);
-app.use('/debug', apiRoutes); // Add debug route alias
+
+// Debug endpoint directly in server
+app.get('/debug/data', async (req, res) => {
+  try {
+    const fs = require('fs').promises;
+    const path = require('path');
+    
+    const loadJsonFile = async (filePath) => {
+      try {
+        const data = await fs.readFile(filePath, 'utf8');
+        return JSON.parse(data);
+      } catch (error) {
+        console.error(`Error loading ${filePath}:`, error);
+        return {};
+      }
+    };
+
+    const CITAS_FILE = path.join(__dirname, 'data/citas.json');
+    const MEDICOS_FILE = path.join(__dirname, 'data/medicos.json');
+    const PACIENTES_FILE = path.join(__dirname, 'data/pacientes.json');
+    const HISTORIAS_FILE = path.join(__dirname, 'data/historias-clinicas.json');
+    const USERS_FILE = path.join(__dirname, 'data/users.json');
+
+    console.log('Loading debug data...');
+    
+    const citasData = await loadJsonFile(CITAS_FILE);
+    const medicosData = await loadJsonFile(MEDICOS_FILE);
+    const pacientesData = await loadJsonFile(PACIENTES_FILE);
+    const historiasData = await loadJsonFile(HISTORIAS_FILE);
+    const usersData = await loadJsonFile(USERS_FILE);
+
+    console.log('Citas loaded:', citasData.citas?.length || 0);
+    console.log('Medicos loaded:', medicosData.medicos?.length || 0);
+    console.log('Pacientes loaded:', pacientesData.pacientes?.length || 0);
+
+    res.json({
+      success: true,
+      citas: citasData.citas || [],
+      medicos: medicosData.medicos || [],
+      pacientes: pacientesData.pacientes || [],
+      historias: historiasData.historias || [],
+      users: usersData.users || []
+    });
+
+  } catch (error) {
+    console.error('Error loading debug data:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error interno del servidor',
+      error: error.message
+    });
+  }
+});
 
 // Serve main page
 app.get('/', (req, res) => {
