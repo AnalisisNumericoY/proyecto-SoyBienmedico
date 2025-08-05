@@ -113,10 +113,24 @@ io.on('connection', (socket) => {
     console.log(`Usuario ${userId} se unió a la sala ${roomId}`);
     socket.to(roomId).emit('user-connected', userId);
 
+    // Store user info for proper cleanup
+    socket.userId = userId;
+    socket.roomId = roomId;
+
     // Handle disconnection
     socket.on('disconnect', () => {
+      console.log(`Usuario ${userId} se desconectó de la sala ${roomId}`);
       socket.to(roomId).emit('user-disconnected', userId);
     });
+  });
+
+  // Handle explicit room leaving
+  socket.on('leave-room', (roomId) => {
+    if (socket.userId && socket.roomId) {
+      console.log(`Usuario ${socket.userId} salió explícitamente de la sala ${socket.roomId}`);
+      socket.to(socket.roomId).emit('user-disconnected', socket.userId);
+      socket.leave(socket.roomId);
+    }
   });
 
   // Handle signaling for WebRTC

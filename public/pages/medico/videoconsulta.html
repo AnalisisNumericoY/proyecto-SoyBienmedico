@@ -36,8 +36,7 @@
 
         .video-grid {
             flex: 1;
-            display: grid;
-            grid-template-rows: 2fr 1fr;
+            display: flex;
             gap: 10px;
         }
 
@@ -420,21 +419,17 @@
         <!-- Área principal de video -->
         <div class="main-video-area">
             <div class="video-grid">
-                <!-- Video del paciente -->
-                <div class="video-panel patient-video">
-                    <video id="patientVideo" autoplay muted style="display: none;"></video>
-                    <div id="patientPlaceholder" class="video-placeholder">
-                        <i class="fas fa-user"></i>
-                        <span>Esperando al paciente...</span>
-                    </div>
-                </div>
-                
-                <!-- Video del médico -->
-                <div class="video-panel doctor-video">
+                <!-- Video principal (médico + paciente) -->
+                <div class="video-panel doctor-video" style="flex: 1;">
                     <video id="doctorVideo" autoplay muted style="display: none;"></video>
+                    <video id="patientVideo" autoplay style="display: none; position: absolute; top: 10px; right: 10px; width: 200px; height: 150px; border: 2px solid #28a745; border-radius: 8px;"></video>
                     <div id="doctorPlaceholder" class="video-placeholder">
                         <i class="fas fa-user-md"></i>
-                        <span>Tu video aparecerá aquí</span>
+                        <span>Iniciando cámara del médico...</span>
+                    </div>
+                    <div id="patientPlaceholder" class="video-placeholder" style="position: absolute; top: 10px; right: 10px; width: 200px; height: 150px; background: rgba(0,0,0,0.8); border: 2px solid #28a745; border-radius: 8px; font-size: 0.8rem;">
+                        <i class="fas fa-user" style="font-size: 2rem;"></i>
+                        <span>Esperando paciente...</span>
                     </div>
                 </div>
             </div>
@@ -894,13 +889,14 @@
                     const patientVideo = document.getElementById('patientVideo');
                     patientVideo.srcObject = remoteStream;
                     patientVideo.style.display = 'block';
+                    patientVideo.muted = false; // El paciente sí debe escucharse
                     document.getElementById('patientPlaceholder').style.display = 'none';
                     console.log('✅ Video del paciente configurado');
                     
                     // Actualizar placeholder del paciente
                     document.getElementById('patientPlaceholder').innerHTML = `
                         <i class="fas fa-user" style="color: #28a745;"></i>
-                        <span style="color: #28a745;">Paciente en video</span>
+                        <span style="color: #28a745;">Paciente conectado</span>
                     `;
                 };
 
@@ -1398,6 +1394,7 @@
                     <i class="fas fa-exclamation-triangle" style="color: #dc3545;"></i>
                     <span style="color: #dc3545;">Error de cámara - Verifique permisos</span>
                 `;
+                document.getElementById('doctorPlaceholder').style.display = 'flex';
             }
         }
 
@@ -1492,6 +1489,11 @@
                     localStream.getTracks().forEach(track => track.stop());
                 }
                 
+                // Cerrar conexión WebRTC
+                if (peerConnection) {
+                    peerConnection.close();
+                }
+                
                 // Ocultar videos y mostrar placeholders
                 document.getElementById('doctorVideo').style.display = 'none';
                 document.getElementById('doctorPlaceholder').style.display = 'flex';
@@ -1504,16 +1506,23 @@
                     <i class="fas fa-pause" style="color: #ffc107;"></i>
                     <span style="color: #ffc107;">Llamada pausada</span>
                 `;
+                document.getElementById('patientPlaceholder').style.display = 'flex';
                 
                 // Cambiar estado de conexión
                 document.querySelector('.connection-status span').textContent = 'Pausado';
                 document.querySelector('.status-indicator').style.background = '#ffc107';
                 
-                // Pausar timer pero no detenerlo
+                // Pausar timer pero no detenerlo completamente
                 isCallActive = false;
                 
                 // Actualizar estado de cita
                 updateAppointmentStatus('pausada');
+                
+                // Notificar al paciente
+                if (socket && roomId) {
+                    socket.emit('leave-room', roomId);
+                    socket.disconnect();
+                }
                 
                 alert('✅ Llamada pausada. Puede continuar editando el formulario médico.');
             }
@@ -1527,9 +1536,24 @@
                     localStream.getTracks().forEach(track => track.stop());
                 }
                 
+                // Cerrar conexión WebRTC
+                if (peerConnection) {
+                    peerConnection.close();
+                }
+                
                 // Detener timer
                 if (timerInterval) {
                     clearInterval(timerInterval);
+                    timerInterval = null;
+                }
+                
+                // Marcar como inactivo
+                isCallActive = false;
+                
+                // Notificar al paciente que la consulta terminó
+                if (socket && roomId) {
+                    socket.emit('leave-room', roomId);
+                    socket.disconnect();
                 }
                 
                 // Marcar cita como completada
@@ -1547,7 +1571,7 @@
         }
 
         function updateTimer() {
-            if (callStartTime) {
+            if (callStartTime && isCallActive) {
                 const now = new Date();
                 const elapsed = Math.floor((now - callStartTime) / 1000);
                 
@@ -1557,6 +1581,12 @@
                 
                 const timeString = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
                 document.getElementById('callTimer').textContent = timeString;
+            } else if (!isCallActive) {
+                // Detener timer si la llamada no está activa
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                }
             }
         }
 

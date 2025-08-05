@@ -343,6 +343,9 @@
                 <button class="control-btn btn-end" id="endBtn" title="Salir de la consulta">
                     <i class="fas fa-phone-slash"></i>
                 </button>
+                <button class="control-btn" id="dashboardBtn" title="Regresar al Dashboard" style="background: #6c757d;">
+                    <i class="fas fa-home"></i>
+                </button>
                 <div style="color: #666; font-size: 0.9rem; margin-left: 20px;">
                     ℹ️ Solo el médico puede finalizar la consulta oficial
                 </div>
@@ -583,16 +586,24 @@
                     console.log('Usuario desconectado:', userId);
                     if (userId.startsWith('medico-')) {
                         document.getElementById('doctorPlaceholder').innerHTML = `
-                            <i class="fas fa-user-md"></i>
-                            <span>Esperando al médico...</span>
+                            <i class="fas fa-exclamation-triangle" style="color: #dc3545;"></i>
+                            <span style="color: #dc3545;">Médico desconectado - Consulta terminada</span>
                         `;
                         
                         // Ocultar video del médico
                         document.getElementById('doctorVideo').style.display = 'none';
                         document.getElementById('doctorPlaceholder').style.display = 'flex';
                         
-                        document.getElementById('consultationStatus').textContent = 'Médico desconectado';
+                        document.getElementById('consultationStatus').textContent = 'Consulta finalizada por el médico';
                         updateConnectionStatus('Desconectado');
+                        
+                        // Mostrar mensaje y botón para regresar
+                        setTimeout(() => {
+                            const resultado = confirm('El médico ha finalizado la consulta.\n\n¿Desea regresar al dashboard?');
+                            if (resultado) {
+                                endCall();
+                            }
+                        }, 2000);
                     }
                 });
 
@@ -768,37 +779,45 @@
             endCall();
         });
 
+        document.getElementById('dashboardBtn').addEventListener('click', function() {
+            if (confirm('¿Está seguro de que desea regresar al dashboard?\n\nEsto terminará su participación en la consulta.')) {
+                endCall();
+            }
+        });
+
         // Finalizar llamada
         function endCall() {
-            if (confirm('¿Está seguro de que desea salir de la consulta?')) {
-                // Detener streams
-                if (localStream) {
-                    localStream.getTracks().forEach(track => track.stop());
-                }
-                
-                // Cerrar conexión WebRTC
-                if (peerConnection) {
-                    peerConnection.close();
-                }
-                
-                // Detener timer
-                if (timerInterval) {
-                    clearInterval(timerInterval);
-                }
-                
-                // Desconectar Socket.io
-                if (socket && roomId) {
-                    socket.emit('leave-room', roomId);
-                    socket.disconnect();
-                }
-                
-                updateConnectionStatus('Desconectado');
-                
-                // Regresar al dashboard
-                setTimeout(() => {
-                    window.location.href = '/pages/paciente/dashboard.html';
-                }, 1000);
+            // Detener streams
+            if (localStream) {
+                localStream.getTracks().forEach(track => track.stop());
             }
+            
+            // Cerrar conexión WebRTC
+            if (peerConnection) {
+                peerConnection.close();
+            }
+            
+            // Detener timer
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            
+            // Marcar como inactivo
+            isCallActive = false;
+            
+            // Desconectar Socket.io
+            if (socket && roomId) {
+                socket.emit('leave-room', roomId);
+                socket.disconnect();
+            }
+            
+            updateConnectionStatus('Desconectado');
+            
+            // Regresar al dashboard
+            setTimeout(() => {
+                window.location.href = '/pages/paciente/dashboard.html';
+            }, 1000);
         }
 
         // Timer de llamada
@@ -808,7 +827,7 @@
         }
 
         function updateTimer() {
-            if (callStartTime) {
+            if (callStartTime && isCallActive) {
                 const now = new Date();
                 const elapsed = Math.floor((now - callStartTime) / 1000);
                 
@@ -819,6 +838,12 @@
                 const timeString = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
                 document.getElementById('callTimer').textContent = timeString;
                 document.getElementById('consultationDuration').textContent = timeString;
+            } else if (!isCallActive) {
+                // Detener timer si la llamada no está activa
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                }
             }
         }
 
