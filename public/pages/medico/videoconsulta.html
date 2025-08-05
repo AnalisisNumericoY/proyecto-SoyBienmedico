@@ -27,18 +27,21 @@
             grid-template-columns: 1fr 400px;
             gap: 10px;
             padding: 10px;
+            overflow: hidden;
         }
 
         .main-video-area {
             display: flex;
             flex-direction: column;
             gap: 10px;
+            min-height: 0;
         }
 
         .video-grid {
             flex: 1;
             display: flex;
             gap: 10px;
+            min-height: 0;
         }
 
         .video-panel {
@@ -84,9 +87,15 @@
             justify-content: center;
             align-items: center;
             gap: 20px;
-            padding: 20px;
-            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.95);
             border-radius: 10px;
+            position: sticky;
+            bottom: 0;
+            z-index: 1000;
+            box-shadow: 0 -4px 12px rgba(0,0,0,0.5);
+            flex-shrink: 0;
+            max-height: 90px;
         }
 
         .control-btn {
@@ -431,7 +440,7 @@
             <div class="video-grid">
                 <!-- Video principal del paciente -->
                 <div class="video-panel patient-video" style="flex: 1; position: relative;">
-                    <video id="patientVideo" autoplay style="display: none; width: 100%; height: 100%;"></video>
+                    <video id="patientVideo" autoplay playsinline webkit-playsinline style="display: none; width: 100%; height: 100%;"></video>
                     <div id="patientPlaceholder" class="video-placeholder">
                         <i class="fas fa-user" style="font-size: 4rem;"></i>
                         <span>Esperando paciente...</span>
@@ -439,7 +448,7 @@
                     
                     <!-- Video pequeño del médico en esquina -->
                     <div style="position: absolute; top: 15px; right: 15px; width: 250px; height: 180px; border: 3px solid #007bff; border-radius: 12px; overflow: hidden; background: #2d2d2d;">
-                        <video id="doctorVideo" autoplay muted style="display: none; width: 100%; height: 100%; object-fit: cover;"></video>
+                        <video id="doctorVideo" autoplay muted playsinline webkit-playsinline style="display: none; width: 100%; height: 100%; object-fit: cover;"></video>
                         <div id="doctorPlaceholder" class="video-placeholder" style="width: 100%; height: 100%; font-size: 0.9rem;">
                             <i class="fas fa-user-md" style="font-size: 2.5rem;"></i>
                             <span>Iniciando cámara...</span>
@@ -1414,10 +1423,24 @@
         async function initializeVideo() {
             try {
                 console.log('🎥 Inicializando video del médico...');
-                localStream = await navigator.mediaDevices.getUserMedia({
-                    video: { width: 1280, height: 720 },
-                    audio: { echoCancellation: true, noiseSuppression: true }
-                });
+                
+                // Detectar si es móvil
+                const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                console.log('📱 Es dispositivo móvil:', isMobile);
+                
+                // Configuración optimizada para móviles
+                const constraints = {
+                    video: isMobile ? 
+                        { width: 640, height: 480, facingMode: 'user' } : 
+                        { width: 1280, height: 720 },
+                    audio: { 
+                        echoCancellation: true, 
+                        noiseSuppression: true,
+                        autoGainControl: true
+                    }
+                };
+                
+                localStream = await navigator.mediaDevices.getUserMedia(constraints);
 
                 console.log('📹 Stream obtenido:', localStream);
                 console.log('🎤 Tracks de audio:', localStream.getAudioTracks().length);
@@ -1427,6 +1450,8 @@
                 doctorVideo.srcObject = localStream;
                 doctorVideo.style.display = 'block';
                 doctorVideo.muted = true; // Evitar feedback del propio audio
+                doctorVideo.setAttribute('playsinline', true); // Importante para iOS
+                doctorVideo.setAttribute('webkit-playsinline', true); // Para iOS más antiguos
                 document.getElementById('doctorPlaceholder').style.display = 'none';
 
                 isCallActive = true;
@@ -1437,6 +1462,7 @@
                 // Verificar que el video se reproduce
                 doctorVideo.onloadedmetadata = () => {
                     console.log('🎬 Metadata del video del médico cargada');
+                    doctorVideo.play().catch(e => console.log('Auto-play issue:', e));
                 };
 
             } catch (error) {

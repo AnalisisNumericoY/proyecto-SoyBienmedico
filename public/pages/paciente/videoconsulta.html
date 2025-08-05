@@ -324,7 +324,7 @@
             <div class="video-grid">
                 <!-- Video principal del médico -->
                 <div class="video-panel doctor-video" style="flex: 1; position: relative;">
-                    <video id="doctorVideo" autoplay style="display: none; width: 100%; height: 100%;"></video>
+                    <video id="doctorVideo" autoplay playsinline webkit-playsinline style="display: none; width: 100%; height: 100%;"></video>
                     <div id="doctorPlaceholder" class="video-placeholder">
                         <i class="fas fa-user-md" style="font-size: 4rem;"></i>
                         <span>Esperando al médico...</span>
@@ -332,7 +332,7 @@
                     
                     <!-- Video pequeño del paciente en esquina -->
                     <div style="position: absolute; top: 15px; right: 15px; width: 250px; height: 180px; border: 3px solid #28a745; border-radius: 12px; overflow: hidden; background: #2d2d2d;">
-                        <video id="patientVideo" autoplay muted style="display: none; width: 100%; height: 100%; object-fit: cover;"></video>
+                        <video id="patientVideo" autoplay muted playsinline webkit-playsinline style="display: none; width: 100%; height: 100%; object-fit: cover;"></video>
                         <div id="patientPlaceholder" class="video-placeholder" style="width: 100%; height: 100%; font-size: 0.9rem;">
                             <i class="fas fa-user" style="font-size: 2.5rem;"></i>
                             <span>Tu video</span>
@@ -716,21 +716,43 @@
         async function initializeVideo() {
             try {
                 console.log('🎥 Inicializando video del paciente...');
-                localStream = await navigator.mediaDevices.getUserMedia({
-                    video: true,
-                    audio: true
-                });
+                
+                // Detectar si es móvil
+                const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                console.log('📱 Es dispositivo móvil:', isMobile);
+                
+                // Configuración optimizada para móviles
+                const constraints = {
+                    video: isMobile ? 
+                        { width: 640, height: 480, facingMode: 'user' } : 
+                        { width: 1280, height: 720 },
+                    audio: { 
+                        echoCancellation: true, 
+                        noiseSuppression: true,
+                        autoGainControl: true
+                    }
+                };
+                
+                localStream = await navigator.mediaDevices.getUserMedia(constraints);
 
                 const patientVideo = document.getElementById('patientVideo');
                 patientVideo.srcObject = localStream;
                 patientVideo.style.display = 'block';
                 patientVideo.muted = true; // Evitar feedback del propio audio
+                patientVideo.setAttribute('playsinline', true); // Importante para iOS
+                patientVideo.setAttribute('webkit-playsinline', true); // Para iOS más antiguos
                 document.getElementById('patientPlaceholder').style.display = 'none';
 
                 isCallActive = true;
                 
                 console.log('✅ Video del paciente inicializado correctamente');
                 console.log('👋 Esperando que el médico inicie la videollamada...');
+
+                // Verificar que el video se reproduce
+                patientVideo.onloadedmetadata = () => {
+                    console.log('🎬 Metadata del video del paciente cargada');
+                    patientVideo.play().catch(e => console.log('Auto-play issue:', e));
+                };
 
             } catch (error) {
                 console.error('❌ Error accediendo a la cámara:', error);
