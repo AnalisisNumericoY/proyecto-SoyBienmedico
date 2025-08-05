@@ -652,14 +652,29 @@
                     console.log('🎪 Tracks en stream del médico:', event.streams[0].getTracks().map(t => t.kind));
                     remoteStream = event.streams[0];
                     const doctorVideo = document.getElementById('doctorVideo');
-                    doctorVideo.srcObject = remoteStream;
-                    doctorVideo.style.display = 'block';
-                    doctorVideo.muted = false; // El médico SÍ debe escucharse
-                    document.getElementById('doctorPlaceholder').style.display = 'none';
-                    console.log('✅ Video del médico configurado - GRANDE en pantalla principal');
+                    if (doctorVideo && remoteStream) {
+                        doctorVideo.srcObject = remoteStream;
+                        doctorVideo.style.display = 'block';
+                        doctorVideo.muted = false; // El médico SÍ debe escucharse
+                        doctorVideo.autoplay = true;
+                        doctorVideo.playsInline = true;
+                        
+                        // Forzar reproducción para iOS/móviles
+                        doctorVideo.play().catch(e => console.log('Doctor video play failed:', e));
+                        
+                        document.getElementById('doctorPlaceholder').style.display = 'none';
+                        console.log('✅ Video del médico configurado - GRANDE en pantalla principal');
+                        
+                        // Verificar audio tracks
+                        const audioTracks = remoteStream.getAudioTracks();
+                        console.log('🎤 Audio tracks del médico:', audioTracks.length);
+                        audioTracks.forEach(track => {
+                            console.log('🎤 Audio track enabled:', track.enabled, 'muted:', track.muted);
+                        });
+                    }
                     
                     // Actualizar estado
-                    document.getElementById('consultationStatus').textContent = 'Videollamada activa con Dr. ' + medicoData.nombre;
+                    document.getElementById('consultationStatus').textContent = 'Videollamada activa con ' + medicoData.nombre;
                     updateConnectionStatus('Video activo');
                     
                     // Actualizar placeholder
@@ -729,11 +744,24 @@
                     audio: { 
                         echoCancellation: true, 
                         noiseSuppression: true,
-                        autoGainControl: true
+                        autoGainControl: true,
+                        sampleRate: 44100,
+                        channelCount: 1
                     }
                 };
                 
                 localStream = await navigator.mediaDevices.getUserMedia(constraints);
+
+                console.log('📹 Stream del paciente obtenido:', localStream);
+                console.log('🎤 Tracks de audio:', localStream.getAudioTracks().length);
+                console.log('📷 Tracks de video:', localStream.getVideoTracks().length);
+
+                // Verificar y habilitar audio explícitamente
+                localStream.getAudioTracks().forEach(track => {
+                    track.enabled = true;
+                    console.log('🎤 Audio track paciente configurado:', track.getSettings());
+                    console.log('🎤 Audio track state:', track.readyState, track.enabled);
+                });
 
                 const patientVideo = document.getElementById('patientVideo');
                 patientVideo.srcObject = localStream;

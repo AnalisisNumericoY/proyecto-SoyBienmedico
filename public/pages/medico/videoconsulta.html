@@ -919,11 +919,26 @@
                     console.log('📥 Stream del paciente recibido:', event.streams.length);
                     remoteStream = event.streams[0];
                     const patientVideo = document.getElementById('patientVideo');
-                    patientVideo.srcObject = remoteStream;
-                    patientVideo.style.display = 'block';
-                    patientVideo.muted = false; // El paciente SÍ debe escucharse
-                    document.getElementById('patientPlaceholder').style.display = 'none';
-                    console.log('✅ Video del paciente configurado - GRANDE en pantalla principal');
+                    if (patientVideo && remoteStream) {
+                        patientVideo.srcObject = remoteStream;
+                        patientVideo.style.display = 'block';
+                        patientVideo.muted = false; // El paciente SÍ debe escucharse
+                        patientVideo.autoplay = true;
+                        patientVideo.playsInline = true;
+                        
+                        // Forzar reproducción para iOS/móviles
+                        patientVideo.play().catch(e => console.log('Play failed:', e));
+                        
+                        document.getElementById('patientPlaceholder').style.display = 'none';
+                        console.log('✅ Video del paciente configurado - GRANDE en pantalla principal');
+                        
+                        // Verificar audio tracks
+                        const audioTracks = remoteStream.getAudioTracks();
+                        console.log('🎤 Audio tracks del paciente:', audioTracks.length);
+                        audioTracks.forEach(track => {
+                            console.log('🎤 Audio track enabled:', track.enabled, 'muted:', track.muted);
+                        });
+                    }
                     
                     // Actualizar placeholder del paciente
                     document.getElementById('patientPlaceholder').innerHTML = `
@@ -981,11 +996,26 @@
                         console.log('📥 Stream del paciente recibido en handleOffer:', event.streams.length);
                         remoteStream = event.streams[0];
                         const patientVideo = document.getElementById('patientVideo');
-                        patientVideo.srcObject = remoteStream;
-                        patientVideo.style.display = 'block';
-                        patientVideo.muted = false;
-                        document.getElementById('patientPlaceholder').style.display = 'none';
-                        console.log('✅ Video del paciente configurado en handleOffer');
+                        if (patientVideo && remoteStream) {
+                            patientVideo.srcObject = remoteStream;
+                            patientVideo.style.display = 'block';
+                            patientVideo.muted = false;
+                            patientVideo.autoplay = true;
+                            patientVideo.playsInline = true;
+                            
+                            // Forzar reproducción
+                            patientVideo.play().catch(e => console.log('Play failed:', e));
+                            
+                            document.getElementById('patientPlaceholder').style.display = 'none';
+                            console.log('✅ Video del paciente configurado en handleOffer');
+                            
+                            // Verificar audio tracks
+                            const audioTracks = remoteStream.getAudioTracks();
+                            console.log('🎤 Audio tracks handleOffer:', audioTracks.length);
+                            audioTracks.forEach(track => {
+                                console.log('🎤 Audio track enabled:', track.enabled);
+                            });
+                        }
                     };
 
                     // Manejar ICE candidates
@@ -1436,7 +1466,9 @@
                     audio: { 
                         echoCancellation: true, 
                         noiseSuppression: true,
-                        autoGainControl: true
+                        autoGainControl: true,
+                        sampleRate: 44100,
+                        channelCount: 1
                     }
                 };
                 
@@ -1445,6 +1477,13 @@
                 console.log('📹 Stream obtenido:', localStream);
                 console.log('🎤 Tracks de audio:', localStream.getAudioTracks().length);
                 console.log('📷 Tracks de video:', localStream.getVideoTracks().length);
+
+                // Verificar y habilitar audio explícitamente
+                localStream.getAudioTracks().forEach(track => {
+                    track.enabled = true;
+                    console.log('🎤 Audio track configurado:', track.getSettings());
+                    console.log('🎤 Audio track state:', track.readyState, track.enabled);
+                });
 
                 const doctorVideo = document.getElementById('doctorVideo');
                 doctorVideo.srcObject = localStream;
