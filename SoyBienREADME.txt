@@ -1,5 +1,9 @@
 https://claude.ai/chat/3a0ed444-bb95-470f-b8ca-d6aca5fe4a7e
 
+repositorio :https://github.com/AnalisisNumericoY/proyecto-SoyBienmedico
+desplegado en RailWay
+
+link de despliegue: https://proyecto-soybienmedico-production.up.railway.app/
 
 
 

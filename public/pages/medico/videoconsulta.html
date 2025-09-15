@@ -1191,16 +1191,206 @@
         }
 
         // Generar PDF de la historia clínica
-        function generatePDF(historiaData) {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
+        // Generar PDF usando la plantilla membrete.pdf como fondo
+        async function generatePDF(historiaData) {
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                
+                // Configuración del documento
+                const pageWidth = doc.internal.pageSize.width;
+                const pageHeight = doc.internal.pageSize.height;
+                const margin = 20;
+                let yPosition = 20;
+                
+                // Cargar el membrete como imagen de fondo
+                const membreteImg = await loadMembreteAsImage();
+                
+                // Función para agregar el membrete en cada página
+                function addMembrete() {
+                    if (membreteImg) {
+                        // Agregar membrete como imagen de fondo
+                        doc.addImage(membreteImg, 'PNG', 0, 0, pageWidth, pageHeight);
+                    }
+                }
             
-            // Configuración del documento
-            const pageWidth = doc.internal.pageSize.width;
-            const margin = 20;
-            let yPosition = 30;
+            // Función para agregar footer profesional
+            function addFooter() {
+                doc.setFontSize(8);
+                doc.setTextColor(100, 100, 100);
+                doc.text('Documento generado por SoyBienmedico - Plataforma de Telemedicina', pageWidth / 2, pageHeight - 10, { align: 'center' });
+                doc.text(`Página ${doc.getCurrentPageInfo().pageNumber}`, pageWidth - margin, pageHeight - 10, { align: 'right' });
+            }
             
-            // Título
+            // Función para verificar nueva página con headers
+            function checkNewPage() {
+                if (yPosition > pageHeight - 40) {
+                    addFooter();
+                    doc.addPage();
+                    addHeader();
+                    yPosition = 50;
+                }
+            }
+            
+            // Agregar header a la primera página
+            addHeader();
+            yPosition = 50;
+            
+            // Título del documento con fondo
+            doc.setFillColor(236, 240, 241); // Gris muy claro
+            doc.rect(margin - 5, yPosition - 5, pageWidth - 2 * margin + 10, 20, 'F');
+            doc.setFontSize(16);
+            doc.setFont(undefined, 'bold');
+            doc.setTextColor(41, 128, 185);
+            doc.text('HISTORIA CLÍNICA DIGITAL - TELEORIENTACIÓN', pageWidth / 2, yPosition + 7, { align: 'center' });
+            yPosition += 25;
+            
+            // Fecha de consulta centrada
+            doc.setFontSize(11);
+            doc.setFont(undefined, 'normal');
+            doc.setTextColor(40, 40, 40);
+            doc.text(`Fecha de consulta: ${historiaData.fecha_consulta || new Date().toLocaleDateString('es-ES')}`, pageWidth / 2, yPosition, { align: 'center' });
+            yPosition += 20;
+            
+            // Función para crear secciones con estilo
+            function addSection(title, content, isTextArea = false) {
+                checkNewPage();
+                
+                // Fondo de la sección
+                doc.setFillColor(52, 152, 219);
+                doc.rect(margin - 2, yPosition - 2, pageWidth - 2 * margin + 4, 12, 'F');
+                
+                // Título de la sección en blanco
+                doc.setFontSize(11);
+                doc.setFont(undefined, 'bold');
+                doc.setTextColor(255, 255, 255);
+                doc.text(title, margin, yPosition + 6);
+                yPosition += 18;
+                
+                // Contenido de la sección
+                doc.setTextColor(40, 40, 40);
+                doc.setFont(undefined, 'normal');
+                doc.setFontSize(9);
+                
+                if (isTextArea && content) {
+                    const lines = doc.splitTextToSize(content, pageWidth - 2 * margin);
+                    doc.text(lines, margin, yPosition);
+                    yPosition += lines.length * 4 + 8;
+                } else if (Array.isArray(content)) {
+                    content.forEach(line => {
+                        if (line) {
+                            doc.text(line, margin, yPosition);
+                            yPosition += 5;
+                        }
+                    });
+                    yPosition += 8;
+                }
+            }
+            
+            // Información del paciente
+            addSection('INFORMACIÓN DEL PACIENTE', [
+                `Identificación: ${historiaData.identificacion_paciente}`,
+                `Nombre completo: ${historiaData.nombre_completo_paciente}`,
+                `Edad: ${calculateAge(pacienteData.fecha_nacimiento)} años`,
+                `Sexo: ${pacienteData.sexo}`,
+                `Tipo de sangre: ${pacienteData.rh}`,
+                `EPS: ${pacienteData.eps || 'No especificada'}`
+            ]);
+            
+            // Información del médico
+            addSection('INFORMACIÓN DEL MÉDICO', [
+                `Nombre: Dr. ${medicoData.nombre}`,
+                `Registro Médico: ${historiaData.registro_medico_doctor}`,
+                `Especialidad: ${medicoData.especialidad || 'Medicina General'}`
+            ]);
+            
+            // Motivo de consulta
+            if (historiaData.motivo_consulta) {
+                addSection('MOTIVO DE CONSULTA', historiaData.motivo_consulta, true);
+            }
+            
+            // Objeto de la teleorientación
+            if (historiaData.objeto_teleorientacion) {
+                addSection('OBJETO DE LA TELEORIENTACIÓN', historiaData.objeto_teleorientacion, true);
+            }
+            
+            // Antecedentes
+            if (historiaData.antecedentes) {
+                addSection('ANTECEDENTES MÉDICOS', historiaData.antecedentes, true);
+            }
+            
+            // Signos vitales
+            let signosVitales = [];
+            if (historiaData.tabaquismo) signosVitales.push(`Tabaquismo: ${historiaData.tabaquismo}`);
+            if (historiaData.presion_sistolica && historiaData.presion_diastolica) {
+                signosVitales.push(`Presión Arterial: ${historiaData.presion_sistolica}/${historiaData.presion_diastolica} mmHg`);
+            } else if (historiaData.presion_sistolica) {
+                signosVitales.push(`Presión Sistólica: ${historiaData.presion_sistolica} mmHg`);
+            } else if (historiaData.presion_diastolica) {
+                signosVitales.push(`Presión Diastólica: ${historiaData.presion_diastolica} mmHg`);
+            }
+            if (historiaData.peso) signosVitales.push(`Peso: ${historiaData.peso} Kg`);
+            if (historiaData.talla) signosVitales.push(`Talla: ${historiaData.talla} cm`);
+            if (historiaData.actividad_fisica) signosVitales.push(`Actividad Física: ${historiaData.actividad_fisica}`);
+            if (historiaData.frecuencia_cardiaca) signosVitales.push(`Frecuencia Cardíaca: ${historiaData.frecuencia_cardiaca} BPM`);
+            if (historiaData.oximetria) signosVitales.push(`Oximetría: ${historiaData.oximetria}%`);
+            if (historiaData.glucometria) signosVitales.push(`Glucometría: ${historiaData.glucometria} mg/dL`);
+            
+            if (signosVitales.length > 0) {
+                addSection('SIGNOS VITALES Y MEDIDAS ANTROPOMÉTRICAS', signosVitales);
+            }
+            
+            // Descripción General
+            if (historiaData.descripcion_general) {
+                addSection('DESCRIPCIÓN GENERAL DEL MÉDICO', historiaData.descripcion_general, true);
+            }
+            
+            // Conducta médica
+            if (historiaData.conducta) {
+                addSection('CONDUCTA MÉDICA', historiaData.conducta, true);
+            }
+            
+            // Especialidad requerida
+            if (historiaData.especialidad_requerida) {
+                addSection('ESPECIALIDAD REQUERIDA', [historiaData.especialidad_requerida]);
+            }
+            
+            // Firma del médico
+            checkNewPage();
+            yPosition += 10;
+            
+            // Sección de firma con borde elegante
+            doc.setDrawColor(52, 152, 219);
+            doc.setLineWidth(1);
+            doc.rect(margin, yPosition, pageWidth - 2 * margin, 60);
+            
+            doc.setFontSize(11);
+            doc.setFont(undefined, 'bold');
+            doc.setTextColor(41, 128, 185);
+            doc.text('FIRMA DEL MÉDICO', margin + 10, yPosition + 15);
+            
+            // Agregar firma del canvas si existe
+            if (firmaCanvas && historiaData.firma_digital) {
+                doc.addImage(historiaData.firma_digital, 'PNG', margin + 10, yPosition + 20, 80, 25);
+            }
+            
+            // Información del médico en la firma
+            doc.setFont(undefined, 'normal');
+            doc.setFontSize(9);
+            doc.setTextColor(40, 40, 40);
+            doc.text(`Dr. ${medicoData.nombre}`, margin + 10, yPosition + 50);
+            doc.text(`Registro Médico: ${historiaData.registro_medico_doctor}`, margin + 10, yPosition + 55);
+            doc.text(`Fecha: ${historiaData.fecha_consulta} - ${historiaData.hora_consulta}`, pageWidth - margin - 10, yPosition + 50, { align: 'right' });
+            
+            // Agregar footer a la última página
+            addFooter();
+            
+            // Guardar PDF
+            const fileName = `Teleorientacion_${pacienteData.numero_documento}_${historiaData.fecha_consulta}.pdf`;
+            doc.save(fileName);
+            
+            return fileName;
+        }
             doc.setFontSize(18);
             doc.setFont(undefined, 'bold');
             doc.text('HISTORIA CLÍNICA DIGITAL - TELEORIENTACIÓN', pageWidth / 2, yPosition, { align: 'center' });
