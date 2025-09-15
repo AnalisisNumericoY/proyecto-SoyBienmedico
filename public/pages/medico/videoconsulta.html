@@ -1291,7 +1291,9 @@
             
             // Signos vitales y medidas antropométricas
             let hasSignosVitales = historiaData.presion_sistolica || historiaData.presion_diastolica || 
-                                   historiaData.peso || historiaData.talla || historiaData.tabaquismo;
+                                   historiaData.peso || historiaData.talla || historiaData.tabaquismo ||
+                                   historiaData.actividad_fisica || historiaData.frecuencia_cardiaca ||
+                                   historiaData.oximetria || historiaData.glucometria;
                                    
             if (hasSignosVitales) {
                 // Verificar si necesitamos nueva página
@@ -1333,7 +1335,38 @@
                     doc.text(`Actividad Física: ${historiaData.actividad_fisica}`, margin, yPosition);
                     yPosition += 6;
                 }
+                if (historiaData.frecuencia_cardiaca) {
+                    doc.text(`Frecuencia Cardíaca: ${historiaData.frecuencia_cardiaca} BPM`, margin, yPosition);
+                    yPosition += 6;
+                }
+                if (historiaData.oximetria) {
+                    doc.text(`Oximetría: ${historiaData.oximetria}%`, margin, yPosition);
+                    yPosition += 6;
+                }
+                if (historiaData.glucometria) {
+                    doc.text(`Glucometría: ${historiaData.glucometria} mg/dL`, margin, yPosition);
+                    yPosition += 6;
+                }
                 yPosition += 10;
+            }
+            
+            // Descripción General
+            if (historiaData.descripcion_general) {
+                // Verificar si necesitamos nueva página
+                if (yPosition > 200) {
+                    doc.addPage();
+                    yPosition = 30;
+                }
+                
+                doc.setFontSize(12);
+                doc.setFont(undefined, 'bold');
+                doc.text('DESCRIPCIÓN GENERAL DEL MÉDICO', margin, yPosition);
+                yPosition += 8;
+                doc.setFont(undefined, 'normal');
+                doc.setFontSize(10);
+                const descripcionLines = doc.splitTextToSize(historiaData.descripcion_general, pageWidth - 2 * margin);
+                doc.text(descripcionLines, margin, yPosition);
+                yPosition += descripcionLines.length * 5 + 10;
             }
             
             // Conducta médica
@@ -1436,6 +1469,12 @@
                     peso: document.getElementById('peso').value,
                     talla: document.getElementById('talla').value,
                     actividad_fisica: document.getElementById('actividadFisica').value,
+                    frecuencia_cardiaca: document.getElementById('frecuenciaCardiaca').value,
+                    oximetria: document.getElementById('oximetria').value,
+                    glucometria: document.getElementById('glucometria').value,
+                    
+                    // Descripción general
+                    descripcion_general: document.getElementById('descripcionGeneral').value,
                     
                     // Conducta y especialidad
                     conducta: document.getElementById('conducta').value,
