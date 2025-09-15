@@ -87,6 +87,18 @@
       "motivo": "Prueba botones control",
       "created_at": "2025-08-05T00:00:00Z",
       "room_id": "room_CITA008_2025"
+    },
+    {
+      "id": "CITA1757971278748",
+      "paciente_id": "PAC001",
+      "medico_id": "DOC001",
+      "fecha": "2025-09-15",
+      "hora": "16:30",
+      "estado": "completada",
+      "motivo": "ddd",
+      "room_id": "room_CITA1757971278748_1757971278748",
+      "created_at": "2025-09-15T21:21:18.748Z",
+      "updated_at": "2025-09-15T23:15:17.506Z"
     }
   ]
 }

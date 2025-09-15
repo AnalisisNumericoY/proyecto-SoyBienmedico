@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; connect-src 'self' wss: https:; media-src 'self' blob:; img-src 'self' data: https:;">
-    <title>VideoConsulta - SoyBienmedico</title>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src 'self' https://cdnjs.cloudflare.com https://*.cloudflare.com data:; connect-src 'self' wss: https:; media-src 'self' blob:; img-src 'self' data: https:;">
+    <title>VideoConsulta - SoyBienmedico v2.1</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         * {
@@ -724,33 +724,7 @@
         let firmaCtx = null;
         let isDrawing = false;
         
-        // Función para cargar datos automáticamente al iniciar
-        function cargarDatosConsulta() {
-            console.log('📋 Cargando datos automáticos de la consulta...');
-            
-            // 1. Fecha de consulta - automática (fecha actual)
-            const fechaHoy = new Date().toISOString().split('T')[0];
-            document.getElementById('fechaConsulta').value = fechaHoy;
-            console.log('📅 Fecha de consulta cargada:', fechaHoy);
-            
-            // 2. Identificación del paciente - automática desde pacienteData
-            if (pacienteData && pacienteData.numero_documento) {
-                document.getElementById('identificacionPaciente').value = pacienteData.numero_documento;
-                console.log('🆔 Identificación del paciente cargada:', pacienteData.numero_documento);
-            }
-            
-            // 3. Nombre completo del paciente - automático desde pacienteData
-            if (pacienteData && pacienteData.nombre) {
-                document.getElementById('nombreCompletoPaciente').value = pacienteData.nombre;
-                console.log('👤 Nombre completo del paciente cargado:', pacienteData.nombre);
-            }
-            
-            console.log('✅ Datos automáticos cargados correctamente');
-        }
-        
-        // Configurar firma digital
-
-        // Variables para Socket.io y WebRTC
+        // Configurar firma digital        // Variables para Socket.io y WebRTC
         let socket = null;
         let roomId = null;
 
@@ -1442,8 +1416,8 @@
                     };
                     img.onerror = () => resolve(null);
                     
-                    // Intentar cargar el membrete
-                    img.src = '/membrete.pdf';
+                    // Intentar cargar el membrete como imagen
+                    img.src = '/membrete.jpg';
                 });
             } catch (error) {
                 console.warn('No se pudo cargar el membrete:', error);
@@ -1451,6 +1425,8 @@
             }
         }
         
+        // Función de respaldo para generar PDF sin membrete
+        function generateFallbackPDF(historiaData) {
             console.warn('Generando PDF sin membrete como respaldo');
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
@@ -1601,221 +1577,123 @@
 
         // Inicializar video
         async function initializeVideo() {
-            yPosition += 6;
-            doc.text(`Edad: ${calculateAge(pacienteData.fecha_nacimiento)} años`, margin, yPosition);
-            yPosition += 6;
-            doc.text(`Sexo: ${pacienteData.sexo}`, margin, yPosition);
-            yPosition += 6;
-            doc.text(`Tipo de sangre: ${pacienteData.rh}`, margin, yPosition);
-            yPosition += 6;
-            doc.text(`EPS: ${pacienteData.eps || 'No especificada'}`, margin, yPosition);
-            yPosition += 15;
-            
-            // Información del médico
-            doc.setFontSize(14);
-            doc.setFont(undefined, 'bold');
-            doc.text('INFORMACIÓN DEL MÉDICO', margin, yPosition);
-            yPosition += 10;
-            
-            doc.setFontSize(10);
-            doc.setFont(undefined, 'normal');
-            doc.text(`Nombre: Dr. ${medicoData.nombre}`, margin, yPosition);
-            yPosition += 6;
-            doc.text(`Registro Médico: ${historiaData.registro_medico_doctor}`, margin, yPosition);
-            yPosition += 6;
-            doc.text(`Especialidad: ${medicoData.especialidad || 'Medicina General'}`, margin, yPosition);
-            yPosition += 15;
-            
-            // Motivo de consulta
-            if (historiaData.motivo_consulta) {
-                doc.setFontSize(12);
-                doc.setFont(undefined, 'bold');
-                doc.text('MOTIVO DE CONSULTA', margin, yPosition);
-                yPosition += 8;
-                doc.setFont(undefined, 'normal');
-                doc.setFontSize(10);
-                const motivoLines = doc.splitTextToSize(historiaData.motivo_consulta, pageWidth - 2 * margin);
-                doc.text(motivoLines, margin, yPosition);
-                yPosition += motivoLines.length * 5 + 10;
-            }
-            
-            // Objeto de la teleorientación
-            if (historiaData.objeto_teleorientacion) {
-                doc.setFontSize(12);
-                doc.setFont(undefined, 'bold');
-                doc.text('OBJETO DE LA TELEORIENTACIÓN', margin, yPosition);
-                yPosition += 8;
-                doc.setFont(undefined, 'normal');
-                doc.setFontSize(10);
-                const objetoLines = doc.splitTextToSize(historiaData.objeto_teleorientacion, pageWidth - 2 * margin);
-                doc.text(objetoLines, margin, yPosition);
-                yPosition += objetoLines.length * 5 + 10;
-            }
-            
-            // Antecedentes
-            if (historiaData.antecedentes) {
-                doc.setFontSize(12);
-                doc.setFont(undefined, 'bold');
-                doc.text('ANTECEDENTES MÉDICOS', margin, yPosition);
-                yPosition += 8;
-                doc.setFont(undefined, 'normal');
-                doc.setFontSize(10);
-                const antecedentesLines = doc.splitTextToSize(historiaData.antecedentes, pageWidth - 2 * margin);
-                doc.text(antecedentesLines, margin, yPosition);
-                yPosition += antecedentesLines.length * 5 + 10;
-            }
-            
-            // Signos vitales y medidas antropométricas
-            let hasSignosVitales = historiaData.presion_sistolica || historiaData.presion_diastolica || 
-                                   historiaData.peso || historiaData.talla || historiaData.tabaquismo ||
-                                   historiaData.actividad_fisica || historiaData.frecuencia_cardiaca ||
-                                   historiaData.oximetria || historiaData.glucometria;
-                                   
-            if (hasSignosVitales) {
-                // Verificar si necesitamos nueva página
-                if (yPosition > 220) {
-                    doc.addPage();
-                    yPosition = 30;
-                }
+            try {
+                console.log('🎥 Inicializando video del médico...');
                 
-                doc.setFontSize(12);
-                doc.setFont(undefined, 'bold');
-                doc.text('SIGNOS VITALES Y MEDIDAS ANTROPOMÉTRICAS', margin, yPosition);
-                yPosition += 8;
-                doc.setFont(undefined, 'normal');
-                doc.setFontSize(10);
+                // Detectar si es móvil
+                const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                console.log('📱 Es dispositivo móvil:', isMobile);
                 
-                if (historiaData.tabaquismo) {
-                    doc.text(`Tabaquismo: ${historiaData.tabaquismo}`, margin, yPosition);
-                    yPosition += 6;
-                }
-                if (historiaData.presion_sistolica && historiaData.presion_diastolica) {
-                    doc.text(`Presión Arterial: ${historiaData.presion_sistolica}/${historiaData.presion_diastolica} mmHg`, margin, yPosition);
-                    yPosition += 6;
-                } else if (historiaData.presion_sistolica) {
-                    doc.text(`Presión Sistólica: ${historiaData.presion_sistolica} mmHg`, margin, yPosition);
-                    yPosition += 6;
-                } else if (historiaData.presion_diastolica) {
-                    doc.text(`Presión Diastólica: ${historiaData.presion_diastolica} mmHg`, margin, yPosition);
-                    yPosition += 6;
-                }
-                if (historiaData.peso) {
-                    doc.text(`Peso: ${historiaData.peso} Kg`, margin, yPosition);
-                    yPosition += 6;
-                }
-                if (historiaData.talla) {
-                    doc.text(`Talla: ${historiaData.talla} cm`, margin, yPosition);
-                    yPosition += 6;
-                }
-                if (historiaData.actividad_fisica) {
-                    doc.text(`Actividad Física: ${historiaData.actividad_fisica}`, margin, yPosition);
-                    yPosition += 6;
-                }
-                if (historiaData.frecuencia_cardiaca) {
-                    doc.text(`Frecuencia Cardíaca: ${historiaData.frecuencia_cardiaca} BPM`, margin, yPosition);
-                    yPosition += 6;
-                }
-                if (historiaData.oximetria) {
-                    doc.text(`Oximetría: ${historiaData.oximetria}%`, margin, yPosition);
-                    yPosition += 6;
-                }
-                if (historiaData.glucometria) {
-                    doc.text(`Glucometría: ${historiaData.glucometria} mg/dL`, margin, yPosition);
-                    yPosition += 6;
-                }
-                yPosition += 10;
-            }
-            
-            // Descripción General
-            if (historiaData.descripcion_general) {
-                // Verificar si necesitamos nueva página
-                if (yPosition > 200) {
-                    doc.addPage();
-                    yPosition = 30;
-                }
+                // Configuración optimizada para móviles
+                const constraints = {
+                    video: {
+                        width: isMobile ? { ideal: 640 } : { ideal: 1280 },
+                        height: isMobile ? { ideal: 480 } : { ideal: 720 },
+                        facingMode: 'user'
+                    },
+                    audio: {
+                        echoCancellation: true,
+                        noiseSuppression: true,
+                        autoGainControl: true
+                    }
+                };
                 
-                doc.setFontSize(12);
-                doc.setFont(undefined, 'bold');
-                doc.text('DESCRIPCIÓN GENERAL DEL MÉDICO', margin, yPosition);
-                yPosition += 8;
-                doc.setFont(undefined, 'normal');
-                doc.setFontSize(10);
-                const descripcionLines = doc.splitTextToSize(historiaData.descripcion_general, pageWidth - 2 * margin);
-                doc.text(descripcionLines, margin, yPosition);
-                yPosition += descripcionLines.length * 5 + 10;
-            }
-            
-            // Conducta médica
-            if (historiaData.conducta) {
-                // Verificar si necesitamos nueva página
-                if (yPosition > 200) {
-                    doc.addPage();
-                    yPosition = 30;
-                }
+                localStream = await navigator.mediaDevices.getUserMedia(constraints);
+                document.getElementById('doctorVideo').srcObject = localStream;
                 
-                doc.setFontSize(12);
-                doc.setFont(undefined, 'bold');
-                doc.text('CONDUCTA MÉDICA', margin, yPosition);
-                yPosition += 8;
-                doc.setFont(undefined, 'normal');
-                doc.setFontSize(10);
-                const conductaLines = doc.splitTextToSize(historiaData.conducta, pageWidth - 2 * margin);
-                doc.text(conductaLines, margin, yPosition);
-                yPosition += conductaLines.length * 5 + 10;
+                console.log('✅ Video del médico inicializado correctamente');
+                return localStream;
+                
+            } catch (error) {
+                console.error('❌ Error inicializando video:', error);
+                alert('Error al acceder a la cámara: ' + error.message);
+                throw error;
             }
-            
-            // Especialidad requerida
-            if (historiaData.especialidad_requerida) {
-                doc.setFontSize(12);
-                doc.setFont(undefined, 'bold');
-                doc.text('ESPECIALIDAD REQUERIDA', margin, yPosition);
-                yPosition += 8;
-                doc.setFont(undefined, 'normal');
-                doc.setFontSize(10);
-                doc.text(historiaData.especialidad_requerida, margin, yPosition);
-                yPosition += 15;
-            }
-            
-            // Verificar si necesitamos una nueva página para la firma
-            if (yPosition > 200) {
-                doc.addPage();
-                yPosition = 30;
-            }
-            
-            // Firma digital
-            yPosition += 20;
-            doc.setFontSize(12);
-            doc.setFont(undefined, 'bold');
-            doc.text('FIRMA DEL MÉDICO', margin, yPosition);
-            yPosition += 10;
-            
-            // Agregar firma del canvas si existe
-            if (firmaCanvas && historiaData.firma_digital) {
-                doc.addImage(historiaData.firma_digital, 'PNG', margin, yPosition, 100, 30);
-                yPosition += 35;
-            }
-            
-            doc.setFont(undefined, 'normal');
-            doc.setFontSize(10);
-            doc.text(`Dr. ${medicoData.nombre}`, margin, yPosition);
-            yPosition += 5;
-            doc.text(`Registro Médico: ${historiaData.registro_medico_doctor}`, margin, yPosition);
-            yPosition += 5;
-            doc.text(`Fecha: ${historiaData.fecha_consulta} ${historiaData.hora_consulta}`, margin, yPosition);
-            
-            // Pie de página
-            doc.setFontSize(8);
-            doc.text('Documento generado por SoyBienmedico - Plataforma de Telemedicina', pageWidth / 2, 285, { align: 'center' });
-            
-            // Guardar PDF
-            const fileNameMain = `Teleorientacion_${pacienteData.numero_documento}_${historiaData.fecha_consulta}.pdf`;
-            doc.save(fileNameMain);
-            
-            return fileNameMain;
         }
 
         // Guardar historia clínica
         async function guardarHistoriaClinica() {
+            try {
+                console.log('🔄 Iniciando guardado de historia clínica...');
+                
+                // Obtener datos del formulario usando los nuevos IDs
+                const historiaData = {
+                    paciente_id: pacienteData.id,
+                    medico_id: medicoData.id,
+                    cita_id: citaId,
+                    
+                    // Datos de la consulta
+                    fecha_consulta: document.getElementById('fechaConsulta').value,
+                    registro_medico_doctor: document.getElementById('registroMedicoDoctor').value,
+                    
+                    // Identificación del paciente
+                    identificacion_paciente: document.getElementById('identificacionPaciente').value,
+                    nombre_completo_paciente: document.getElementById('nombreCompletoPaciente').value,
+                    
+                    // Campos principales del formulario
+                    motivo_consulta: document.getElementById('motivoConsulta').value,
+                    objeto_teleorientacion: document.getElementById('objetoTeleorientacion').value,
+                    antecedentes: document.getElementById('antecedentes').value,
+                    
+                    // Signos vitales y medidas
+                    tabaquismo: document.getElementById('tabaquismo').value,
+                    presion_sistolica: document.getElementById('presionSistolica').value,
+                    presion_diastolica: document.getElementById('presionDiastolica').value,
+                    peso: document.getElementById('peso').value,
+                    talla: document.getElementById('talla').value,
+                    actividad_fisica: document.getElementById('actividadFisica').value,
+                    frecuencia_cardiaca: document.getElementById('frecuenciaCardiaca').value,
+                    oximetria: document.getElementById('oximetria').value,
+                    glucometria: document.getElementById('glucometria').value,
+                    
+                    // Descripción general
+                    descripcion_general: document.getElementById('descripcionGeneral').value,
+                    
+                    // Conducta y especialidad
+                    conducta: document.getElementById('conducta').value,
+                    especialidad_requerida: document.getElementById('especialidadRequerida').value,
+                    
+                    // Firma digital
+                    firma_digital: firmaCanvas ? firmaCanvas.toDataURL() : null,
+                    
+                    // Metadatos
+                    hora_consulta: new Date().toLocaleTimeString('es-ES'),
+                    timestamp: new Date().toISOString()
+                };
+                
+                console.log('📝 Datos recopilados:', historiaData);
+                
+                // Validar campos obligatorios
+                if (!historiaData.registro_medico_doctor || !historiaData.motivo_consulta) {
+                    alert('Por favor complete los campos obligatorios:\n- Registro médico del doctor\n- Motivo de consulta');
+                    return;
+                }
+                
+                console.log('✅ Validación completada, generando PDF...');
+                
+                // Generar PDF con los nuevos campos
+                const fileName = generatePDF(historiaData);
+                
+                // Actualizar estado de la cita a "completada"
+                await updateAppointmentStatus('completada');
+                
+                alert(`✅ Historia clínica guardada exitosamente!\n\n📄 PDF generado: ${fileName}\n\n💾 El archivo se ha descargado a su carpeta de Descargas.`);
+                
+                // Preguntar si desea finalizar la consulta
+                const continuar = confirm('¿Desea finalizar la consulta ahora?');
+                
+                if (continuar) {
+                    finalizarConsulta();
+                }
+                
+            } catch (error) {
+                console.error('❌ Error:', error);
+                alert('Error al guardar la historia clínica: ' + error.message);
+            }
+        }
+
+        // Inicializar video
+        async function initializeVideo() {
             try {
                 console.log('🔄 Iniciando guardado de historia clínica...');
                 
@@ -2261,16 +2139,13 @@
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🚀 Página cargada, inicializando componentes...');
             
-            // 1. Cargar datos automáticos de la consulta
-            cargarDatosConsulta();
-            
-            // 2. Inicializar canvas de firma digital
+            // 1. Inicializar canvas de firma digital
             initializeSignatureCanvas();
             
-            // 3. Inicializar contadores de caracteres
+            // 2. Inicializar contadores de caracteres
             initializeCharacterCounters();
             
-            // 4. Configurar boton de limpiar firma
+            // 3. Configurar boton de limpiar firma
             const clearBtn = document.querySelector('.btn-clear');
             if (clearBtn) {
                 clearBtn.addEventListener('click', clearSignature);
