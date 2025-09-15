@@ -723,6 +723,32 @@
         let firmaCanvas = null;
         let firmaCtx = null;
         let isDrawing = false;
+        
+        // Función para cargar datos automáticamente al iniciar
+        function cargarDatosConsulta() {
+            console.log('📋 Cargando datos automáticos de la consulta...');
+            
+            // 1. Fecha de consulta - automática (fecha actual)
+            const fechaHoy = new Date().toISOString().split('T')[0];
+            document.getElementById('fechaConsulta').value = fechaHoy;
+            console.log('📅 Fecha de consulta cargada:', fechaHoy);
+            
+            // 2. Identificación del paciente - automática desde pacienteData
+            if (pacienteData && pacienteData.numero_documento) {
+                document.getElementById('identificacionPaciente').value = pacienteData.numero_documento;
+                console.log('🆔 Identificación del paciente cargada:', pacienteData.numero_documento);
+            }
+            
+            // 3. Nombre completo del paciente - automático desde pacienteData
+            if (pacienteData && pacienteData.nombre) {
+                document.getElementById('nombreCompletoPaciente').value = pacienteData.nombre;
+                console.log('👤 Nombre completo del paciente cargado:', pacienteData.nombre);
+            }
+            
+            console.log('✅ Datos automáticos cargados correctamente');
+        }
+        
+        // Configurar firma digital
 
         // Variables para Socket.io y WebRTC
         let socket = null;
@@ -1568,35 +1594,13 @@
             doc.text(`Registro Médico: ${historiaData.registro_medico_doctor}`, margin + 10, yPosition + 55);
             doc.text(`Fecha: ${historiaData.fecha_consulta} - ${historiaData.hora_consulta}`, pageWidth - margin - 10, yPosition + 50, { align: 'right' });
             
-            const fileName = `Teleorientacion_${pacienteData.numero_documento}_${historiaData.fecha_consulta}.pdf`;
-            doc.save(fileName);
-            return fileName;
+            const fileNameFallback = `Teleorientacion_${pacienteData.numero_documento}_${historiaData.fecha_consulta}.pdf`;
+            doc.save(fileNameFallback);
+            return fileNameFallback;
         }
-        }
-            doc.setFontSize(18);
-            doc.setFont(undefined, 'bold');
-            doc.text('HISTORIA CLÍNICA DIGITAL - TELEORIENTACIÓN', pageWidth / 2, yPosition, { align: 'center' });
-            yPosition += 15;
-            
-            // Información del centro médico
-            doc.setFontSize(12);
-            doc.setFont(undefined, 'normal');
-            doc.text('SoyBienmedico - Plataforma de Telemedicina', pageWidth / 2, yPosition, { align: 'center' });
-            yPosition += 10;
-            doc.text(`Fecha de consulta: ${historiaData.fecha_consulta || new Date().toLocaleDateString('es-ES')}`, pageWidth / 2, yPosition, { align: 'center' });
-            yPosition += 20;
-            
-            // Información del paciente
-            doc.setFontSize(14);
-            doc.setFont(undefined, 'bold');
-            doc.text('INFORMACIÓN DEL PACIENTE', margin, yPosition);
-            yPosition += 10;
-            
-            doc.setFontSize(10);
-            doc.setFont(undefined, 'normal');
-            doc.text(`Identificación: ${historiaData.identificacion_paciente}`, margin, yPosition);
-            yPosition += 6;
-            doc.text(`Nombre completo: ${historiaData.nombre_completo_paciente}`, margin, yPosition);
+
+        // Inicializar video
+        async function initializeVideo() {
             yPosition += 6;
             doc.text(`Edad: ${calculateAge(pacienteData.fecha_nacimiento)} años`, margin, yPosition);
             yPosition += 6;
@@ -1804,10 +1808,10 @@
             doc.text('Documento generado por SoyBienmedico - Plataforma de Telemedicina', pageWidth / 2, 285, { align: 'center' });
             
             // Guardar PDF
-            const fileName = `Teleorientacion_${pacienteData.numero_documento}_${historiaData.fecha_consulta}.pdf`;
-            doc.save(fileName);
+            const fileNameMain = `Teleorientacion_${pacienteData.numero_documento}_${historiaData.fecha_consulta}.pdf`;
+            doc.save(fileNameMain);
             
-            return fileName;
+            return fileNameMain;
         }
 
         // Guardar historia clínica
@@ -2251,6 +2255,28 @@
                 e.preventDefault();
                 e.returnValue = 'Hay una consulta en curso. ¿Está seguro de que desea salir?';
             }
+        });
+
+        // ✅ INICIALIZACIÓN AUTOMÁTICA AL CARGAR LA PÁGINA
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Página cargada, inicializando componentes...');
+            
+            // 1. Cargar datos automáticos de la consulta
+            cargarDatosConsulta();
+            
+            // 2. Inicializar canvas de firma digital
+            initializeSignatureCanvas();
+            
+            // 3. Inicializar contadores de caracteres
+            initializeCharacterCounters();
+            
+            // 4. Configurar boton de limpiar firma
+            const clearBtn = document.querySelector('.btn-clear');
+            if (clearBtn) {
+                clearBtn.addEventListener('click', clearSignature);
+            }
+            
+            console.log('✅ Todos los componentes inicializados correctamente');
         });
     </script>
 </body>
