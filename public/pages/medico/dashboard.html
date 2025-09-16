@@ -298,6 +298,10 @@
                 if (response.ok) {
                     const data = await response.json();
                     
+                    // Obtener fecha de hoy (fecha local, no UTC)
+                    const today = new Date();
+                    const hoy = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+                    
                     // Filtrar citas del médico actual
                     const misCitas = data.citas?.filter(cita => 
                         cita.medico_id === currentUser.medicoId
@@ -311,9 +315,23 @@
                         historia.medico_id === currentUser.medicoId
                     ) || [];
 
-                    // Obtener fecha de hoy
-                    const hoy = new Date().toISOString().split('T')[0];
-                    const citasHoy = misCitas.filter(cita => cita.fecha === hoy);
+                    // Obtener momento actual
+                    const now = new Date();
+
+                    // Filtrar citas de hoy que NO estén completadas Y que no hayan pasado la hora
+                    const citasHoy = misCitas.filter(cita => {
+                        const esHoy = cita.fecha === hoy;
+                        const noCompletada = cita.estado !== 'completada';
+                        
+                        // Si es hoy, verificar también que no haya pasado la hora
+                        let noHaPasado = true;
+                        if (esHoy) {
+                            const citaDateTime = new Date(cita.fecha + ' ' + cita.hora);
+                            noHaPasado = citaDateTime > now;
+                        }
+                        
+                        return esHoy && noCompletada && noHaPasado;
+                    });
 
                     // Actualizar estadísticas
                     document.getElementById('citasHoy').textContent = citasHoy.length;
@@ -373,13 +391,18 @@
         // Mostrar próximas citas
         function mostrarProximasCitas(todasCitas, pacientes) {
             const container = document.getElementById('proximasCitas');
-            const hoy = new Date().toISOString().split('T')[0];
+            const today = new Date();
+            const hoy = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
             
-            // Filtrar citas futuras (excluyendo hoy)
+            // Filtrar citas futuras (de MAÑANA en adelante, NO incluir las de hoy) que NO estén completadas
             const citasFuturas = todasCitas
-                .filter(cita => cita.fecha > hoy)
-                .sort((a, b) => new Date(a.fecha + ' ' + a.hora) - new Date(b.fecha + ' ' + b.hora))
-                .slice(0, 5);
+                .filter(cita => {
+                    if (cita.estado === 'completada') return false;
+                    
+                    // EXCLUIR las citas de hoy - solo mostrar de mañana en adelante
+                    return cita.fecha > hoy;
+                })
+                .sort((a, b) => new Date(a.fecha + ' ' + a.hora) - new Date(b.fecha + ' ' + b.hora));
 
             if (citasFuturas.length === 0) {
                 container.innerHTML = '<div class="no-appointments">No hay citas futuras programadas</div>';

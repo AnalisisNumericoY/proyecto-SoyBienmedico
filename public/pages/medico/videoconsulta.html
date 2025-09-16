@@ -1216,7 +1216,7 @@
                 
                 // Función para verificar nueva página con membrete
                 function checkNewPage() {
-                    if (yPosition > pageHeight - 40) {
+                    if (yPosition > pageHeight - 80) { // Margen inferior de 80px igual al superior
                         doc.addPage();
                         addMembrete();
                         yPosition = 80; // Espacio para el header del membrete
@@ -1452,7 +1452,7 @@
             
             // Función simple para secciones
             function addSimpleSection(title, content, isTextArea = false) {
-                if (yPosition > pageHeight - 40) {
+                if (yPosition > pageHeight - 80) { // Margen inferior de 80px igual al superior
                     doc.addPage();
                     yPosition = 30;
                 }
@@ -1544,7 +1544,7 @@
             }
             
             // Firma
-            if (yPosition > pageHeight - 70) {
+            if (yPosition > pageHeight - 80) { // Margen inferior consistente de 80px
                 doc.addPage();
                 yPosition = 30;
             }

@@ -99,6 +99,95 @@
       "room_id": "room_CITA1757971278748_1757971278748",
       "created_at": "2025-09-15T21:21:18.748Z",
       "updated_at": "2025-09-15T23:15:17.506Z"
+    },
+    {
+      "id": "CITA1757987391277",
+      "paciente_id": "PAC001",
+      "medico_id": "DOC001",
+      "fecha": "2025-09-15",
+      "hora": "21:00",
+      "estado": "programada",
+      "motivo": "7898",
+      "room_id": "room_CITA1757987391277_1757987391277",
+      "created_at": "2025-09-16T01:49:51.277Z"
+    },
+    {
+      "id": "CITA1757987911158",
+      "paciente_id": "PAC001",
+      "medico_id": "DOC001",
+      "fecha": "2025-09-15",
+      "hora": "21:10",
+      "estado": "programada",
+      "motivo": "vamos a ir a la cita para el remedio ",
+      "room_id": "room_CITA1757987911158_1757987911158",
+      "created_at": "2025-09-16T01:58:31.158Z"
+    },
+    {
+      "id": "CITA1757990182569",
+      "paciente_id": "PAC001",
+      "medico_id": "DOC001",
+      "fecha": "2025-09-20",
+      "hora": "08:00",
+      "estado": "programada",
+      "motivo": "nos vemos el sabado a las 8am",
+      "room_id": "room_CITA1757990182569_1757990182569",
+      "created_at": "2025-09-16T02:36:22.569Z"
+    },
+    {
+      "id": "CITA1757990555491",
+      "paciente_id": "PAC001",
+      "medico_id": "DOC001",
+      "fecha": "2025-09-15",
+      "hora": "21:55",
+      "estado": "programada",
+      "motivo": "cita nocturna para el lunes 15 de septiembre",
+      "room_id": "room_CITA1757990555491_1757990555491",
+      "created_at": "2025-09-16T02:42:35.491Z"
+    },
+    {
+      "id": "CITA1757991014999",
+      "paciente_id": "PAC001",
+      "medico_id": "DOC001",
+      "fecha": "2025-09-15",
+      "hora": "22:20",
+      "estado": "completada",
+      "motivo": "A las 10:20 PM",
+      "room_id": "room_CITA1757991014999_1757991015000",
+      "created_at": "2025-09-16T02:50:15.000Z",
+      "updated_at": "2025-09-16T03:52:06.433Z"
+    },
+    {
+      "id": "CITA1757991882267",
+      "paciente_id": "PAC001",
+      "medico_id": "DOC001",
+      "fecha": "2025-09-15",
+      "hora": "22:15",
+      "estado": "programada",
+      "motivo": "revisión urgente de noche",
+      "room_id": "room_CITA1757991882267_1757991882267",
+      "created_at": "2025-09-16T03:04:42.267Z"
+    },
+    {
+      "id": "CITA1757994851832",
+      "paciente_id": "PAC001",
+      "medico_id": "DOC001",
+      "fecha": "2025-09-15",
+      "hora": "23:00",
+      "estado": "programada",
+      "motivo": "hoy a las 11pm ",
+      "room_id": "room_CITA1757994851832_1757994851832",
+      "created_at": "2025-09-16T03:54:11.832Z"
+    },
+    {
+      "id": "CITA1757995302268",
+      "paciente_id": "PAC001",
+      "medico_id": "DOC001",
+      "fecha": "2025-09-15",
+      "hora": "23:10",
+      "estado": "programada",
+      "motivo": "vamos a las 11:10 pm",
+      "room_id": "room_CITA1757995302268_1757995302268",
+      "created_at": "2025-09-16T04:01:42.268Z"
     }
   ]
 }
