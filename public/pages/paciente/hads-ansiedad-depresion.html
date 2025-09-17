@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evaluación HADS + Burnout Laboral - SoyBienmedico</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+            color: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.8rem;
+        }
+
+        .nav-link {
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .nav-link:hover {
+            color: white;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+            color: white;
+            padding: 1.5rem;
+        }
+
+        .card-header h2 {
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-body {
+            padding: 2rem;
+        }
+
+        .test-section {
+            margin-bottom: 3rem;
+            padding-bottom: 2rem;
+            border-bottom: 2px solid #eee;
+        }
+
+        .test-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .test-header {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+
+        .test-header.ansiedad {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+
+        .test-header.depresion {
+            background: linear-gradient(135deg, #34495e, #2c3e50);
+        }
+
+        .test-header.burnout {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+        }
+
+        .test-header h3 {
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .test-description {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-top: 0.5rem;
+        }
+
+        .question {
+            background: #f8f9fa;
+            border-left: 4px solid #9b59b6;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .question-text {
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #2c3e50;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .option {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .option:hover {
+            border-color: #9b59b6;
+            background: #f8f4ff;
+        }
+
+        .option input[type="radio"] {
+            margin: 0;
+            transform: scale(1.2);
+        }
+
+        .option.selected {
+            border-color: #9b59b6;
+            background: #f8f4ff;
+            box-shadow: 0 2px 5px rgba(155, 89, 182, 0.2);
+        }
+
+        .calculate-btn {
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+            color: white;
+            border: none;
+            padding: 1.25rem 2.5rem;
+            font-size: 1.2rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            width: 100%;
+            margin-top: 2rem;
+        }
+
+        .calculate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(155, 89, 182, 0.3);
+        }
+
+        .calculate-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .results-section {
+            display: none;
+            margin-top: 2rem;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .result-card {
+            padding: 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .result-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: inherit;
+            opacity: 0.9;
+            z-index: 1;
+        }
+
+        .result-card > * {
+            position: relative;
+            z-index: 2;
+        }
+
+        .result-normal {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+        }
+
+        .result-leve {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+        }
+
+        .result-moderado {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+
+        .result-grave {
+            background: linear-gradient(135deg, #8e44ad, #9b59b6);
+        }
+
+        .result-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .result-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+
+        .result-category {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .result-description {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .recommendations {
+            background: #f8f9fa;
+            padding: 2rem;
+            border-radius: 8px;
+            margin-top: 2rem;
+        }
+
+        .recommendations h4 {
+            color: #9b59b6;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .recommendation-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .recommendation-category {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border-left: 4px solid #9b59b6;
+        }
+
+        .recommendation-category h5 {
+            color: #2c3e50;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .recommendation-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .recommendation-list li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .recommendation-list li:last-child {
+            border-bottom: none;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: transform 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-warning {
+            background: #f39c12;
+            color: white;
+        }
+
+        .progress-bar {
+            background: #e9ecef;
+            height: 8px;
+            border-radius: 4px;
+            margin: 1rem 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            text-align: center;
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-top: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 1rem auto;
+                padding: 0 0.5rem;
+            }
+
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .recommendation-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .options {
+                gap: 0.5rem;
+            }
+
+            .option {
+                padding: 0.5rem;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>
+            <i class="fas fa-brain"></i>
+            Evaluación HADS + Burnout Laboral
+        </h1>
+        <a href="dashboard.html" class="nav-link">
+            <i class="fas fa-arrow-left"></i> Volver al Dashboard
+        </a>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <div class="card-header">
+                <h2>
+                    <i class="fas fa-clipboard-check"></i>
+                    Cuestionario de Evaluación Psicológica
+                </h2>
+            </div>
+            <div class="card-body">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                </div>
+                <div class="progress-text" id="progressText">0 de 21 preguntas completadas</div>
+
+                <form id="hadsForm">
+                    <!-- HADS - Ansiedad -->
+                    <div class="test-section">
+                        <div class="test-header ansiedad">
+                            <h3>
+                                <i class="fas fa-exclamation-triangle"></i>
+                                Escala HADS - Ansiedad
+                            </h3>
+                            <div class="test-description">
+                                Evalúa síntomas de ansiedad. Puntuación: 0-7 Normal, 8-10 Leve, 11-14 Moderado, 15-21 Grave
+                            </div>
+                        </div>
+
+                        <!-- Pregunta 1 -->
+                        <div class="question">
+                            <div class="question-text">1. Me siento tenso o nervioso:</div>
+                            <div class="options">
+                                <label class="option">
+                                    <input type="radio" name="ansiedad1" value="3" required>
+                                    <span>Mayor parte del tiempo</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="ansiedad1" value="2">
+                                    <span>Frecuentemente</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="ansiedad1" value="1">
+                                    <span>Ocasionalmente</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="ansiedad1" value="0">
+                                    <span>Nunca</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Pregunta 2 -->
+                        <div class="question">
+                            <div class="question-text">2. Tengo una sensación de miedo como si algo terrible me fuera a pasar:</div>
+                            <div class="options">
+                                <label class="option">
+                                    <input type="radio" name="ansiedad2" value="3" required>
+                                    <span>Sí, y muy intenso</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="ansiedad2" value="2">
+                                    <span>Sí, pero no muy intenso</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="ansiedad2" value="1">
+                                    <span>Un poco</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="ansiedad2" value="0">
+                                    <span>Nada en absoluto</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Pregunta 3 -->
+                        <div class="question">
+                            <div class="question-text">3. Me siento inquieto como si no pudiera estar quieto:</div>
+                            <div class="options">
+                                <label class="option">
+                                    <input type="radio" name="ansiedad3" value="3" required>
+                                    <span>Muy a menudo</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="ansiedad3" value="2">
+                                    <span>Bastante a menudo</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="ansiedad3" value="1">
+                                    <span>No muy a menudo</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="ansiedad3" value="0">
+                                    <span>Nada en absoluto</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Pregunta 4 -->
+                        <div class="question">
+                            <div class="question-text">4. Puedo sentarme tranquilamente y sentirme relajado:</div>
+                            <div class="options">
+                                <label class="option">
+                                    <input type="radio" name="ansiedad4" value="0" required>
+                                    <span>Sí, completamente</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="ansiedad4" value="1">
+                                    <span>Sí, usualmente</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="ansiedad4" value="2">
+                                    <span>No muy frecuentemente</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="ansiedad4" value="3">
+                                    <span>Nunca</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Pregunta 5 -->
+                        <div class="question">
+                            <div class="question-text">5. Tengo una sensación de pánico:</div>
+                            <div class="options">
+                                <label class="option">
+                                    <input type="radio" name="ansiedad5" value="3" required>
+                                    <span>Muy frecuentemente</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="ansiedad5" value="2">
+                                    <span>Frecuentemente</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="ansiedad5" value="1">
+                                    <span>Ocasionalmente</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="ansiedad5" value="0">
+                                    <span>Nunca</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Pregunta 6 -->
+                        <div class="question">
+                            <div class="question-text">6. Puedo disfrutar de las cosas que normalmente disfruto:</div>
+                            <div class="options">
+                                <label class="option">
+                                    <input type="radio" name="ansiedad6" value="0" required>
+                                    <span>Totalmente</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="ansiedad6" value="1">
+                                    <span>Bastante</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="ansiedad6" value="2">
+                                    <span>Poco</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="ansiedad6" value="3">
+                                    <span>Nada</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Pregunta 7 -->
+                        <div class="question">
+                            <div class="question-text">7. Me siento acelerado o alterado internamente:</div>
+                            <div class="options">
+                                <label class="option">
+                                    <input type="radio" name="ansiedad7" value="3" required>
+                                    <span>Mucho</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="ansiedad7" value="2">
+                                    <span>Bastante</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="ansiedad7" value="1">
+                                    <span>Un poco</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="ansiedad7" value="0">
+                                    <span>Nada</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- HADS - Depresión -->
+                    <div class="test-section">
+                        <div class="test-header depresion">
+                            <h3>
+                                <i class="fas fa-cloud-rain"></i>
+                                Escala HADS - Depresión
+                            </h3>
+                            <div class="test-description">
+                                Evalúa síntomas de depresión. Puntuación: 0-7 Normal, 8-10 Leve, 11-14 Moderado, 15-21 Grave
+                            </div>
+                        </div>
+
+                        <!-- Pregunta 1 -->
+                        <div class="question">
+                            <div class="question-text">1. Todavía disfruto de las cosas que solía disfrutar:</div>
+                            <div class="options">
+                                <label class="option">
+                                    <input type="radio" name="depresion1" value="0" required>
+                                    <span>Definitivamente</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="depresion1" value="1">
+                                    <span>En parte</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="depresion1" value="2">
+                                    <span>Un poco</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="depresion1" value="3">
+                                    <span>No en absoluto</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Pregunta 2 -->
+                        <div class="question">
+                            <div class="question-text">2. Encuentro humor en cosas y sonrío:</div>
+                            <div class="options">
+                                <label class="option">
+                                    <input type="radio" name="depresion2" value="0" required>
+                                    <span>Tan a menudo como antes</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="depresion2" value="1">
+                                    <span>No tan a menudo</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="depresion2" value="2">
+                                    <span>Claramente menos</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="depresion2" value="3">
+                                    <span>Nunca</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Pregunta 3 -->
+                        <div class="question">
+                            <div class="question-text">3. Me siento animado:</div>
+                            <div class="options">
+                                <label class="option">
+                                    <input type="radio" name="depresion3" value="0" required>
+                                    <span>Sí, completamente</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="depresion3" value="1">
+                                    <span>Sí, pero no siempre</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="depresion3" value="2">
+                                    <span>Rara vez</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="depresion3" value="3">
+                                    <span>Nunca</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Pregunta 4 -->
+                        <div class="question">
+                            <div class="question-text">4. Tengo una sensación de lentitud:</div>
+                            <div class="options">
+                                <label class="option">
+                                    <input type="radio" name="depresion4" value="3" required>
+                                    <span>Casi todo el tiempo</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="depresion4" value="2">
+                                    <span>Muy a menudo</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="depresion4" value="1">
+                                    <span>Ocasionalmente</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="depresion4" value="0">
+                                    <span>Nunca</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Pregunta 5 -->
+                        <div class="question">
+                            <div class="question-text">5. He perdido interés por mi apariencia:</div>
+                            <div class="options">
+                                <label class="option">
+                                    <input type="radio" name="depresion5" value="3" required>
+                                    <span>Sí completamente</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="depresion5" value="2">
+                                    <span>No me importa tanto</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="depresion5" value="1">
+                                    <span>A veces</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="depresion5" value="0">
+                                    <span>No</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Pregunta 6 -->
+                        <div class="question">
+                            <div class="question-text">6. Estoy esperando con ilusión cosas en el futuro:</div>
+                            <div class="options">
+                                <label class="option">
+                                    <input type="radio" name="depresion6" value="0" required>
+                                    <span>Sí</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="depresion6" value="1">
+                                    <span>No con tanta frecuencia</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="depresion6" value="2">
+                                    <span>Rara vez</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="depresion6" value="3">
+                                    <span>Nunca</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Pregunta 7 -->
+                        <div class="question">
+                            <div class="question-text">7. Puedo disfrutar de un buen libro o programa de televisión:</div>
+                            <div class="options">
+                                <label class="option">
+                                    <input type="radio" name="depresion7" value="0" required>
+                                    <span>A menudo</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="depresion7" value="1">
+                                    <span>Algunas veces</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="depresion7" value="2">
+                                    <span>Rara vez</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="depresion7" value="3">
+                                    <span>Nunca</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CBI - Burnout Laboral -->
+                    <div class="test-section">
+                        <div class="test-header burnout">
+                            <h3>
+                                <i class="fas fa-fire"></i>
+                                Escala CBI - Burnout Laboral
+                            </h3>
+                            <div class="test-description">
+                                Evalúa el burnout relacionado con el trabajo. Resultado: <1.5 Bajo, 1.5-2.9 Medio, ≥3 Alto
+                            </div>
+                        </div>
+
+                        <!-- Pregunta 1 -->
+                        <div class="question">
+                            <div class="question-text">1. Mi trabajo me frustra:</div>
+                            <div class="options">
+                                <label class="option">
+                                    <input type="radio" name="burnout1" value="0" required>
+                                    <span>Nunca</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="burnout1" value="1">
+                                    <span>Rara vez</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="burnout1" value="2">
+                                    <span>A veces</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="burnout1" value="3">
+                                    <span>Frecuentemente</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="burnout1" value="4">
+                                    <span>Siempre</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Pregunta 2 -->
+                        <div class="question">
+                            <div class="question-text">2. Siento que estoy emocionalmente agotado/a por mi trabajo:</div>
+                            <div class="options">
+                                <label class="option">
+                                    <input type="radio" name="burnout2" value="0" required>
+                                    <span>Nunca</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="burnout2" value="1">
+                                    <span>Rara vez</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="burnout2" value="2">
+                                    <span>A veces</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="burnout2" value="3">
+                                    <span>Frecuentemente</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="burnout2" value="4">
+                                    <span>Siempre</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Pregunta 3 -->
+                        <div class="question">
+                            <div class="question-text">3. Me siento agotado/a cuando pienso en mi trabajo:</div>
+                            <div class="options">
+                                <label class="option">
+                                    <input type="radio" name="burnout3" value="0" required>
+                                    <span>Nunca</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="burnout3" value="1">
+                                    <span>Rara vez</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="burnout3" value="2">
+                                    <span>A veces</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="burnout3" value="3">
+                                    <span>Frecuentemente</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="burnout3" value="4">
+                                    <span>Siempre</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Pregunta 4 -->
+                        <div class="question">
+                            <div class="question-text">4. Me siento quemado/a por mi trabajo:</div>
+                            <div class="options">
+                                <label class="option">
+                                    <input type="radio" name="burnout4" value="0" required>
+                                    <span>Nunca</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="burnout4" value="1">
+                                    <span>Rara vez</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="burnout4" value="2">
+                                    <span>A veces</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="burnout4" value="3">
+                                    <span>Frecuentemente</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="burnout4" value="4">
+                                    <span>Siempre</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Pregunta 5 -->
+                        <div class="question">
+                            <div class="question-text">5. Trabajo directamente con personas todo el día:</div>
+                            <div class="options">
+                                <label class="option">
+                                    <input type="radio" name="burnout5" value="0" required>
+                                    <span>Nunca</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="burnout5" value="1">
+                                    <span>Rara vez</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="burnout5" value="2">
+                                    <span>A veces</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="burnout5" value="3">
+                                    <span>Frecuentemente</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="burnout5" value="4">
+                                    <span>Siempre</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Pregunta 6 -->
+                        <div class="question">
+                            <div class="question-text">6. Trabajo en situaciones emocionalmente exigentes:</div>
+                            <div class="options">
+                                <label class="option">
+                                    <input type="radio" name="burnout6" value="0" required>
+                                    <span>Nunca</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="burnout6" value="1">
+                                    <span>Rara vez</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="burnout6" value="2">
+                                    <span>A veces</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="burnout6" value="3">
+                                    <span>Frecuentemente</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="burnout6" value="4">
+                                    <span>Siempre</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Pregunta 7 -->
+                        <div class="question">
+                            <div class="question-text">7. Mi trabajo me exige emocionalmente:</div>
+                            <div class="options">
+                                <label class="option">
+                                    <input type="radio" name="burnout7" value="0" required>
+                                    <span>Nunca</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="burnout7" value="1">
+                                    <span>Rara vez</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="burnout7" value="2">
+                                    <span>A veces</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="burnout7" value="3">
+                                    <span>Frecuentemente</span>
+                                </label>
+                                <label class="option">
+                                    <input type="radio" name="burnout7" value="4">
+                                    <span>Siempre</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="calculate-btn" id="calculateBtn">
+                        <i class="fas fa-calculator"></i>
+                        Calcular Resultados
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Sección de Resultados -->
+        <div id="resultados" class="results-section">
+            <div class="card">
+                <div class="card-header">
+                    <h2>
+                        <i class="fas fa-chart-bar"></i>
+                        Resultados de la Evaluación
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="results-grid" id="resultsGrid">
+                        <!-- Los resultados se insertarán aquí -->
+                    </div>
+
+                    <div class="recommendations">
+                        <h4><i class="fas fa-lightbulb"></i> Recomendaciones Personalizadas</h4>
+                        <div class="recommendation-grid" id="recommendationsGrid">
+                            <!-- Las recomendaciones se insertarán aquí -->
+                        </div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button onclick="nuevaEvaluacion()" class="btn btn-primary">
+                            <i class="fas fa-redo"></i> Nueva Evaluación
+                        </button>
+                        <button onclick="descargarReporte()" class="btn btn-success">
+                            <i class="fas fa-download"></i> Descargar Reporte
+                        </button>
+                        <button onclick="solicitarCita()" class="btn btn-warning">
+                            <i class="fas fa-calendar-plus"></i> Solicitar Cita Especialista
+                        </button>
+                        <a href="dashboard.html" class="btn btn-secondary">
+                            <i class="fas fa-home"></i> Volver al Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/hads-ansiedad-depresion.js"></script>
+    <script>
+        // Manejar selección de opciones
+        document.addEventListener('DOMContentLoaded', function() {
+            const options = document.querySelectorAll('.option');
+            options.forEach(option => {
+                option.addEventListener('click', function() {
+                    const radio = this.querySelector('input[type="radio"]');
+                    if (radio) {
+                        radio.checked = true;
+                        // Remover selección de otras opciones del mismo grupo
+                        const groupName = radio.name;
+                        const groupOptions = document.querySelectorAll(`input[name="${groupName}"]`);
+                        groupOptions.forEach(opt => {
+                            opt.closest('.option').classList.remove('selected');
+                        });
+                        this.classList.add('selected');
+                        
+                        // Actualizar progreso
+                        updateProgress();
+                    }
+                });
+            });
+        });
+
+        // Actualizar barra de progreso
+        function updateProgress() {
+            const totalQuestions = 21;
+            const answeredQuestions = document.querySelectorAll('input[type="radio"]:checked').length;
+            const percentage = (answeredQuestions / totalQuestions) * 100;
+            
+            document.getElementById('progressFill').style.width = percentage + '%';
+            document.getElementById('progressText').textContent = `${answeredQuestions} de ${totalQuestions} preguntas completadas`;
+            
+            // Habilitar/deshabilitar botón
+            const calculateBtn = document.getElementById('calculateBtn');
+            if (answeredQuestions === totalQuestions) {
+                calculateBtn.disabled = false;
+                calculateBtn.innerHTML = '<i class="fas fa-calculator"></i> Calcular Resultados';
+            } else {
+                calculateBtn.disabled = true;
+                calculateBtn.innerHTML = `<i class="fas fa-clock"></i> Complete todas las preguntas (${answeredQuestions}/${totalQuestions})`;
+            }
+        }
+
+        // Manejar envío del formulario
+        document.getElementById('hadsForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            calcularResultadosHADS();
+        });
+
+        function nuevaEvaluacion() {
+            document.getElementById('hadsForm').reset();
+            document.getElementById('resultados').style.display = 'none';
+            document.querySelectorAll('.option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            updateProgress();
+            window.scrollTo(0, 0);
+        }
+
+        function descargarReporte() {
+            alert('La funcionalidad de descarga de reporte estará disponible próximamente.');
+        }
+
+        function solicitarCita() {
+            alert('La funcionalidad para solicitar cita con especialista estará disponible próximamente.');
+        }
+
+        // Inicializar progreso
+        updateProgress();
+    </script>
+    
+    <!-- Archivo JavaScript para cálculos HADS -->
+    <script src="js/hads-ansiedad-depresion.js"></script>
+</body>
+</html>
