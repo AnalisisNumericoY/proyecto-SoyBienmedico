@@ -192,6 +192,148 @@ router.put('/cita/:id/status', verifyToken, async (req, res) => {
   }
 });
 
+// ENDPOINT PARA RECIBIR MEDICIONES DE DISPOSITIVOS IoT
+router.post('/mediciones/recibir', async (req, res) => {
+  try {
+    console.log('📊 Nueva medición recibida:', req.body);
+    
+    const { dispositivo_tipo, dispositivo_id, valores, timestamp } = req.body;
+    
+    // Validación básica de campos requeridos
+    if (!dispositivo_tipo || !dispositivo_id || !valores) {
+      return res.status(400).json({
+        success: false,
+        message: 'Campos requeridos: dispositivo_tipo, dispositivo_id, valores'
+      });
+    }
+
+    // Validar tipos de dispositivo permitidos
+    const tiposPermitidos = ['pulsoximetro', 'tension', 'balanza'];
+    if (!tiposPermitidos.includes(dispositivo_tipo)) {
+      return res.status(400).json({
+        success: false,
+        message: `Tipo de dispositivo no válido. Permitidos: ${tiposPermitidos.join(', ')}`
+      });
+    }
+
+    // Validar rangos médicos básicos según tipo de dispositivo
+    const esValorValido = validarRangosMedicos(dispositivo_tipo, valores);
+    if (!esValorValido.valido) {
+      return res.status(400).json({
+        success: false,
+        message: `Valores fuera de rango médico: ${esValorValido.error}`
+      });
+    }
+
+    // Crear registro de medición
+    const medicion = {
+      id: generarUUID(),
+      dispositivo_tipo,
+      dispositivo_id,
+      valores,
+      timestamp: timestamp || new Date().toISOString(),
+      recibido_en: new Date().toISOString(),
+      procesado: true
+    };
+
+    // Cargar mediciones existentes
+    const MEDICIONES_FILE = path.join(__dirname, '../data/mediciones-temporales.json');
+    let medicionesData;
+    try {
+      medicionesData = await loadJsonFile(MEDICIONES_FILE);
+      if (!medicionesData.mediciones) {
+        medicionesData = { mediciones: [] };
+      }
+    } catch (error) {
+      medicionesData = { mediciones: [] };
+    }
+
+    // Agregar nueva medición
+    medicionesData.mediciones.push(medicion);
+
+    // Mantener solo las últimas 1000 mediciones para evitar archivos muy grandes
+    if (medicionesData.mediciones.length > 1000) {
+      medicionesData.mediciones = medicionesData.mediciones.slice(-1000);
+    }
+
+    // Guardar mediciones actualizadas
+    const guardado = await saveJsonFile(MEDICIONES_FILE, medicionesData);
+    
+    if (guardado) {
+      console.log('✅ Medición guardada correctamente:', medicion.id);
+      
+      // Respuesta exitosa (lo que esperan los dispositivos)
+      res.status(200).json({
+        success: true,
+        message: 'Medición recibida correctamente',
+        id: medicion.id,
+        timestamp: medicion.recibido_en
+      });
+    } else {
+      throw new Error('Error al guardar la medición');
+    }
+
+  } catch (error) {
+    console.error('❌ Error procesando medición:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error interno del servidor',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
+
+// Función para validar rangos médicos
+function validarRangosMedicos(tipo, valores) {
+  switch (tipo) {
+    case 'pulsoximetro':
+      // SpO2: 70-100%, BPM: 30-200, Temperatura: 30-45°C
+      if (valores.spo2 && (valores.spo2 < 70 || valores.spo2 > 100)) {
+        return { valido: false, error: 'SpO2 debe estar entre 70-100%' };
+      }
+      if (valores.bpm && (valores.bpm < 30 || valores.bpm > 200)) {
+        return { valido: false, error: 'BPM debe estar entre 30-200' };
+      }
+      if (valores.temperatura && (valores.temperatura < 30 || valores.temperatura > 45)) {
+        return { valido: false, error: 'Temperatura debe estar entre 30-45°C' };
+      }
+      break;
+
+    case 'tension':
+      // Sistólica: 70-250 mmHg, Diastólica: 40-150 mmHg, BPM: 30-200
+      if (valores.sistolica && (valores.sistolica < 70 || valores.sistolica > 250)) {
+        return { valido: false, error: 'Presión sistólica debe estar entre 70-250 mmHg' };
+      }
+      if (valores.diastolica && (valores.diastolica < 40 || valores.diastolica > 150)) {
+        return { valido: false, error: 'Presión diastólica debe estar entre 40-150 mmHg' };
+      }
+      if (valores.bpm && (valores.bpm < 30 || valores.bpm > 200)) {
+        return { valido: false, error: 'BPM debe estar entre 30-200' };
+      }
+      break;
+
+    case 'balanza':
+      // Peso: 10-300 kg, IMC: 10-60 (si viene calculado)
+      if (valores.peso && (valores.peso < 10 || valores.peso > 300)) {
+        return { valido: false, error: 'Peso debe estar entre 10-300 kg' };
+      }
+      if (valores.imc && (valores.imc < 10 || valores.imc > 60)) {
+        return { valido: false, error: 'IMC debe estar entre 10-60' };
+      }
+      break;
+
+    default:
+      return { valido: false, error: 'Tipo de dispositivo no reconocido' };
+  }
+  
+  return { valido: true };
+}
+
+// Función para generar UUID simple
+function generarUUID() {
+  return 'med_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+}
+
 // HEALTH CHECK
 router.get('/health', (req, res) => {
   res.json({
