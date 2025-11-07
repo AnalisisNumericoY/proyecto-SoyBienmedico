@@ -283,6 +283,67 @@ router.post('/mediciones/recibir', async (req, res) => {
   }
 });
 
+// ENDPOINT PARA OBTENER MEDICIONES RECIENTES
+router.get('/mediciones/recientes', async (req, res) => {
+  try {
+    console.log('📊 Solicitando mediciones recientes');
+    
+    // Obtener el límite de la query string (por defecto 100)
+    const limite = parseInt(req.query.limite) || 100;
+    
+    // Validar que el límite sea razonable
+    if (limite < 1 || limite > 1000) {
+      return res.status(400).json({
+        success: false,
+        message: 'El límite debe estar entre 1 y 1000'
+      });
+    }
+
+    // Cargar mediciones desde el archivo
+    const MEDICIONES_FILE = path.join(__dirname, '../data/mediciones-temporales.json');
+    let medicionesData;
+    
+    try {
+      medicionesData = await loadJsonFile(MEDICIONES_FILE);
+      if (!medicionesData.mediciones) {
+        medicionesData = { mediciones: [] };
+      }
+    } catch (error) {
+      console.log('⚠️ Archivo de mediciones no encontrado o vacío');
+      medicionesData = { mediciones: [] };
+    }
+
+    // Ordenar por timestamp/recibido_en más reciente primero
+    const medicionesOrdenadas = medicionesData.mediciones.sort((a, b) => {
+      const fechaA = new Date(a.recibido_en || a.timestamp);
+      const fechaB = new Date(b.recibido_en || b.timestamp);
+      return fechaB - fechaA; // Más reciente primero
+    });
+
+    // Tomar solo las últimas N mediciones según el límite
+    const medicionesLimitadas = medicionesOrdenadas.slice(0, limite);
+
+    console.log(`✅ Devolviendo ${medicionesLimitadas.length} mediciones de ${medicionesData.mediciones.length} totales`);
+
+    // Respuesta exitosa
+    res.status(200).json({
+      success: true,
+      total: medicionesLimitadas.length,
+      total_disponible: medicionesData.mediciones.length,
+      limite_aplicado: limite,
+      mediciones: medicionesLimitadas
+    });
+
+  } catch (error) {
+    console.error('❌ Error obteniendo mediciones:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error interno del servidor',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
+
 // Función para validar rangos médicos
 function validarRangosMedicos(tipo, valores) {
   switch (tipo) {
