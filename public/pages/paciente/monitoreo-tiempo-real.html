@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitoreo en Tiempo Real - SoyBienmedico</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-title h1 {
+            font-size: 1.8rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .live-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(239, 68, 68, 0.1);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            color: #ef4444;
+        }
+
+        .live-dot {
+            width: 10px;
+            height: 10px;
+            background: #ef4444;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        .back-button {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            margin-bottom: 2rem;
+        }
+
+        .back-button:hover {
+            background: white;
+            color: #667eea;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .device-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .device-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, var(--card-color-1), var(--card-color-2));
+        }
+
+        .device-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 50px rgba(0,0,0,0.15);
+        }
+
+        .device-card.oximetro {
+            --card-color-1: #3b82f6;
+            --card-color-2: #60a5fa;
+        }
+
+        .device-card.tension {
+            --card-color-1: #ef4444;
+            --card-color-2: #f87171;
+        }
+
+        .device-card.balanza {
+            --card-color-1: #10b981;
+            --card-color-2: #34d399;
+        }
+
+        .device-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+
+        .device-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        .device-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .oximetro .device-icon {
+            background: linear-gradient(135deg, #3b82f6, #60a5fa);
+        }
+
+        .tension .device-icon {
+            background: linear-gradient(135deg, #ef4444, #f87171);
+        }
+
+        .balanza .device-icon {
+            background: linear-gradient(135deg, #10b981, #34d399);
+        }
+
+        .device-status {
+            font-size: 0.85rem;
+            color: #6b7280;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #10b981;
+        }
+
+        .status-dot.inactive {
+            background: #9ca3af;
+        }
+
+        .device-values {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .value-item {
+            text-align: center;
+            padding: 1rem;
+            background: #f9fafb;
+            border-radius: 12px;
+        }
+
+        .value-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 0.25rem;
+        }
+
+        .value-label {
+            font-size: 0.85rem;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .device-meta {
+            display: flex;
+            justify-content: space-between;
+            padding-top: 1rem;
+            border-top: 1px solid #e5e7eb;
+            font-size: 0.85rem;
+            color: #6b7280;
+        }
+
+        .charts-section {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .charts-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .charts-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 3rem;
+            color: #9ca3af;
+            font-size: 1.1rem;
+        }
+
+        .no-data i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem;
+            color: #9ca3af;
+        }
+
+        .loading i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            animation: spin 2s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .alert-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .alert-badge.normal {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .alert-badge.warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .alert-badge.danger {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .container {
+                padding: 0 1rem;
+            }
+        }
+
+        .refresh-info {
+            text-align: center;
+            color: white;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .new-data-animation {
+            animation: newDataPulse 0.5s ease;
+        }
+
+        @keyframes newDataPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); box-shadow: 0 15px 50px rgba(0,0,0,0.2); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-title">
+            <i class="fas fa-heartbeat" style="font-size: 2rem; color: #667eea;"></i>
+            <h1>Monitoreo en Tiempo Real</h1>
+        </div>
+        <div class="live-indicator">
+            <div class="live-dot"></div>
+            <span>EN VIVO</span>
+        </div>
+    </div>
+
+    <div class="container">
+        <button class="back-button" onclick="volverDashboard()">
+            <i class="fas fa-arrow-left"></i>
+            Volver al Dashboard
+        </button>
+
+        <div class="refresh-info" id="refreshInfo">
+            <i class="fas fa-sync-alt"></i> Actualizando cada 3 segundos...
+        </div>
+
+        <!-- Cards de Dispositivos -->
+        <div class="stats-grid" id="devicesGrid">
+            <!-- Oxímetro -->
+            <div class="device-card oximetro" id="cardOximetro">
+                <div class="device-header">
+                    <div class="device-title">
+                        <div class="device-icon">
+                            <i class="fas fa-lungs"></i>
+                        </div>
+                        <span>Oxímetro</span>
+                    </div>
+                    <div class="device-status">
+                        <div class="status-dot" id="statusOximetro"></div>
+                        <span id="statusTextOximetro">Sin datos</span>
+                    </div>
+                </div>
+                <div class="device-values" id="valuesOximetro">
+                    <div class="no-data">
+                        <i class="fas fa-clock"></i>
+                        Esperando mediciones...
+                    </div>
+                </div>
+                <div class="device-meta" id="metaOximetro" style="display: none;">
+                    <span id="serialOximetro">Serial: ---</span>
+                    <span id="timeOximetro">---</span>
+                </div>
+            </div>
+
+            <!-- Tensiómetro -->
+            <div class="device-card tension" id="cardTension">
+                <div class="device-header">
+                    <div class="device-title">
+                        <div class="device-icon">
+                            <i class="fas fa-heart-pulse"></i>
+                        </div>
+                        <span>Tensiómetro</span>
+                    </div>
+                    <div class="device-status">
+                        <div class="status-dot" id="statusTension"></div>
+                        <span id="statusTextTension">Sin datos</span>
+                    </div>
+                </div>
+                <div class="device-values" id="valuesTension">
+                    <div class="no-data">
+                        <i class="fas fa-clock"></i>
+                        Esperando mediciones...
+                    </div>
+                </div>
+                <div class="device-meta" id="metaTension" style="display: none;">
+                    <span id="serialTension">Serial: ---</span>
+                    <span id="timeTension">---</span>
+                </div>
+            </div>
+
+            <!-- Balanza -->
+            <div class="device-card balanza" id="cardBalanza">
+                <div class="device-header">
+                    <div class="device-title">
+                        <div class="device-icon">
+                            <i class="fas fa-weight-scale"></i>
+                        </div>
+                        <span>Balanza</span>
+                    </div>
+                    <div class="device-status">
+                        <div class="status-dot" id="statusBalanza"></div>
+                        <span id="statusTextBalanza">Sin datos</span>
+                    </div>
+                </div>
+                <div class="device-values" id="valuesBalanza">
+                    <div class="no-data">
+                        <i class="fas fa-clock"></i>
+                        Esperando mediciones...
+                    </div>
+                </div>
+                <div class="device-meta" id="metaBalanza" style="display: none;">
+                    <span id="serialBalanza">Serial: ---</span>
+                    <span id="timeBalanza">---</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección de Gráficos -->
+        <div class="charts-section">
+            <div class="charts-header">
+                <h2 class="charts-title">
+                    <i class="fas fa-chart-line"></i>
+                    Tendencias (Últimas 10 Mediciones)
+                </h2>
+            </div>
+            <div class="chart-container">
+                <canvas id="trendsChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/monitoreo-tiempo-real.js"></script>
+    <script>
+        function volverDashboard() {
+            window.location.href = 'dashboard.html';
+        }
+
+        // Inicializar cuando cargue la página
+        window.addEventListener('load', iniciarMonitoreo);
+    </script>
+</body>
+</html>
