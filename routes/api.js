@@ -192,6 +192,70 @@ router.put('/cita/:id/status', verifyToken, async (req, res) => {
   }
 });
 
+// ENDPOINT ESPECÍFICO PARA DISPOSITIVOS IoT DEL PROVEEDOR (measure_sim.json)
+router.post('/mediciones/recibir/measure_sim.json', async (req, res) => {
+  try {
+    console.log('📊 Nueva medición recibida desde dispositivo IoT (measure_sim):', JSON.stringify(req.body, null, 2));
+    
+    // El proveedor envía los datos en un formato específico, los adaptamos
+    const datosDispositivo = req.body;
+    
+    // Crear registro de medición adaptado
+    const medicion = {
+      id: generarUUID(),
+      datos_originales: datosDispositivo, // Guardamos los datos tal como llegan
+      recibido_en: new Date().toISOString(),
+      procesado: true,
+      origen: 'proveedor_iot'
+    };
+
+    // Cargar mediciones existentes
+    const MEDICIONES_FILE = path.join(__dirname, '../data/mediciones-temporales.json');
+    let medicionesData;
+    try {
+      medicionesData = await loadJsonFile(MEDICIONES_FILE);
+      if (!medicionesData.mediciones) {
+        medicionesData = { mediciones: [] };
+      }
+    } catch (error) {
+      medicionesData = { mediciones: [] };
+    }
+
+    // Agregar nueva medición
+    medicionesData.mediciones.push(medicion);
+
+    // Mantener solo las últimas 1000 mediciones
+    if (medicionesData.mediciones.length > 1000) {
+      medicionesData.mediciones = medicionesData.mediciones.slice(-1000);
+    }
+
+    // Guardar mediciones actualizadas
+    const guardado = await saveJsonFile(MEDICIONES_FILE, medicionesData);
+    
+    if (guardado) {
+      console.log('✅ Medición del dispositivo IoT guardada correctamente:', medicion.id);
+      
+      // Respuesta exitosa (200 OK que esperan los dispositivos)
+      res.status(200).json({
+        success: true,
+        message: 'Medición recibida correctamente',
+        id: medicion.id,
+        timestamp: medicion.recibido_en
+      });
+    } else {
+      throw new Error('Error al guardar la medición');
+    }
+
+  } catch (error) {
+    console.error('❌ Error procesando medición del dispositivo IoT:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error interno del servidor',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
+
 // ENDPOINT PARA RECIBIR MEDICIONES DE DISPOSITIVOS IoT
 router.post('/mediciones/recibir', async (req, res) => {
   try {
