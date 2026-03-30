@@ -138,7 +138,7 @@ router.post('/iniciar', verifyToken, async (req, res) => {
       message: 'Sesión de medición iniciada correctamente',
       sesion: {
         ...nuevaSesion,
-        paciente_nombre: `${paciente.nombre} ${paciente.apellidos}`
+        nombre_paciente: `${paciente.nombre} ${paciente.apellidos}`
       }
     });
 
@@ -163,25 +163,47 @@ router.post('/iniciar', verifyToken, async (req, res) => {
 /**
  * Finaliza la sesión activa de una cápsula
  * POST /api/sesiones/finalizar
+ * Body: { sesion_id } o { capsula_id } (backward compatibility)
  */
 router.post('/finalizar', verifyToken, async (req, res) => {
   try {
-    const { capsula_id } = req.body;
+    const { sesion_id, capsula_id } = req.body;
 
-    if (!capsula_id) {
+    let sesionActiva;
+
+    // Opción 1: Finalizar por sesion_id (preferred)
+    if (sesion_id) {
+      sesionActiva = await sesionService.getSesionById(sesion_id);
+      
+      if (!sesionActiva) {
+        return res.status(404).json({
+          success: false,
+          message: 'Sesión no encontrada'
+        });
+      }
+
+      if (sesionActiva.estado !== 'activa') {
+        return res.status(400).json({
+          success: false,
+          message: 'La sesión ya fue finalizada'
+        });
+      }
+    }
+    // Opción 2: Finalizar por capsula_id (backward compatibility)
+    else if (capsula_id) {
+      sesionActiva = await sesionService.getSesionActivaByCapsula(capsula_id);
+      
+      if (!sesionActiva) {
+        return res.status(404).json({
+          success: false,
+          message: 'No hay sesión activa en esta cápsula'
+        });
+      }
+    }
+    else {
       return res.status(400).json({
         success: false,
-        message: 'ID de cápsula requerido'
-      });
-    }
-
-    // Obtener sesión activa
-    const sesionActiva = await sesionService.getSesionActivaByCapsula(capsula_id);
-    
-    if (!sesionActiva) {
-      return res.status(404).json({
-        success: false,
-        message: 'No hay sesión activa en esta cápsula'
+        message: 'Se requiere sesion_id o capsula_id'
       });
     }
 

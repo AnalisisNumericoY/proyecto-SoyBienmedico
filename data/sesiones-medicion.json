@@ -1,3 +1,15 @@
 {
-  "sesiones": []
+  "sesiones": [
+    {
+      "id": "SESSION_1774904081279",
+      "capsula_id": "CAPSULA_DEFAULT_01",
+      "paciente_id": "PAC001",
+      "numero_documento": "87654321",
+      "tipo_sesion": "clasificacion_riesgos",
+      "estado": "finalizada",
+      "inicio": "2026-03-30T20:54:41.280Z",
+      "fin": "2026-03-30T21:30:00.000Z",
+      "mediciones_count": 0
+    }
+  ]
 }
