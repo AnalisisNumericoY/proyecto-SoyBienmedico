@@ -8,6 +8,23 @@ link de despliegue: https://proyecto-soybienmedico-production.up.railway.app/
 
 
 
+
+Para ejecurar n local : 
+Abrir terminal en el directorio del proyecto:
+cd "d:\Users\Jose Antonio Solano\Documents\AsResearch_D\InvestigacionDesarrollo\SoyBienmedico"
+
+
+2 Ejecutar el servidor: npm start
+ó
+node server.js
+
+3. abrir el navegador : 
+http://localhost:3000
+
+
+
+
+
 Quiero un proyecto que tenga una página web con  login que accedan pacientes y medicos y 
 secretarias, que permita que las secretarias hagan citas por medio de un calendario entre 
 los pacientes y los médicos. Y que el encuentro se haga dentro de la página usando una video llamada. 
