@@ -20,6 +20,16 @@ const getAllSesiones = async () => {
 };
 
 /**
+ * Obtiene una sesión por su ID
+ * @param {string} sesionId - ID de la sesión
+ * @returns {Promise<Object|null>}
+ */
+const getSesionById = async (sesionId) => {
+  const sesiones = await getAllSesiones();
+  return sesiones.find(s => s.id === sesionId) || null;
+};
+
+/**
  * Obtiene la sesión activa de una cápsula
  * @param {string} capsulaId - ID de la cápsula
  * @returns {Promise<Object|null>}
@@ -136,6 +146,7 @@ const getSesionesByPaciente = async (pacienteId) => {
 
 module.exports = {
   getAllSesiones,
+  getSesionById,
   getSesionActivaByCapsula,
   haySesionActiva,
   iniciarSesion,

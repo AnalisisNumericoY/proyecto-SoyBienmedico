@@ -1,3 +1,59 @@
 {
-  "sesiones": []
+  "sesiones": [
+    {
+      "id": "SESSION_1774904081279",
+      "capsula_id": "CAPSULA_DEFAULT_01",
+      "paciente_id": "PAC001",
+      "numero_documento": "87654321",
+      "tipo_sesion": "clasificacion_riesgos",
+      "estado": "finalizada",
+      "inicio": "2026-03-30T20:54:41.280Z",
+      "fin": "2026-03-30T21:30:00.000Z",
+      "mediciones_count": 0
+    },
+    {
+      "id": "SESSION_1774907056837",
+      "capsula_id": "CAPSULA_DEFAULT_01",
+      "paciente_id": "PAC1754364002715",
+      "numero_documento": "71770529",
+      "tipo_sesion": "clasificacion_riesgos",
+      "estado": "finalizada",
+      "inicio": "2026-03-30T21:44:16.838Z",
+      "fin": "2026-03-30T21:46:16.311Z",
+      "mediciones_count": 0
+    },
+    {
+      "id": "SESSION_1774908020281",
+      "capsula_id": "CAPSULA_DEFAULT_01",
+      "paciente_id": "PAC1754364002715",
+      "numero_documento": "71770529",
+      "tipo_sesion": "clasificacion_riesgos",
+      "estado": "finalizada",
+      "inicio": "2026-03-30T22:00:20.281Z",
+      "fin": "2026-03-30T22:04:46.267Z",
+      "mediciones_count": 1
+    },
+    {
+      "id": "SESSION_1774908322841",
+      "capsula_id": "CAPSULA_DEFAULT_01",
+      "paciente_id": "PAC001",
+      "numero_documento": "87654321",
+      "tipo_sesion": "clasificacion_riesgos",
+      "estado": "finalizada",
+      "inicio": "2026-03-30T22:05:22.842Z",
+      "fin": "2026-03-30T22:13:12.219Z",
+      "mediciones_count": 4
+    },
+    {
+      "id": "SESSION_1774909091567",
+      "capsula_id": "CAPSULA_DEFAULT_01",
+      "paciente_id": "PAC1754364002715",
+      "numero_documento": "71770529",
+      "tipo_sesion": "clasificacion_riesgos",
+      "estado": "activa",
+      "inicio": "2026-03-30T22:18:11.567Z",
+      "fin": null,
+      "mediciones_count": 3
+    }
+  ]
 }

@@ -352,6 +352,144 @@
             50% { transform: scale(1.02); box-shadow: 0 15px 50px rgba(0,0,0,0.2); }
             100% { transform: scale(1); }
         }
+
+        /* Estilos para Panel de Control de Sesiones */
+        .sesion-panel {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .sesion-panel-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .sesion-panel-header i {
+            font-size: 1.5rem;
+            color: #667eea;
+        }
+
+        .sesion-panel-header h2 {
+            font-size: 1.5rem;
+            color: #1f2937;
+        }
+
+        .sesion-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            align-items: end;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-group label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #4b5563;
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 0.75rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .sesion-btn {
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .sesion-btn-iniciar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .sesion-btn-iniciar:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .sesion-btn-finalizar {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+        }
+
+        .sesion-btn-finalizar:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(239, 68, 68, 0.4);
+        }
+
+        .sesion-activa-info {
+            display: none;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border-radius: 15px;
+            padding: 1.5rem;
+            color: white;
+        }
+
+        .sesion-activa-info.active {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .sesion-info-contenido {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .sesion-info-titulo {
+            font-size: 1.1rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sesion-info-datos {
+            font-size: 0.95rem;
+            opacity: 0.95;
+        }
+
+        .sesion-init-form {
+            display: block;
+        }
+
+        .sesion-init-form.hidden {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -371,6 +509,78 @@
             <i class="fas fa-arrow-left"></i>
             Volver al Dashboard
         </button>
+
+        <!-- Panel de Control de Sesiones -->
+        <div class="sesion-panel">
+            <div class="sesion-panel-header">
+                <i class="fas fa-clipboard-check"></i>
+                <h2>Control de Sesión de Medición</h2>
+            </div>
+
+            <!-- Formulario para iniciar sesión -->
+            <div class="sesion-init-form" id="sesionInitForm">
+                <div class="sesion-form">
+                    <div class="form-group">
+                        <label for="capsulaSelect">
+                            <i class="fas fa-clinic-medical"></i> Cápsula
+                        </label>
+                        <select id="capsulaSelect">
+                            <option value="">Cargando cápsulas...</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="numeroDocumento">
+                            <i class="fas fa-id-card"></i> Documento del Paciente
+                        </label>
+                        <input 
+                            type="text" 
+                            id="numeroDocumento" 
+                            placeholder="Ej: 1234567890"
+                            required
+                        >
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="tipoSesion">
+                            <i class="fas fa-tasks"></i> Tipo de Sesión
+                        </label>
+                        <select id="tipoSesion">
+                            <option value="clasificacion_riesgos">Clasificación de Riesgos (10 min)</option>
+                            <option value="teleconsulta">Teleconsulta (20 min)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <button class="sesion-btn sesion-btn-iniciar" onclick="iniciarSesion()">
+                            <i class="fas fa-play"></i>
+                            Iniciar Sesión
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Información de sesión activa -->
+            <div class="sesion-activa-info" id="sesionActivaInfo">
+                <div class="sesion-info-contenido">
+                    <div class="sesion-info-titulo">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Sesión Activa</span>
+                    </div>
+                    <div class="sesion-info-datos" id="sesionDatos">
+                        Paciente: <strong id="pacienteNombre">-</strong> | 
+                        Documento: <strong id="pacienteDocumento">-</strong> | 
+                        Cápsula: <strong id="sesionCapsula">-</strong> | 
+                        Tipo: <strong id="sesionTipo">-</strong> | 
+                        Mediciones: <strong id="sesionMediciones">0</strong>
+                    </div>
+                </div>
+                <button class="sesion-btn sesion-btn-finalizar" onclick="finalizarSesion()">
+                    <i class="fas fa-stop"></i>
+                    Finalizar Sesión
+                </button>
+            </div>
+        </div>
 
         <div class="refresh-info" id="refreshInfo">
             <i class="fas fa-sync-alt"></i> Actualizando cada 3 segundos...
@@ -473,12 +683,200 @@
 
     <script src="js/monitoreo-tiempo-real.js"></script>
     <script>
+        // Variable global para almacenar sesión activa
+        let sesionActual = null;
+
         function volverDashboard() {
             window.location.href = 'dashboard.html';
         }
 
+        // Cargar cápsulas disponibles
+        async function cargarCapsulas() {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/sesiones/capsulas', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                const select = document.getElementById('capsulaSelect');
+                
+                if (data.success && data.capsulas.length > 0) {
+                    select.innerHTML = data.capsulas.map(c => 
+                        `<option value="${c.id}">${c.nombre} - ${c.ubicacion}</option>`
+                    ).join('');
+                } else {
+                    select.innerHTML = '<option value="">No hay cápsulas disponibles</option>';
+                }
+            } catch (error) {
+                console.error('Error cargando cápsulas:', error);
+                document.getElementById('capsulaSelect').innerHTML = 
+                    '<option value="">Error al cargar cápsulas</option>';
+            }
+        }
+
+        // Verificar si hay sesión activa
+        async function verificarSesionActiva() {
+            try {
+                const capsulaId = document.getElementById('capsulaSelect').value;
+                if (!capsulaId) return;
+                
+                const token = localStorage.getItem('token');
+                const response = await fetch(`/api/sesiones/activa/${capsulaId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success && data.sesion) {
+                    sesionActual = data.sesion;
+                    mostrarSesionActiva(data.sesion);
+                } else {
+                    sesionActual = null;
+                    mostrarFormularioInicio();
+                }
+            } catch (error) {
+                console.error('Error verificando sesión activa:', error);
+            }
+        }
+
+        // Iniciar sesión de medición
+        async function iniciarSesion() {
+            const capsulaId = document.getElementById('capsulaSelect').value;
+            const numeroDocumento = document.getElementById('numeroDocumento').value.trim();
+            const tipoSesion = document.getElementById('tipoSesion').value;
+            
+            if (!capsulaId || !numeroDocumento) {
+                alert('Por favor complete todos los campos');
+                return;
+            }
+            
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/sesiones/iniciar', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        capsula_id: capsulaId,
+                        numero_documento: numeroDocumento,
+                        tipo_sesion: tipoSesion
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    sesionActual = data.sesion;
+                    mostrarSesionActiva(data.sesion);
+                    alert(`✅ Sesión iniciada para ${data.sesion.nombre_paciente}`);
+                    // Limpiar formulario
+                    document.getElementById('numeroDocumento').value = '';
+                } else {
+                    alert(`❌ Error: ${data.message}`);
+                }
+            } catch (error) {
+                console.error('Error iniciando sesión:', error);
+                alert('Error al iniciar sesión. Intente nuevamente.');
+            }
+        }
+
+        // Finalizar sesión
+        async function finalizarSesion() {
+            if (!sesionActual) return;
+            
+            if (!confirm('¿Desea finalizar la sesión de medición actual?')) {
+                return;
+            }
+            
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/sesiones/finalizar', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        sesion_id: sesionActual.id
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(`✅ Sesión finalizada. Total de mediciones: ${data.mediciones_count}`);
+                    sesionActual = null;
+                    mostrarFormularioInicio();
+                } else {
+                    alert(`❌ Error: ${data.message}`);
+                }
+            } catch (error) {
+                console.error('Error finalizando sesión:', error);
+                alert('Error al finalizar sesión. Intente nuevamente.');
+            }
+        }
+
+        // Mostrar formulario de inicio
+        function mostrarFormularioInicio() {
+            document.getElementById('sesionInitForm').classList.remove('hidden');
+            document.getElementById('sesionActivaInfo').classList.remove('active');
+        }
+
+        // Mostrar información de sesión activa
+        function mostrarSesionActiva(sesion) {
+            document.getElementById('sesionInitForm').classList.add('hidden');
+            document.getElementById('sesionActivaInfo').classList.add('active');
+            
+            document.getElementById('pacienteNombre').textContent = sesion.nombre_paciente || 'N/A';
+            document.getElementById('pacienteDocumento').textContent = sesion.numero_documento;
+            document.getElementById('sesionCapsula').textContent = sesion.capsula_id;
+            document.getElementById('sesionTipo').textContent = 
+                sesion.tipo_sesion === 'clasificacion_riesgos' ? 'Clasificación de Riesgos' : 'Teleconsulta';
+            document.getElementById('sesionMediciones').textContent = sesion.mediciones_count || 0;
+        }
+
+        // Actualizar contador de mediciones (si hay sesión activa)
+        async function actualizarContadorMediciones() {
+            if (!sesionActual) return;
+            
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`/api/sesiones/activa/${sesionActual.capsula_id}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success && data.sesion) {
+                    sesionActual = data.sesion;
+                    document.getElementById('sesionMediciones').textContent = data.sesion.mediciones_count || 0;
+                }
+            } catch (error) {
+                console.error('Error actualizando contador:', error);
+            }
+        }
+
         // Inicializar cuando cargue la página
-        window.addEventListener('load', iniciarMonitoreo);
+        window.addEventListener('load', async () => {
+            await cargarCapsulas();
+            await verificarSesionActiva();
+            iniciarMonitoreo();
+            
+            // Escuchar cambios en selector de cápsula
+            document.getElementById('capsulaSelect').addEventListener('change', verificarSesionActiva);
+            
+            // Actualizar contador de mediciones cada 5 segundos
+            setInterval(actualizarContadorMediciones, 5000);
+        });
     </script>
 </body>
 </html>

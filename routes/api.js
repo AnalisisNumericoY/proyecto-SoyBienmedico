@@ -2,6 +2,8 @@ const express = require('express');
 const fs = require('fs').promises;
 const path = require('path');
 const { verifyToken } = require('./auth');
+const sesionService = require('../services/sesion-service');
+const medicionService = require('../services/medicion-service');
 const router = express.Router();
 
 // File paths
@@ -197,53 +199,128 @@ router.post('/mediciones/recibir/measure_sim.json', async (req, res) => {
   try {
     console.log('📊 Nueva medición recibida desde dispositivo IoT (measure_sim):', JSON.stringify(req.body, null, 2));
     
-    // El proveedor envía los datos en un formato específico, los adaptamos
+    // El proveedor envía los datos en un formato específico
     const datosDispositivo = req.body;
     
-    // Crear registro de medición adaptado
-    const medicion = {
-      id: generarUUID(),
-      datos_originales: datosDispositivo, // Guardamos los datos tal como llegan
-      recibido_en: new Date().toISOString(),
-      procesado: true,
-      origen: 'proveedor_iot'
-    };
-
-    // Cargar mediciones existentes
-    const MEDICIONES_FILE = path.join(__dirname, '../data/mediciones-temporales.json');
-    let medicionesData;
-    try {
-      medicionesData = await loadJsonFile(MEDICIONES_FILE);
-      if (!medicionesData.mediciones) {
-        medicionesData = { mediciones: [] };
-      }
-    } catch (error) {
-      medicionesData = { mediciones: [] };
-    }
-
-    // Agregar nueva medición
-    medicionesData.mediciones.push(medicion);
-
-    // Mantener solo las últimas 1000 mediciones
-    if (medicionesData.mediciones.length > 1000) {
-      medicionesData.mediciones = medicionesData.mediciones.slice(-1000);
-    }
-
-    // Guardar mediciones actualizadas
-    const guardado = await saveJsonFile(MEDICIONES_FILE, medicionesData);
+    // Extraer capsula_id del request (puede venir en body, query o headers)
+    // Por ahora usamos la cápsula por defecto, pero esto debe parametrizarse según el dispositivo
+    const capsulaId = req.body.capsula_id || req.query.capsula_id || req.headers['x-capsula-id'] || 'CAPSULA_DEFAULT_01';
     
-    if (guardado) {
-      console.log('✅ Medición del dispositivo IoT guardada correctamente:', medicion.id);
+    // VERIFICAR SI HAY UNA SESIÓN ACTIVA EN LA CÁPSULA
+    const sesionActiva = await sesionService.getSesionActivaByCapsula(capsulaId);
+    
+    if (sesionActiva) {
+      // ✅ HAY SESIÓN ACTIVA - Guardar medición asociada al paciente
+      console.log(`✅ Sesión activa encontrada: ${sesionActiva.id} - Paciente: ${sesionActiva.numero_documento}`);
       
-      // Respuesta exitosa (200 OK que esperan los dispositivos)
+      // Extraer tipo de dispositivo de los datos recibidos
+      // Adaptamos el formato del proveedor al formato interno
+      let dispositivoTipo = 'desconocido';
+      let valoresAdaptados = {};
+      
+      // Detectar tipo de dispositivo según estructura de datos (esto depende del formato del proveedor)
+      if (datosDispositivo.measure && Array.isArray(datosDispositivo.measure)) {
+        // Analizar los datos para determinar el tipo
+        const primeraMedida = datosDispositivo.measure[0];
+        if (primeraMedida) {
+          if (primeraMedida.hasOwnProperty('systolic') || primeraMedida.hasOwnProperty('diastolic')) {
+            dispositivoTipo = 'tensiometro';
+            valoresAdaptados = {
+              sistolica: primeraMedida.systolic,
+              diastolica: primeraMedida.diastolic,
+              pulso: primeraMedida.pulse
+            };
+          } else if (primeraMedida.hasOwnProperty('spo2')) {
+            dispositivoTipo = 'pulsoximetro';
+            valoresAdaptados = {
+              spo2: primeraMedida.spo2,
+              pulso: primeraMedida.pulse
+            };
+          } else if (primeraMedida.hasOwnProperty('weight')) {
+            dispositivoTipo = 'balanza';
+            valoresAdaptados = {
+              peso: primeraMedida.weight
+            };
+          }
+        }
+      }
+      
+      // Guardar medición usando el servicio de mediciones (con asociación al paciente)
+      const medicionGuardada = await medicionService.guardarMedicion({
+        paciente_id: sesionActiva.paciente_id,
+        sesion_id: sesionActiva.id,
+        capsula_id: capsulaId,
+        dispositivo_tipo: dispositivoTipo,
+        dispositivo_id: datosDispositivo.device_id || 'DEVICE_UNKNOWN',
+        valores: valoresAdaptados,
+        datos_originales: datosDispositivo
+      });
+      
+      // Incrementar contador de mediciones en la sesión
+      await sesionService.incrementarMediciones(sesionActiva.id);
+      
+      console.log(`✅ Medición asociada al paciente ${sesionActiva.numero_documento} guardada con ID: ${medicionGuardada.id}`);
+      
       res.status(200).json({
         success: true,
-        message: 'Medición recibida correctamente',
-        id: medicion.id,
-        timestamp: medicion.recibido_en
+        message: 'Medición recibida y asociada al paciente',
+        id: medicionGuardada.id,
+        timestamp: medicionGuardada.timestamp,
+        paciente_documento: sesionActiva.numero_documento,
+        sesion_id: sesionActiva.id
       });
+      
     } else {
-      throw new Error('Error al guardar la medición');
+      // ⚠️ NO HAY SESIÓN ACTIVA - Guardar como temporal (comportamiento legacy)
+      console.warn(`⚠️ NO HAY SESIÓN ACTIVA en cápsula ${capsulaId}. Guardando medición como temporal (sin asociar a paciente).`);
+      
+      // Crear registro de medición temporal (comportamiento original)
+      const medicion = {
+        id: generarUUID(),
+        datos_originales: datosDispositivo,
+        recibido_en: new Date().toISOString(),
+        procesado: false, // marcamos como no procesado porque no está asociado
+        origen: 'proveedor_iot',
+        capsula_id: capsulaId,
+        sin_sesion: true // flag para identificar mediciones huérfanas
+      };
+
+      // Cargar mediciones temporales
+      const MEDICIONES_FILE = path.join(__dirname, '../data/mediciones-temporales.json');
+      let medicionesData;
+      try {
+        medicionesData = await loadJsonFile(MEDICIONES_FILE);
+        if (!medicionesData.mediciones) {
+          medicionesData = { mediciones: [] };
+        }
+      } catch (error) {
+        medicionesData = { mediciones: [] };
+      }
+
+      // Agregar medición temporal
+      medicionesData.mediciones.push(medicion);
+
+      // Mantener solo las últimas 1000 mediciones
+      if (medicionesData.mediciones.length > 1000) {
+        medicionesData.mediciones = medicionesData.mediciones.slice(-1000);
+      }
+
+      // Guardar mediciones temporales
+      const guardado = await saveJsonFile(MEDICIONES_FILE, medicionesData);
+      
+      if (guardado) {
+        console.log('⚠️ Medición temporal guardada (sin paciente asociado):', medicion.id);
+        
+        res.status(200).json({
+          success: true,
+          message: 'Medición recibida pero NO asociada (no hay sesión activa)',
+          id: medicion.id,
+          timestamp: medicion.recibido_en,
+          warning: 'No hay sesión activa. Esta medición no está asociada a ningún paciente.'
+        });
+      } else {
+        throw new Error('Error al guardar la medición temporal');
+      }
     }
 
   } catch (error) {

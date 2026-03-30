@@ -12,6 +12,13 @@ const MEDICIONES_FILE = path.join(__dirname, '../data/mediciones-temporales.json
 /**
  * Guarda una nueva medición
  * @param {Object} medicionData - Datos de la medición
+ * @param {string} medicionData.paciente_id - ID del paciente
+ * @param {string} medicionData.sesion_id - ID de la sesión activa
+ * @param {string} medicionData.capsula_id - ID de la cápsula
+ * @param {string} medicionData.dispositivo_tipo - Tipo de dispositivo (tensiometro, balanza, pulsoximetro)
+ * @param {string} medicionData.dispositivo_id - ID del dispositivo físico
+ * @param {Object} medicionData.valores - Valores medidos (estructura depende del dispositivo)
+ * @param {Object} [medicionData.datos_originales] - Datos originales del proveedor (opcional)
  * @returns {Promise<Object>}
  */
 const guardarMedicion = async (medicionData) => {
@@ -20,21 +27,25 @@ const guardarMedicion = async (medicionData) => {
     numero_documento,
     sesion_id,
     capsula_id,
-    dispositivo,
-    mediciones
+    dispositivo_tipo,
+    dispositivo_id,
+    valores,
+    datos_originales
   } = medicionData;
 
   const data = await loadJsonFile(MEDICIONES_FILE);
   if (!data.mediciones) data.mediciones = [];
 
   const nuevaMedicion = {
-    id: `MED_${Date.now()}`,
+    id: `MED_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
     paciente_id,
-    numero_documento,
+    numero_documento: numero_documento || null,
     sesion_id,
     capsula_id,
-    dispositivo,
-    mediciones,
+    dispositivo: dispositivo_tipo, // Mantener campo 'dispositivo' para compatibilidad con otras funciones
+    dispositivo_id,
+    mediciones: valores, // Renombrar 'valores' a 'mediciones' para compatibilidad
+    datos_originales: datos_originales || null,
     timestamp: getCurrentTimestamp()
   };
 

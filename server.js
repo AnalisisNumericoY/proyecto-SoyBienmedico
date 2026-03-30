@@ -12,6 +12,7 @@ const adminRoutes = require('./routes/admin');
 const medicoRoutes = require('./routes/medico');
 const pacienteRoutes = require('./routes/paciente');
 const apiRoutes = require('./routes/api');
+const sesionesRoutes = require('./routes/sesiones');
 
 const app = express();
 const server = http.createServer(app);
@@ -44,6 +45,7 @@ app.use('/admin', adminRoutes);
 app.use('/medico', medicoRoutes);
 app.use('/paciente', pacienteRoutes);
 app.use('/api', apiRoutes);
+app.use('/api/sesiones', sesionesRoutes);
 
 // Debug endpoint directly in server
 app.get('/debug/data', async (req, res) => {
