@@ -1,3 +1,240 @@
 {
-  "mediciones": []
+  "mediciones": [
+    {
+      "id": "med_1774902363568_d7kabs2bq",
+      "datos_originales": {},
+      "recibido_en": "2026-03-30T20:26:03.569Z",
+      "procesado": false,
+      "origen": "proveedor_iot",
+      "capsula_id": "CAPSULA_DEFAULT_01",
+      "sin_sesion": true
+    },
+    {
+      "id": "MED_1774908055715_eie1usezu",
+      "paciente_id": "PAC1754364002715",
+      "numero_documento": null,
+      "sesion_id": "SESSION_1774908020281",
+      "capsula_id": "CAPSULA_DEFAULT_01",
+      "dispositivo": "tensiometro",
+      "dispositivo_id": "TENSIOMETRO_001",
+      "mediciones": {
+        "sistolica": 120,
+        "diastolica": 80,
+        "pulso": 72
+      },
+      "datos_originales": {
+        "device_id": "TENSIOMETRO_001",
+        "capsula_id": "CAPSULA_DEFAULT_01",
+        "measure": [
+          {
+            "systolic": 120,
+            "diastolic": 80,
+            "pulse": 72
+          }
+        ]
+      },
+      "timestamp": "2026-03-30T22:00:55.715Z"
+    },
+    {
+      "id": "MED_1774908368693_g8ad5dnfd",
+      "paciente_id": "PAC001",
+      "numero_documento": null,
+      "sesion_id": "SESSION_1774908322841",
+      "capsula_id": "CAPSULA_DEFAULT_01",
+      "dispositivo": "tensiometro",
+      "dispositivo_id": "TENSIOMETRO_001",
+      "mediciones": {
+        "sistolica": 115,
+        "diastolica": 85,
+        "pulso": 72
+      },
+      "datos_originales": {
+        "device_id": "TENSIOMETRO_001",
+        "capsula_id": "CAPSULA_DEFAULT_01",
+        "measure": [
+          {
+            "systolic": 115,
+            "diastolic": 85,
+            "pulse": 72
+          }
+        ]
+      },
+      "timestamp": "2026-03-30T22:06:08.693Z"
+    },
+    {
+      "id": "MED_1774908514564_0caozq1si",
+      "paciente_id": "PAC001",
+      "numero_documento": null,
+      "sesion_id": "SESSION_1774908322841",
+      "capsula_id": "CAPSULA_DEFAULT_01",
+      "dispositivo": "tensiometro",
+      "dispositivo_id": "TENSIOMETRO_001",
+      "mediciones": {
+        "sistolica": 130,
+        "diastolica": 90,
+        "pulso": 72
+      },
+      "datos_originales": {
+        "device_id": "TENSIOMETRO_001",
+        "capsula_id": "CAPSULA_DEFAULT_01",
+        "measure": [
+          {
+            "systolic": 130,
+            "diastolic": 90,
+            "pulse": 72
+          }
+        ]
+      },
+      "timestamp": "2026-03-30T22:08:34.564Z"
+    },
+    {
+      "id": "MED_1774908580589_yztd0knrr",
+      "paciente_id": "PAC001",
+      "numero_documento": null,
+      "sesion_id": "SESSION_1774908322841",
+      "capsula_id": "CAPSULA_DEFAULT_01",
+      "dispositivo": "tensiometro",
+      "dispositivo_id": "TENSIOMETRO_001",
+      "mediciones": {
+        "sistolica": 140,
+        "diastolica": 70,
+        "pulso": 72
+      },
+      "datos_originales": {
+        "device_id": "TENSIOMETRO_001",
+        "capsula_id": "CAPSULA_DEFAULT_01",
+        "measure": [
+          {
+            "systolic": 140,
+            "diastolic": 70,
+            "pulse": 72
+          }
+        ]
+      },
+      "timestamp": "2026-03-30T22:09:40.589Z"
+    },
+    {
+      "id": "MED_1774908780315_qjbyovn0a",
+      "paciente_id": "PAC001",
+      "numero_documento": null,
+      "sesion_id": "SESSION_1774908322841",
+      "capsula_id": "CAPSULA_DEFAULT_01",
+      "dispositivo": "tensiometro",
+      "dispositivo_id": "TENSIOMETRO_001",
+      "mediciones": {
+        "sistolica": 140,
+        "diastolica": 70,
+        "pulso": 72
+      },
+      "datos_originales": {
+        "device_id": "TENSIOMETRO_001",
+        "capsula_id": "CAPSULA_DEFAULT_01",
+        "measure": [
+          {
+            "systolic": 140,
+            "diastolic": 70,
+            "pulse": 72
+          }
+        ]
+      },
+      "timestamp": "2026-03-30T22:13:00.315Z"
+    },
+    {
+      "id": "med_1774908808530_vblnd8s9a",
+      "datos_originales": {
+        "device_id": "TENSIOMETRO_001",
+        "capsula_id": "CAPSULA_DEFAULT_01",
+        "measure": [
+          {
+            "systolic": 140,
+            "diastolic": 70,
+            "pulse": 72
+          }
+        ]
+      },
+      "recibido_en": "2026-03-30T22:13:28.530Z",
+      "procesado": false,
+      "origen": "proveedor_iot",
+      "capsula_id": "CAPSULA_DEFAULT_01",
+      "sin_sesion": true
+    },
+    {
+      "id": "MED_1774910547550_osta0j8hn",
+      "paciente_id": "PAC1754364002715",
+      "numero_documento": null,
+      "sesion_id": "SESSION_1774909091567",
+      "capsula_id": "CAPSULA_DEFAULT_01",
+      "dispositivo": "tensiometro",
+      "dispositivo_id": "TENSIOMETRO_001",
+      "mediciones": {
+        "sistolica": 140,
+        "diastolica": 70,
+        "pulso": 72
+      },
+      "datos_originales": {
+        "device_id": "TENSIOMETRO_001",
+        "capsula_id": "CAPSULA_DEFAULT_01",
+        "measure": [
+          {
+            "systolic": 140,
+            "diastolic": 70,
+            "pulse": 72
+          }
+        ]
+      },
+      "timestamp": "2026-03-30T22:42:27.555Z"
+    },
+    {
+      "id": "MED_1774910566998_i8cedtxw4",
+      "paciente_id": "PAC1754364002715",
+      "numero_documento": null,
+      "sesion_id": "SESSION_1774909091567",
+      "capsula_id": "CAPSULA_DEFAULT_01",
+      "dispositivo": "tensiometro",
+      "dispositivo_id": "TENSIOMETRO_001",
+      "mediciones": {
+        "sistolica": 125,
+        "diastolica": 75,
+        "pulso": 72
+      },
+      "datos_originales": {
+        "device_id": "TENSIOMETRO_001",
+        "capsula_id": "CAPSULA_DEFAULT_01",
+        "measure": [
+          {
+            "systolic": 125,
+            "diastolic": 75,
+            "pulse": 72
+          }
+        ]
+      },
+      "timestamp": "2026-03-30T22:42:46.998Z"
+    },
+    {
+      "id": "MED_1774910583226_1vcop511f",
+      "paciente_id": "PAC1754364002715",
+      "numero_documento": null,
+      "sesion_id": "SESSION_1774909091567",
+      "capsula_id": "CAPSULA_DEFAULT_01",
+      "dispositivo": "tensiometro",
+      "dispositivo_id": "TENSIOMETRO_001",
+      "mediciones": {
+        "sistolica": 115,
+        "diastolica": 90,
+        "pulso": 68
+      },
+      "datos_originales": {
+        "device_id": "TENSIOMETRO_001",
+        "capsula_id": "CAPSULA_DEFAULT_01",
+        "measure": [
+          {
+            "systolic": 115,
+            "diastolic": 90,
+            "pulse": 68
+          }
+        ]
+      },
+      "timestamp": "2026-03-30T22:43:03.226Z"
+    }
+  ]
 }
