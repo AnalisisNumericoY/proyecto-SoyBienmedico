@@ -425,9 +425,9 @@ router.post('/mediciones/recibir', async (req, res) => {
 });
 
 // ENDPOINT PARA OBTENER MEDICIONES RECIENTES
-router.get('/mediciones/recientes', async (req, res) => {
+router.get('/mediciones/recientes', verifyToken, async (req, res) => {
   try {
-    console.log('📊 Solicitando mediciones recientes');
+    console.log('📊 Solicitando mediciones recientes para paciente:', req.user.pacienteId);
     
     // Obtener el límite de la query string (por defecto 100)
     const limite = parseInt(req.query.limite) || 100;
@@ -454,8 +454,15 @@ router.get('/mediciones/recientes', async (req, res) => {
       medicionesData = { mediciones: [] };
     }
 
+    // FILTRAR SOLO MEDICIONES DEL PACIENTE ACTUAL (privacidad y seguridad)
+    const medicionesPaciente = medicionesData.mediciones.filter(medicion => {
+      return medicion.paciente_id === req.user.pacienteId;
+    });
+
+    console.log(`🔍 Filtradas ${medicionesPaciente.length} mediciones de ${medicionesData.mediciones.length} totales para paciente ${req.user.pacienteId}`);
+
     // Ordenar por timestamp/recibido_en más reciente primero
-    const medicionesOrdenadas = medicionesData.mediciones.sort((a, b) => {
+    const medicionesOrdenadas = medicionesPaciente.sort((a, b) => {
       const fechaA = new Date(a.recibido_en || a.timestamp);
       const fechaB = new Date(b.recibido_en || b.timestamp);
       return fechaB - fechaA; // Más reciente primero

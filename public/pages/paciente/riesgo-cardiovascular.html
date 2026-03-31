@@ -385,6 +385,47 @@
             color: white;
         }
 
+        /* Banner informativo para flujo recomendado */
+        .info-banner {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            padding: 1.25rem;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            box-shadow: 0 3px 10px rgba(52, 152, 219, 0.3);
+        }
+
+        .info-banner i {
+            font-size: 1.5rem;
+            margin-top: 0.2rem;
+            flex-shrink: 0;
+        }
+
+        .info-banner strong {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .info-banner p {
+            margin: 0;
+            line-height: 1.6;
+            opacity: 0.95;
+        }
+
+        .info-banner a {
+            color: #fff;
+            text-decoration: underline;
+            font-weight: 600;
+        }
+
+        .info-banner a:hover {
+            color: #f1c40f;
+        }
+
         @media (max-width: 768px) {
             .container {
                 margin: 1rem auto;
@@ -426,6 +467,22 @@
                 </h2>
             </div>
             <div class="card-body">
+                <!-- Banner informativo: Flujo recomendado -->
+                <div class="info-banner">
+                    <i class="fas fa-lightbulb"></i>
+                    <div>
+                        <strong>💡 Consejo para mejores resultados con IoT</strong>
+                        <p>
+                            Para capturar datos precisos de dispositivos IoT, te recomendamos: <br>
+                            1️⃣ Ve primero a <a href="monitoreo-tiempo-real.html">Monitoreo en Tiempo Real</a><br>
+                            2️⃣ Inicia una sesión de medición<br>
+                            3️⃣ Toma tus signos vitales con los dispositivos<br>
+                            4️⃣ Finaliza la sesión<br>
+                            5️⃣ Regresa aquí y usa el botón "Última medición" ⭐
+                        </p>
+                    </div>
+                </div>
+
                 <form id="riesgoForm">
                     <!-- Datos Demográficos -->
                     <div class="form-section">
@@ -515,9 +572,9 @@
                                         <input type="radio" name="sistolica_source" value="manual" checked onchange="toggleDataSource('sistolica')">
                                         <i class="fas fa-keyboard"></i> Manual
                                     </label>
-                                    <label>
+                                    <label title="Recomendado: Primero ve a Monitoreo en Tiempo Real">
                                         <input type="radio" name="sistolica_source" value="ultima" onchange="toggleDataSource('sistolica')">
-                                        <i class="fas fa-history"></i> Última medición
+                                        <i class="fas fa-history"></i> Última medición ⭐
                                     </label>
                                     <label>
                                         <input type="radio" name="sistolica_source" value="ahora" onchange="toggleDataSource('sistolica')">
@@ -534,9 +591,9 @@
                                         <input type="radio" name="diastolica_source" value="manual" checked onchange="toggleDataSource('diastolica')">
                                         <i class="fas fa-keyboard"></i> Manual
                                     </label>
-                                    <label>
+                                    <label title="Recomendado: Primero ve a Monitoreo en Tiempo Real">
                                         <input type="radio" name="diastolica_source" value="ultima" onchange="toggleDataSource('diastolica')">
-                                        <i class="fas fa-history"></i> Última medición
+                                        <i class="fas fa-history"></i> Última medición ⭐
                                     </label>
                                     <label>
                                         <input type="radio" name="diastolica_source" value="ahora" onchange="toggleDataSource('diastolica')">
@@ -555,9 +612,9 @@
                                         <input type="radio" name="frecuencia_source" value="manual" checked onchange="toggleDataSource('frecuencia')">
                                         <i class="fas fa-keyboard"></i> Manual
                                     </label>
-                                    <label>
+                                    <label title="Recomendado: Primero ve a Monitoreo en Tiempo Real">
                                         <input type="radio" name="frecuencia_source" value="ultima" onchange="toggleDataSource('frecuencia')">
-                                        <i class="fas fa-history"></i> Última medición
+                                        <i class="fas fa-history"></i> Última medición ⭐
                                     </label>
                                     <label>
                                         <input type="radio" name="frecuencia_source" value="ahora" onchange="toggleDataSource('frecuencia')">
@@ -613,9 +670,9 @@
                                             <input type="radio" name="peso_source" value="manual" checked onchange="toggleDataSource('peso')">
                                             <i class="fas fa-keyboard"></i> Manual
                                         </label>
-                                        <label>
+                                        <label title="Recomendado: Primero ve a Monitoreo en Tiempo Real">
                                             <input type="radio" name="peso_source" value="ultima" onchange="toggleDataSource('peso')">
-                                            <i class="fas fa-history"></i> Última medición
+                                            <i class="fas fa-history"></i> Última medición ⭐
                                         </label>
                                         <label>
                                             <input type="radio" name="peso_source" value="ahora" onchange="toggleDataSource('peso')">
