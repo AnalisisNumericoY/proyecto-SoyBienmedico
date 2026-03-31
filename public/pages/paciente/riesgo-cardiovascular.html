@@ -688,52 +688,49 @@
             statusDiv.className = 'iot-status';
             statusDiv.innerHTML = '';
             
+            // Cancelar polling si existe
+            if (window.pollingIntervalos && window.pollingIntervalos[campo]) {
+                clearInterval(window.pollingIntervalos[campo]);
+                delete window.pollingIntervalos[campo];
+            }
+            
             if (source === 'manual') {
                 // Modo manual: habilitar input
                 input.disabled = false;
                 input.value = '';
                 input.focus();
+                
+                // Resetear trazabilidad
+                if (window.trazabilidadIoT) {
+                    window.trazabilidadIoT[campo] = { fuente: 'manual', medicion_id: null };
+                }
             } else if (source === 'ultima') {
                 // Última medición: deshabilitar input y cargar data
                 input.disabled = true;
                 statusDiv.className = 'iot-status active loading';
                 statusDiv.innerHTML = '<div class="spinner"></div> Cargando última medición...';
                 
-                // Llamar función que obtiene última medición (implementar en paso 1.2)
-                cargarUltimaMedicion(campo);
+                // Llamar función de carga (definida en riesgo-cardiovascular.js)
+                if (typeof cargarUltimaMedicion === 'function') {
+                    cargarUltimaMedicion(campo);
+                } else {
+                    statusDiv.className = 'iot-status active error';
+                    statusDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Función no disponible';
+                }
             } else if (source === 'ahora') {
                 // Tomar ahora: deshabilitar input y esperar dispositivo
                 input.disabled = true;
                 statusDiv.className = 'iot-status active loading';
                 statusDiv.innerHTML = '<div class="spinner"></div> Esperando medición del dispositivo...';
                 
-                // Llamar función que obtiene medición en tiempo real (implementar en paso 1.2)
-                tomarMedicionAhora(campo);
+                // Llamar función de polling (definida en riesgo-cardiovascular.js)
+                if (typeof tomarMedicionAhora === 'function') {
+                    tomarMedicionAhora(campo);
+                } else {
+                    statusDiv.className = 'iot-status active error';
+                    statusDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Función no disponible';
+                }
             }
-        }
-
-        /**
-         * Cargar última medición del dispositivo (placeholder - implementar en paso 1.2)
-         */
-        function cargarUltimaMedicion(campo) {
-            // TODO: Implementar en paso 1.2
-            setTimeout(() => {
-                const statusDiv = document.getElementById(`${campo}_status`);
-                statusDiv.className = 'iot-status active error';
-                statusDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Funcionalidad pendiente de implementación';
-            }, 1000);
-        }
-
-        /**
-         * Tomar medición en tiempo real (placeholder - implementar en paso 1.2)
-         */
-        function tomarMedicionAhora(campo) {
-            // TODO: Implementar en paso 1.2
-            setTimeout(() => {
-                const statusDiv = document.getElementById(`${campo}_status`);
-                statusDiv.className = 'iot-status active error';
-                statusDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Funcionalidad pendiente de implementación';
-            }, 1000);
         }
 
         // Manejar envío del formulario
@@ -751,10 +748,24 @@
             // Resetear selectores IoT a modo manual
             const camposIoT = ['sistolica', 'diastolica', 'frecuencia', 'peso'];
             camposIoT.forEach(campo => {
+                // Cancelar polling si existe
+                if (window.pollingIntervalos && window.pollingIntervalos[campo]) {
+                    clearInterval(window.pollingIntervalos[campo]);
+                    delete window.pollingIntervalos[campo];
+                }
+                
+                // Resetear selector a manual
                 document.querySelector(`input[name="${campo}_source"][value="manual"]`).checked = true;
                 document.getElementById(campo).disabled = false;
+                
+                // Limpiar status
                 document.getElementById(`${campo}_status`).className = 'iot-status';
                 document.getElementById(`${campo}_status`).innerHTML = '';
+                
+                // Resetear trazabilidad
+                if (window.trazabilidadIoT) {
+                    window.trazabilidadIoT[campo] = { fuente: 'manual', medicion_id: null };
+                }
             });
             
             window.scrollTo(0, 0);
