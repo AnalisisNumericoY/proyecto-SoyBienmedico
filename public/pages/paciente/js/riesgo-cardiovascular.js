@@ -6,6 +6,7 @@
 
 // Variables globales para los resultados
 let resultados = {};
+let evaluacionId = null; // ID de la evaluación guardada en backend
 
 // Trazabilidad IoT: guardar origen de cada medición para el backend
 let trazabilidadIoT = {
@@ -21,6 +22,7 @@ let pollingIntervalos = {};
 // Exponer variables al scope global para acceso desde HTML
 window.trazabilidadIoT = trazabilidadIoT;
 window.pollingIntervalos = pollingIntervalos;
+window.evaluacionId = evaluacionId;
 
 /**
  * Mapeo de campos del formulario a campos de dispositivos IoT
@@ -253,7 +255,7 @@ async function tomarMedicionAhora(campo) {
 /**
  * Función principal para calcular riesgo cardiovascular
  */
-function calcularRiesgoCardiovascular() {
+async function calcularRiesgoCardiovascular() {
     try {
         // Obtener datos del formulario
         const datos = obtenerDatosFormulario();
@@ -263,7 +265,7 @@ function calcularRiesgoCardiovascular() {
             return;
         }
 
-        // Calcular todos los indicadores
+        // Calcular todos los indicadores (cálculo local para mostrar inmediatamente)
         resultados = {
             riesgoCardiovascular: calcularRiesgoPAHO(datos),
             presionArterial: clasificarPresionArterial(datos.sistolica, datos.diastolica),
@@ -271,16 +273,172 @@ function calcularRiesgoCardiovascular() {
             hba1c: datos.hba1c ? clasificarHbA1c(datos.hba1c) : null
         };
 
-        // Mostrar resultados
+        // Mostrar resultados locales inmediatamente
         mostrarResultados(resultados, datos);
         
         // Scroll a resultados
         document.getElementById('resultados').scrollIntoView({ behavior: 'smooth' });
 
+        // NUEVO: Guardar evaluación en el backend
+        await guardarEvaluacionBackend(datos, resultados);
+
     } catch (error) {
         console.error('Error en cálculo:', error);
         alert('Ocurrió un error al calcular el riesgo. Por favor, revise los datos ingresados.');
     }
+}
+
+/**
+ * Guardar evaluación en el backend con trazabilidad IoT
+ */
+async function guardarEvaluacionBackend(datos, resultados) {
+    try {
+        // Obtener usuario y token
+        const token = localStorage.getItem('token');
+        const user = JSON.parse(localStorage.getItem('user'));
+        
+        if (!token || !user || !user.pacienteId) {
+            console.error('No hay sesión de paciente activa');
+            // No bloquear la UI, solo no guardar en backend
+            return;
+        }
+
+        // Preparar datos para backend con trazabilidad IoT
+        const datosBackend = {
+            paciente_id: user.pacienteId,
+            datos_entrada: {
+                // Datos demográficos
+                edad: datos.edad,
+                sexo: datos.sexo,
+                
+                // Hábitos y antecedentes
+                fumador: datos.fumador,
+                diabetes: datos.diabetes,
+                cardiovascular: datos.cardiovascular,
+                renal: datos.renal,
+                hipertension: datos.hipertension,
+                
+                // Signos vitales con trazabilidad
+                sistolica: datos.sistolica,
+                sistolica_fuente: trazabilidadIoT.sistolica.fuente,
+                sistolica_medicion_id: trazabilidadIoT.sistolica.medicion_id,
+                
+                diastolica: datos.diastolica,
+                diastolica_fuente: trazabilidadIoT.diastolica.fuente,
+                diastolica_medicion_id: trazabilidadIoT.diastolica.medicion_id,
+                
+                frecuencia: datos.frecuencia,
+                frecuencia_fuente: trazabilidadIoT.frecuencia.fuente,
+                frecuencia_medicion_id: trazabilidadIoT.frecuencia.medicion_id,
+                
+                // Colesterol
+                conoceColesterol: datos.conoceColesterol,
+                colesterolTotal: datos.colesterolTotal,
+                ldl: datos.ldl,
+                hdl: datos.hdl,
+                
+                // Antropométricos con trazabilidad
+                peso: datos.peso,
+                peso_fuente: trazabilidadIoT.peso.fuente,
+                peso_medicion_id: trazabilidadIoT.peso.medicion_id,
+                
+                talla: datos.talla,
+                hba1c: datos.hba1c
+            }
+        };
+
+        // Enviar al backend
+        console.log('📤 Enviando evaluación al backend...', datosBackend);
+        
+        const response = await fetch('/api/evaluaciones/riesgo-cardiovascular', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(datosBackend)
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Error al guardar evaluación');
+        }
+
+        const data = await response.json();
+        
+        if (data.success && data.data) {
+            // Guardar ID de evaluación globalmente
+            evaluacionId = data.data.evaluacion_id;
+            
+            console.log('✅ Evaluación guardada exitosamente. ID:', evaluacionId);
+            console.log('📄 PDF disponible en:', data.data.pdf_url);
+            
+            // Mostrar mensaje de éxito discreto
+            mostrarNotificacion('Evaluación guardada correctamente', 'success');
+            
+            // Habilitar botón de descarga de PDF
+            habilitarBotonDescarga();
+        }
+
+    } catch (error) {
+        console.error('❌ Error guardando evaluación en backend:', error);
+        mostrarNotificacion('La evaluación se calculó pero no se pudo guardar en el servidor', 'warning');
+        // No bloquear la UI, el usuario ve los resultados de todos modos
+    }
+}
+
+/**
+ * Habilitar botón de descarga de PDF
+ */
+function habilitarBotonDescarga() {
+    // Actualizar variable global en window
+    window.evaluacionId = evaluacionId;
+    
+    const btnDescargar = document.querySelector('button[onclick="descargarReporte()"]');
+    if (btnDescargar) {
+        btnDescargar.disabled = false;
+        btnDescargar.style.opacity = '1';
+        btnDescargar.style.cursor = 'pointer';
+    }
+}
+
+/**
+ * Mostrar notificación temporal
+ */
+function mostrarNotificacion(mensaje, tipo = 'info') {
+    // Crear elemento de notificación
+    const notif = document.createElement('div');
+    notif.className = `notificacion notificacion-${tipo}`;
+    notif.innerHTML = `
+        <i class="fas fa-${tipo === 'success' ? 'check-circle' : tipo === 'warning' ? 'exclamation-triangle' : 'info-circle'}"></i>
+        <span>${mensaje}</span>
+    `;
+    
+    // Estilos inline (o agregar CSS al archivo)
+    notif.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${tipo === 'success' ? '#27ae60' : tipo === 'warning' ? '#f39c12' : '#3498db'};
+        color: white;
+        padding: 15px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.9rem;
+        z-index: 10000;
+        animation: slideIn 0.3s ease-out;
+    `;
+    
+    document.body.appendChild(notif);
+    
+    // Auto-remover después de 4 segundos
+    setTimeout(() => {
+        notif.style.animation = 'slideOut 0.3s ease-out';
+        setTimeout(() => notif.remove(), 300);
+    }, 4000);
 }
 
 /**

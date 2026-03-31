@@ -324,6 +324,28 @@
             100% { transform: rotate(360deg); }
         }
 
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+        }
+
         .action-buttons {
             display: flex;
             gap: 1rem;
@@ -648,7 +670,7 @@
                         <button onclick="nuevaEvaluacion()" class="btn btn-primary">
                             <i class="fas fa-redo"></i> Nueva Evaluación
                         </button>
-                        <button onclick="descargarReporte()" class="btn btn-success">
+                        <button onclick="descargarReporte()" class="btn btn-success" disabled style="opacity: 0.6; cursor: not-allowed;">
                             <i class="fas fa-download"></i> Descargar Reporte
                         </button>
                         <a href="dashboard.html" class="btn btn-secondary">
@@ -745,6 +767,22 @@
             document.getElementById('colesterolFields').style.display = 'none';
             document.getElementById('antropometricoFields').style.display = 'block';
             
+            // Resetear ID de evaluación
+            if (typeof evaluacionId !== 'undefined') {
+                evaluacionId = null;
+            }
+            if (window.evaluacionId) {
+                window.evaluacionId = null;
+            }
+            
+            // Deshabilitar botón de descarga hasta nueva evaluación
+            const btnDescargar = document.querySelector('button[onclick="descargarReporte()"]');
+            if (btnDescargar) {
+                btnDescargar.disabled = true;
+                btnDescargar.style.opacity = '0.6';
+                btnDescargar.style.cursor = 'not-allowed';
+            }
+            
             // Resetear selectores IoT a modo manual
             const camposIoT = ['sistolica', 'diastolica', 'frecuencia', 'peso'];
             camposIoT.forEach(campo => {
@@ -772,8 +810,60 @@
         }
 
         function descargarReporte() {
-            // Implementar descarga de reporte PDF
-            alert('La funcionalidad de descarga de reporte estará disponible próximamente.');
+            // Verificar que haya una evaluación guardada
+            if (!window.evaluacionId && typeof evaluacionId !== 'undefined' && !evaluacionId) {
+                alert('Primero debe calcular el riesgo cardiovascular para generar el reporte.');
+                return;
+            }
+            
+            const evalId = window.evaluacionId || evaluacionId;
+            
+            if (!evalId) {
+                alert('No se pudo obtener el ID de la evaluación. Por favor, calcule nuevamente.');
+                return;
+            }
+            
+            // Obtener token
+            const token = localStorage.getItem('token');
+            
+            if (!token) {
+                alert('Sesión expirada. Por favor, inicie sesión nuevamente.');
+                window.location.href = '/index.html';
+                return;
+            }
+            
+            // Descargar PDF usando fetch (para poder agregar headers de autenticación)
+            console.log('📥 Descargando PDF de evaluación:', evalId);
+            
+            fetch(`/api/evaluaciones/${evalId}/pdf`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error al obtener el PDF');
+                }
+                return response.blob();
+            })
+            .then(blob => {
+                // Crear URL del blob y descargar
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `evaluacion_riesgo_cardiovascular_${evalId}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+                
+                console.log('✅ PDF descargado exitosamente');
+            })
+            .catch(error => {
+                console.error('❌ Error descargando PDF:', error);
+                alert('No se pudo descargar el reporte. Intente nuevamente.');
+            });
         }
     </script>
 </body>
