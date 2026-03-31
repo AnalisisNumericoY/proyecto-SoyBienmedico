@@ -107,7 +107,7 @@ router.get('/:evaluacionId', verifyToken, async (req, res) => {
         // Verificar permisos (paciente solo ve sus evaluaciones, médico ve todas)
         const esAdmin = req.user.role === 'admin';
         const esMedico = req.user.role === 'medico';
-        const esSuPaciente = evaluacion.paciente_id === req.user.userId;
+        const esSuPaciente = evaluacion.paciente_id === req.user.pacienteId;
 
         if (!esAdmin && !esMedico && !esSuPaciente) {
             return res.status(403).json({
@@ -143,7 +143,7 @@ router.get('/paciente/:pacienteId', verifyToken, async (req, res) => {
         // Verificar permisos
         const esAdmin = req.user.role === 'admin';
         const esMedico = req.user.role === 'medico';
-        const esSuPaciente = pacienteId === req.user.userId;
+        const esSuPaciente = pacienteId === req.user.pacienteId;
 
         if (!esAdmin && !esMedico && !esSuPaciente) {
             return res.status(403).json({
