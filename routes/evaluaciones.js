@@ -6,10 +6,14 @@
 
 const express = require('express');
 const router = express.Router();
+const fs = require('fs').promises;
+const path = require('path');
 const { verifyToken } = require('./auth');
 const evaluacionService = require('../services/evaluacion-service');
 const pdfService = require('../services/pdf-service');
 const { validarEvaluacionRiesgo } = require('../utils/validators');
+
+const PACIENTES_FILE = path.join(__dirname, '../data/pacientes.json');
 
 /**
  * POST /api/evaluaciones/riesgo-cardiovascular
@@ -58,8 +62,22 @@ router.post('/riesgo-cardiovascular', verifyToken, async (req, res) => {
         // Guardar evaluación en BD/JSON
         const evaluacion = await evaluacionService.crearEvaluacion(evaluacionData);
 
-        // Generar PDF
-        const pdfPath = await pdfService.generarPDFRiesgoCardiovascular(evaluacion);
+        // Buscar datos completos del paciente
+        let pacienteData = null;
+        try {
+            const pacientesFile = await fs.readFile(PACIENTES_FILE, 'utf8');
+            const pacientesJson = JSON.parse(pacientesFile);
+            pacienteData = pacientesJson.pacientes?.find(p => p.id === paciente_id);
+            
+            if (!pacienteData) {
+                console.warn(`⚠️ Paciente ${paciente_id} no encontrado en BD`);
+            }
+        } catch (error) {
+            console.error('❌ Error al buscar datos del paciente:', error);
+        }
+
+        // Generar PDF con datos del paciente
+        const pdfPath = await pdfService.generarPDFRiesgoCardiovascular(evaluacion, pacienteData);
         
         // Actualizar evaluación con ruta del PDF
         await evaluacionService.actualizarPDFPath(evaluacion.id, pdfPath);

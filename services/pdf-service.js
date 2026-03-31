@@ -10,9 +10,10 @@ const { ensureDirectory } = require('../utils/file-handler');
 /**
  * Genera PDF de evaluación de riesgo cardiovascular
  * @param {Object} evaluacion - Objeto completo de evaluación con resultado
+ * @param {Object} pacienteData - Datos completos del paciente (opcional)
  * @returns {Promise<string>} - Ruta relativa del PDF generado
  */
-const generarPDFRiesgoCardiovascular = async (evaluacion) => {
+const generarPDFRiesgoCardiovascular = async (evaluacion, pacienteData = null) => {
   const pdfDir = path.join(__dirname, '../pdfs/evaluaciones');
   await ensureDirectory(pdfDir);
 
@@ -47,11 +48,46 @@ const generarPDFRiesgoCardiovascular = async (evaluacion) => {
       doc.moveTo(50, doc.y).lineTo(562, doc.y).stroke();
       doc.moveDown(0.5);
 
-      doc.fontSize(10).font('Helvetica')
-        .text(`Paciente ID: ${evaluacion.paciente_id}`, { continued: false });
+      doc.fontSize(10).font('Helvetica');
 
-      if (evaluacion.sesion_id) {
-        doc.text(`Sesión de Medición: ${evaluacion.sesion_id}`);
+      if (pacienteData) {
+        // Calcular edad desde fecha de nacimiento
+        let edadTexto = '';
+        if (pacienteData.fecha_nacimiento) {
+          const fechaNac = new Date(pacienteData.fecha_nacimiento);
+          const hoy = new Date();
+          let edad = hoy.getFullYear() - fechaNac.getFullYear();
+          const mes = hoy.getMonth() - fechaNac.getMonth();
+          if (mes < 0 || (mes === 0 && hoy.getDate() < fechaNac.getDate())) {
+            edad--;
+          }
+          const fechaNacFormato = fechaNac.toLocaleDateString('es-CO');
+          edadTexto = ` (${edad} años)`;
+          
+          doc.text(`Nombre: ${pacienteData.nombre} ${pacienteData.apellidos}`);
+          doc.text(`Documento: ${pacienteData.tipo_documento} Nro. ${pacienteData.numero_documento}`);
+          doc.text(`Fecha de Nacimiento: ${fechaNacFormato}${edadTexto}`);
+        } else {
+          doc.text(`Nombre: ${pacienteData.nombre} ${pacienteData.apellidos}`);
+          doc.text(`Documento: ${pacienteData.tipo_documento} Nro. ${pacienteData.numero_documento}`);
+        }
+        
+        if (pacienteData.sexo) {
+          const sexoFormato = pacienteData.sexo === 'hombre' ? 'Masculino' : 
+                             pacienteData.sexo === 'mujer' ? 'Femenino' : 
+                             pacienteData.sexo;
+          doc.text(`Sexo: ${sexoFormato}`);
+        }
+        
+        if (pacienteData.rh) {
+          doc.text(`Tipo de Sangre (RH): ${pacienteData.rh}`);
+        }
+      } else {
+        // Fallback si no hay datos del paciente
+        doc.text(`Paciente ID: ${evaluacion.paciente_id}`, { continued: false });
+        doc.fontSize(9).fillColor('#666666')
+          .text(`(Datos completos no disponibles)`, { continued: false });
+        doc.fillColor('#000000').fontSize(10);
       }
 
       doc.moveDown(1.5);
