@@ -424,11 +424,32 @@ router.post('/mediciones/recibir', async (req, res) => {
   }
 });
 
-// ENDPOINT PARA OBTENER MEDICIONES RECIENTES
-router.get('/mediciones/recientes', verifyToken, async (req, res) => {
+// Middleware opcional: verifica token si existe, pero no falla si no está
+const optionalAuth = (req, res, next) => {
+  const token = req.headers.authorization?.replace('Bearer ', '');
+  
+  if (token) {
+    // Si hay token, intentar verificarlo
+    try {
+      const jwt = require('jsonwebtoken');
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'soyBienmedico_secret_key_2024');
+      req.user = decoded;
+      console.log('🔐 Token verificado - Usuario autenticado:', decoded.userId);
+    } catch (error) {
+      console.log('⚠️ Token inválido, continuando sin autenticación');
+      req.user = null;
+    }
+  } else {
+    console.log('📖 Sin token - Modo público (Monitoreo general)');
+    req.user = null;
+  }
+  
+  next();
+};
+
+// ENDPOINT PARA OBTENER MEDICIONES RECIENTES (Inteligente: funciona CON y SIN autenticación)
+router.get('/mediciones/recientes', optionalAuth, async (req, res) => {
   try {
-    console.log('📊 Solicitando mediciones recientes para paciente:', req.user.pacienteId);
-    
     // Obtener el límite de la query string (por defecto 100)
     const limite = parseInt(req.query.limite) || 100;
     
@@ -454,15 +475,23 @@ router.get('/mediciones/recientes', verifyToken, async (req, res) => {
       medicionesData = { mediciones: [] };
     }
 
-    // FILTRAR SOLO MEDICIONES DEL PACIENTE ACTUAL (privacidad y seguridad)
-    const medicionesPaciente = medicionesData.mediciones.filter(medicion => {
-      return medicion.paciente_id === req.user.pacienteId;
-    });
-
-    console.log(`🔍 Filtradas ${medicionesPaciente.length} mediciones de ${medicionesData.mediciones.length} totales para paciente ${req.user.pacienteId}`);
+    let medicionesFinales;
+    
+    // MODO INTELIGENTE: Con autenticación = filtrar, sin autenticación = todo
+    if (req.user && req.user.pacienteId) {
+      // CON AUTENTICACIÓN: Filtrar solo mediciones del paciente (privacidad)
+      medicionesFinales = medicionesData.mediciones.filter(medicion => {
+        return medicion.paciente_id === req.user.pacienteId;
+      });
+      console.log(`🔐 Modo autenticado - Filtradas ${medicionesFinales.length} mediciones para paciente ${req.user.pacienteId}`);
+    } else {
+      // SIN AUTENTICACIÓN: Devolver todas (para Monitoreo general)
+      medicionesFinales = medicionesData.mediciones;
+      console.log(`📖 Modo público - Devolviendo ${medicionesFinales.length} mediciones totales`);
+    }
 
     // Ordenar por timestamp/recibido_en más reciente primero
-    const medicionesOrdenadas = medicionesPaciente.sort((a, b) => {
+    const medicionesOrdenadas = medicionesFinales.sort((a, b) => {
       const fechaA = new Date(a.recibido_en || a.timestamp);
       const fechaB = new Date(b.recibido_en || b.timestamp);
       return fechaB - fechaA; // Más reciente primero
