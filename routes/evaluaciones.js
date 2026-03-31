@@ -6,7 +6,7 @@
 
 const express = require('express');
 const router = express.Router();
-const { verifyToken } = require('../config/local-db');
+const { verifyToken } = require('./auth');
 const evaluacionService = require('../services/evaluacion-service');
 const pdfService = require('../services/pdf-service');
 const { validarEvaluacionRiesgo } = require('../utils/validators');
