@@ -79,3 +79,6 @@ tmp/
 # Build files
 dist/
 build/
+
+# Generated PDFs directory
+pdfs/

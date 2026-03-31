@@ -50,9 +50,9 @@
       "paciente_id": "PAC1754364002715",
       "numero_documento": "71770529",
       "tipo_sesion": "clasificacion_riesgos",
-      "estado": "activa",
+      "estado": "finalizada",
       "inicio": "2026-03-30T22:18:11.567Z",
-      "fin": null,
+      "fin": "2026-03-31T06:13:48.790Z",
       "mediciones_count": 3
     }
   ]

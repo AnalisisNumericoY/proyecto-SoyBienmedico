@@ -244,6 +244,108 @@
             border-bottom: none;
         }
 
+        .data-source-selector {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 0.5rem;
+            padding: 0.5rem;
+            background: #f8f9fa;
+            border-radius: 6px;
+            flex-wrap: wrap;
+        }
+
+        .data-source-selector label {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            cursor: pointer;
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            transition: background 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .data-source-selector label:hover {
+            background: #e9ecef;
+        }
+
+        .data-source-selector input[type="radio"] {
+            cursor: pointer;
+        }
+
+        .iot-status {
+            display: none;
+            padding: 0.5rem;
+            margin-top: 0.5rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        .iot-status.active {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .iot-status.loading {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffc107;
+        }
+
+        .iot-status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #28a745;
+        }
+
+        .iot-status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #dc3545;
+        }
+
+        .iot-value-display {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .spinner {
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #e74c3c;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+        }
+
         .action-buttons {
             display: flex;
             gap: 1rem;
@@ -408,17 +510,62 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="sistolica">Presión arterial sistólica (mmHg) *</label>
+                                <div class="data-source-selector">
+                                    <label>
+                                        <input type="radio" name="sistolica_source" value="manual" checked onchange="toggleDataSource('sistolica')">
+                                        <i class="fas fa-keyboard"></i> Manual
+                                    </label>
+                                    <label>
+                                        <input type="radio" name="sistolica_source" value="ultima" onchange="toggleDataSource('sistolica')">
+                                        <i class="fas fa-history"></i> Última medición
+                                    </label>
+                                    <label>
+                                        <input type="radio" name="sistolica_source" value="ahora" onchange="toggleDataSource('sistolica')">
+                                        <i class="fas fa-heartbeat"></i> Tomar ahora
+                                    </label>
+                                </div>
                                 <input type="number" id="sistolica" name="sistolica" min="80" max="250" required>
+                                <div id="sistolica_status" class="iot-status"></div>
                             </div>
                             <div class="form-group">
                                 <label for="diastolica">Presión arterial diastólica (mmHg) *</label>
+                                <div class="data-source-selector">
+                                    <label>
+                                        <input type="radio" name="diastolica_source" value="manual" checked onchange="toggleDataSource('diastolica')">
+                                        <i class="fas fa-keyboard"></i> Manual
+                                    </label>
+                                    <label>
+                                        <input type="radio" name="diastolica_source" value="ultima" onchange="toggleDataSource('diastolica')">
+                                        <i class="fas fa-history"></i> Última medición
+                                    </label>
+                                    <label>
+                                        <input type="radio" name="diastolica_source" value="ahora" onchange="toggleDataSource('diastolica')">
+                                        <i class="fas fa-heartbeat"></i> Tomar ahora
+                                    </label>
+                                </div>
                                 <input type="number" id="diastolica" name="diastolica" min="40" max="150" required>
+                                <div id="diastolica_status" class="iot-status"></div>
                             </div>
                         </div>
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="frecuencia">Frecuencia cardíaca (lpm)</label>
+                                <div class="data-source-selector">
+                                    <label>
+                                        <input type="radio" name="frecuencia_source" value="manual" checked onchange="toggleDataSource('frecuencia')">
+                                        <i class="fas fa-keyboard"></i> Manual
+                                    </label>
+                                    <label>
+                                        <input type="radio" name="frecuencia_source" value="ultima" onchange="toggleDataSource('frecuencia')">
+                                        <i class="fas fa-history"></i> Última medición
+                                    </label>
+                                    <label>
+                                        <input type="radio" name="frecuencia_source" value="ahora" onchange="toggleDataSource('frecuencia')">
+                                        <i class="fas fa-heartbeat"></i> Tomar ahora
+                                    </label>
+                                </div>
                                 <input type="number" id="frecuencia" name="frecuencia" min="40" max="200">
+                                <div id="frecuencia_status" class="iot-status"></div>
                             </div>
                             <div class="form-group">
                                 <label for="hba1c">Hemoglobina glicosilada HbA1c (%)</label>
@@ -461,7 +608,22 @@
                             <div class="form-row">
                                 <div class="form-group">
                                     <label for="peso">Peso (kg)</label>
+                                    <div class="data-source-selector">
+                                        <label>
+                                            <input type="radio" name="peso_source" value="manual" checked onchange="toggleDataSource('peso')">
+                                            <i class="fas fa-keyboard"></i> Manual
+                                        </label>
+                                        <label>
+                                            <input type="radio" name="peso_source" value="ultima" onchange="toggleDataSource('peso')">
+                                            <i class="fas fa-history"></i> Última medición
+                                        </label>
+                                        <label>
+                                            <input type="radio" name="peso_source" value="ahora" onchange="toggleDataSource('peso')">
+                                            <i class="fas fa-weight"></i> Tomar ahora
+                                        </label>
+                                    </div>
                                     <input type="number" id="peso" name="peso" min="30" max="300" step="0.1">
+                                    <div id="peso_status" class="iot-status"></div>
                                 </div>
                                 <div class="form-group">
                                     <label for="talla">Talla (cm)</label>
@@ -508,7 +670,7 @@
                         <button onclick="nuevaEvaluacion()" class="btn btn-primary">
                             <i class="fas fa-redo"></i> Nueva Evaluación
                         </button>
-                        <button onclick="descargarReporte()" class="btn btn-success">
+                        <button onclick="descargarReporte()" class="btn btn-success" disabled style="opacity: 0.6; cursor: not-allowed;">
                             <i class="fas fa-download"></i> Descargar Reporte
                         </button>
                         <a href="dashboard.html" class="btn btn-secondary">
@@ -536,6 +698,63 @@
             }
         });
 
+        /**
+         * Alternar entre fuentes de datos (Manual / Última medición / Tomar ahora)
+         */
+        function toggleDataSource(campo) {
+            const source = document.querySelector(`input[name="${campo}_source"]:checked`).value;
+            const input = document.getElementById(campo);
+            const statusDiv = document.getElementById(`${campo}_status`);
+            
+            // Limpiar estado anterior
+            statusDiv.className = 'iot-status';
+            statusDiv.innerHTML = '';
+            
+            // Cancelar polling si existe
+            if (window.pollingIntervalos && window.pollingIntervalos[campo]) {
+                clearInterval(window.pollingIntervalos[campo]);
+                delete window.pollingIntervalos[campo];
+            }
+            
+            if (source === 'manual') {
+                // Modo manual: habilitar input
+                input.disabled = false;
+                input.value = '';
+                input.focus();
+                
+                // Resetear trazabilidad
+                if (window.trazabilidadIoT) {
+                    window.trazabilidadIoT[campo] = { fuente: 'manual', medicion_id: null };
+                }
+            } else if (source === 'ultima') {
+                // Última medición: deshabilitar input y cargar data
+                input.disabled = true;
+                statusDiv.className = 'iot-status active loading';
+                statusDiv.innerHTML = '<div class="spinner"></div> Cargando última medición...';
+                
+                // Llamar función de carga (definida en riesgo-cardiovascular.js)
+                if (typeof cargarUltimaMedicion === 'function') {
+                    cargarUltimaMedicion(campo);
+                } else {
+                    statusDiv.className = 'iot-status active error';
+                    statusDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Función no disponible';
+                }
+            } else if (source === 'ahora') {
+                // Tomar ahora: deshabilitar input y esperar dispositivo
+                input.disabled = true;
+                statusDiv.className = 'iot-status active loading';
+                statusDiv.innerHTML = '<div class="spinner"></div> Esperando medición del dispositivo...';
+                
+                // Llamar función de polling (definida en riesgo-cardiovascular.js)
+                if (typeof tomarMedicionAhora === 'function') {
+                    tomarMedicionAhora(campo);
+                } else {
+                    statusDiv.className = 'iot-status active error';
+                    statusDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Función no disponible';
+                }
+            }
+        }
+
         // Manejar envío del formulario
         document.getElementById('riesgoForm').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -547,12 +766,104 @@
             document.getElementById('resultados').style.display = 'none';
             document.getElementById('colesterolFields').style.display = 'none';
             document.getElementById('antropometricoFields').style.display = 'block';
+            
+            // Resetear ID de evaluación
+            if (typeof evaluacionId !== 'undefined') {
+                evaluacionId = null;
+            }
+            if (window.evaluacionId) {
+                window.evaluacionId = null;
+            }
+            
+            // Deshabilitar botón de descarga hasta nueva evaluación
+            const btnDescargar = document.querySelector('button[onclick="descargarReporte()"]');
+            if (btnDescargar) {
+                btnDescargar.disabled = true;
+                btnDescargar.style.opacity = '0.6';
+                btnDescargar.style.cursor = 'not-allowed';
+            }
+            
+            // Resetear selectores IoT a modo manual
+            const camposIoT = ['sistolica', 'diastolica', 'frecuencia', 'peso'];
+            camposIoT.forEach(campo => {
+                // Cancelar polling si existe
+                if (window.pollingIntervalos && window.pollingIntervalos[campo]) {
+                    clearInterval(window.pollingIntervalos[campo]);
+                    delete window.pollingIntervalos[campo];
+                }
+                
+                // Resetear selector a manual
+                document.querySelector(`input[name="${campo}_source"][value="manual"]`).checked = true;
+                document.getElementById(campo).disabled = false;
+                
+                // Limpiar status
+                document.getElementById(`${campo}_status`).className = 'iot-status';
+                document.getElementById(`${campo}_status`).innerHTML = '';
+                
+                // Resetear trazabilidad
+                if (window.trazabilidadIoT) {
+                    window.trazabilidadIoT[campo] = { fuente: 'manual', medicion_id: null };
+                }
+            });
+            
             window.scrollTo(0, 0);
         }
 
         function descargarReporte() {
-            // Implementar descarga de reporte PDF
-            alert('La funcionalidad de descarga de reporte estará disponible próximamente.');
+            // Verificar que haya una evaluación guardada
+            if (!window.evaluacionId && typeof evaluacionId !== 'undefined' && !evaluacionId) {
+                alert('Primero debe calcular el riesgo cardiovascular para generar el reporte.');
+                return;
+            }
+            
+            const evalId = window.evaluacionId || evaluacionId;
+            
+            if (!evalId) {
+                alert('No se pudo obtener el ID de la evaluación. Por favor, calcule nuevamente.');
+                return;
+            }
+            
+            // Obtener token
+            const token = localStorage.getItem('token');
+            
+            if (!token) {
+                alert('Sesión expirada. Por favor, inicie sesión nuevamente.');
+                window.location.href = '/index.html';
+                return;
+            }
+            
+            // Descargar PDF usando fetch (para poder agregar headers de autenticación)
+            console.log('📥 Descargando PDF de evaluación:', evalId);
+            
+            fetch(`/api/evaluaciones/${evalId}/pdf`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error al obtener el PDF');
+                }
+                return response.blob();
+            })
+            .then(blob => {
+                // Crear URL del blob y descargar
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `evaluacion_riesgo_cardiovascular_${evalId}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+                
+                console.log('✅ PDF descargado exitosamente');
+            })
+            .catch(error => {
+                console.error('❌ Error descargando PDF:', error);
+                alert('No se pudo descargar el reporte. Intente nuevamente.');
+            });
         }
     </script>
 </body>
