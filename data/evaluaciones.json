@@ -1,5 +1,425 @@
 {
   "riesgo_cardiovascular": [],
   "hads": [],
-  "evaluaciones": []
+  "evaluaciones": [
+    {
+      "id": "EVAL_1774940929488_8iqhk8jwl",
+      "tipo": "riesgo_cardiovascular",
+      "paciente_id": "PAC001",
+      "sesion_id": null,
+      "fecha": "2026-03-31T07:08:49.489Z",
+      "datos_entrada": {
+        "edad": 45,
+        "sexo": "masculino",
+        "fumador": true,
+        "diabetes": true,
+        "cardiovascular": false,
+        "renal": false,
+        "hipertension": false,
+        "sistolica": 115,
+        "sistolica_fuente": "dispositivo",
+        "sistolica_medicion_id": "MED_1774910583226_1vcop511f",
+        "diastolica": 90,
+        "diastolica_fuente": "dispositivo",
+        "diastolica_medicion_id": "MED_1774910583226_1vcop511f",
+        "frecuencia": 68,
+        "frecuencia_fuente": "dispositivo",
+        "frecuencia_medicion_id": "MED_1774910583226_1vcop511f",
+        "conoceColesterol": false,
+        "colesterolTotal": null,
+        "ldl": null,
+        "hdl": null,
+        "peso": 70,
+        "peso_fuente": "manual",
+        "peso_medicion_id": null,
+        "talla": 175,
+        "hba1c": 3
+      },
+      "resultado": {
+        "puntos": 5,
+        "porcentaje": "1%",
+        "categoria": "BAJO",
+        "descripcion": "Riesgo de evento cardiovascular a 10 años: 1%",
+        "recomendaciones": [
+          "Mantener estilo de vida saludable",
+          "Continuar con controles médicos anuales",
+          "IMPORTANTE: Cesación del tabaquismo (reduce riesgo en 50%)",
+          "Control estricto de glicemia (HbA1c < 7%)",
+          "Actividad física: mínimo 150 min/semana",
+          "Dieta: reducir sal, grasas saturadas y azúcares"
+        ]
+      },
+      "pdf_path": "/pdfs/evaluaciones/EVAL_1774940929488_8iqhk8jwl.pdf",
+      "creado_por": "pac001",
+      "version_algoritmo": "PAHO_v1.0"
+    },
+    {
+      "id": "EVAL_1774941200280_voyrysc7d",
+      "tipo": "riesgo_cardiovascular",
+      "paciente_id": "PAC001",
+      "sesion_id": null,
+      "fecha": "2026-03-31T07:13:20.280Z",
+      "datos_entrada": {
+        "edad": 45,
+        "sexo": "masculino",
+        "fumador": true,
+        "diabetes": true,
+        "cardiovascular": false,
+        "renal": false,
+        "hipertension": false,
+        "sistolica": 115,
+        "sistolica_fuente": "dispositivo",
+        "sistolica_medicion_id": "MED_1774910583226_1vcop511f",
+        "diastolica": 90,
+        "diastolica_fuente": "dispositivo",
+        "diastolica_medicion_id": "MED_1774910583226_1vcop511f",
+        "frecuencia": 68,
+        "frecuencia_fuente": "dispositivo",
+        "frecuencia_medicion_id": "MED_1774910583226_1vcop511f",
+        "conoceColesterol": false,
+        "colesterolTotal": null,
+        "ldl": null,
+        "hdl": null,
+        "peso": 70,
+        "peso_fuente": "manual",
+        "peso_medicion_id": null,
+        "talla": 175,
+        "hba1c": 3
+      },
+      "resultado": {
+        "puntos": 5,
+        "porcentaje": "1%",
+        "categoria": "BAJO",
+        "descripcion": "Riesgo de evento cardiovascular a 10 años: 1%",
+        "recomendaciones": [
+          "Mantener estilo de vida saludable",
+          "Continuar con controles médicos anuales",
+          "IMPORTANTE: Cesación del tabaquismo (reduce riesgo en 50%)",
+          "Control estricto de glicemia (HbA1c < 7%)",
+          "Actividad física: mínimo 150 min/semana",
+          "Dieta: reducir sal, grasas saturadas y azúcares"
+        ]
+      },
+      "pdf_path": "/pdfs/evaluaciones/EVAL_1774941200280_voyrysc7d.pdf",
+      "creado_por": "pac001",
+      "version_algoritmo": "PAHO_v1.0"
+    },
+    {
+      "id": "EVAL_1774942591754_zjn88ml1t",
+      "tipo": "riesgo_cardiovascular",
+      "paciente_id": "PAC001",
+      "sesion_id": null,
+      "fecha": "2026-03-31T07:36:31.754Z",
+      "datos_entrada": {
+        "edad": 45,
+        "sexo": "femenino",
+        "fumador": true,
+        "diabetes": true,
+        "cardiovascular": false,
+        "renal": false,
+        "hipertension": false,
+        "sistolica": 115,
+        "sistolica_fuente": "dispositivo",
+        "sistolica_medicion_id": "MED_1774910583226_1vcop511f",
+        "diastolica": 90,
+        "diastolica_fuente": "dispositivo",
+        "diastolica_medicion_id": "MED_1774910583226_1vcop511f",
+        "frecuencia": 68,
+        "frecuencia_fuente": "dispositivo",
+        "frecuencia_medicion_id": "MED_1774910583226_1vcop511f",
+        "conoceColesterol": false,
+        "colesterolTotal": null,
+        "ldl": null,
+        "hdl": null,
+        "peso": 70,
+        "peso_fuente": "manual",
+        "peso_medicion_id": null,
+        "talla": 175,
+        "hba1c": 3
+      },
+      "resultado": {
+        "puntos": 5,
+        "porcentaje": "1%",
+        "categoria": "BAJO",
+        "descripcion": "Riesgo de evento cardiovascular a 10 años: 1%",
+        "recomendaciones": [
+          "Mantener estilo de vida saludable",
+          "Continuar con controles médicos anuales",
+          "IMPORTANTE: Cesación del tabaquismo (reduce riesgo en 50%)",
+          "Control estricto de glicemia (HbA1c < 7%)",
+          "Actividad física: mínimo 150 min/semana",
+          "Dieta: reducir sal, grasas saturadas y azúcares"
+        ]
+      },
+      "pdf_path": "/pdfs/evaluaciones/EVAL_1774942591754_zjn88ml1t.pdf",
+      "creado_por": "pac001",
+      "version_algoritmo": "PAHO_v1.0"
+    },
+    {
+      "id": "EVAL_1774966019760_j0eu0q86m",
+      "tipo": "riesgo_cardiovascular",
+      "paciente_id": "PAC001",
+      "sesion_id": null,
+      "fecha": "2026-03-31T14:06:59.763Z",
+      "datos_entrada": {
+        "edad": 55,
+        "sexo": "masculino",
+        "fumador": true,
+        "diabetes": true,
+        "hipertension": true,
+        "cardiovascular": false,
+        "renal": false,
+        "sistolica": 145,
+        "diastolica": 95,
+        "frecuencia": 78,
+        "conoceColesterol": true,
+        "colesterolTotal": 240,
+        "hdl": 35,
+        "hba1c": 7.2
+      },
+      "resultado": {
+        "puntos": 11,
+        "porcentaje": "5%",
+        "categoria": "MODERADO",
+        "descripcion": "Riesgo de evento cardiovascular a 10 años: 5%",
+        "recomendaciones": [
+          "Control médico cada 6 meses",
+          "Monitoreo regular de presión arterial y colesterol",
+          "IMPORTANTE: Cesación del tabaquismo (reduce riesgo en 50%)",
+          "Control de hipertensión arterial - considerar medicación",
+          "Control estricto de glicemia (HbA1c < 7%)",
+          "Actividad física: mínimo 150 min/semana",
+          "Dieta: reducir sal, grasas saturadas y azúcares"
+        ]
+      },
+      "pdf_path": "/pdfs/evaluaciones/EVAL_1774966019760_j0eu0q86m.pdf",
+      "creado_por": "pac001",
+      "version_algoritmo": "PAHO_v1.0"
+    },
+    {
+      "id": "EVAL_1774966922604_qn5csdn8i",
+      "tipo": "riesgo_cardiovascular",
+      "paciente_id": "PAC001",
+      "sesion_id": "SES_1711840000000_xyz789",
+      "fecha": "2026-03-31T14:22:02.605Z",
+      "datos_entrada": {
+        "edad": 45,
+        "sexo": "femenino",
+        "fumador": false,
+        "diabetes": false,
+        "hipertension": false,
+        "cardiovascular": false,
+        "renal": false,
+        "sistolica": {
+          "valor": 128,
+          "fuente": "tensiometro",
+          "medicion_id": "MED_1711840500000_ten001"
+        },
+        "diastolica": {
+          "valor": 82,
+          "fuente": "tensiometro",
+          "medicion_id": "MED_1711840500000_ten001"
+        },
+        "frecuencia": {
+          "valor": 72,
+          "fuente": "pulsoximetro",
+          "medicion_id": "MED_1711840600000_pul001"
+        },
+        "conoceColesterol": false,
+        "peso": {
+          "valor": 68,
+          "fuente": "balanza",
+          "medicion_id": "MED_1711840700000_bal001"
+        },
+        "talla": 165,
+        "hba1c": 5.4
+      },
+      "resultado": {
+        "puntos": 2,
+        "porcentaje": "1%",
+        "categoria": "BAJO",
+        "descripcion": "Riesgo de evento cardiovascular a 10 años: 1%",
+        "recomendaciones": [
+          "Mantener estilo de vida saludable",
+          "Continuar con controles médicos anuales",
+          "Actividad física: mínimo 150 min/semana",
+          "Dieta: reducir sal, grasas saturadas y azúcares"
+        ]
+      },
+      "pdf_path": "/pdfs/evaluaciones/EVAL_1774966922604_qn5csdn8i.pdf",
+      "creado_por": "pac001",
+      "version_algoritmo": "PAHO_v1.0"
+    },
+    {
+      "id": "EVAL_1774967333620_rszarf3m9",
+      "tipo": "riesgo_cardiovascular",
+      "paciente_id": "PAC001",
+      "sesion_id": null,
+      "fecha": "2026-03-31T14:28:53.620Z",
+      "datos_entrada": {
+        "edad": 40,
+        "sexo": "masculino",
+        "fumador": false,
+        "diabetes": false,
+        "hipertension": false,
+        "cardiovascular": true,
+        "renal": false,
+        "sistolica": 120,
+        "diastolica": 78,
+        "conoceColesterol": true,
+        "colesterolTotal": 180,
+        "hdl": 50
+      },
+      "resultado": {
+        "puntos": null,
+        "porcentaje": ">20%",
+        "categoria": "ALTO",
+        "descripcion": "Riesgo alto por enfermedad cardiovascular o renal preexistente",
+        "recomendaciones": [
+          "Requiere seguimiento médico estrecho",
+          "Control estricto de todos los factores de riesgo",
+          "Considerar evaluación por cardiología",
+          "Adherencia estricta al tratamiento farmacológico"
+        ]
+      },
+      "pdf_path": "/pdfs/evaluaciones/EVAL_1774967333620_rszarf3m9.pdf",
+      "creado_por": "pac001",
+      "version_algoritmo": "PAHO_v1.0"
+    },
+    {
+      "id": "EVAL_1774972901608_cc4o2dffj",
+      "tipo": "riesgo_cardiovascular",
+      "paciente_id": "PAC001",
+      "sesion_id": null,
+      "fecha": "2026-03-31T16:01:41.608Z",
+      "datos_entrada": {
+        "edad": 40,
+        "sexo": "masculino",
+        "fumador": false,
+        "diabetes": false,
+        "hipertension": false,
+        "cardiovascular": true,
+        "renal": false,
+        "sistolica": 120,
+        "diastolica": 78,
+        "conoceColesterol": true,
+        "colesterolTotal": 180,
+        "hdl": 50
+      },
+      "resultado": {
+        "puntos": null,
+        "porcentaje": ">20%",
+        "categoria": "ALTO",
+        "descripcion": "Riesgo alto por enfermedad cardiovascular o renal preexistente",
+        "recomendaciones": [
+          "Requiere seguimiento médico estrecho",
+          "Control estricto de todos los factores de riesgo",
+          "Considerar evaluación por cardiología",
+          "Adherencia estricta al tratamiento farmacológico"
+        ]
+      },
+      "pdf_path": "/pdfs/evaluaciones/EVAL_1774972901608_cc4o2dffj.pdf",
+      "creado_por": "pac001",
+      "version_algoritmo": "PAHO_v1.0"
+    },
+    {
+      "id": "EVAL_1774973927356_084ouyb8f",
+      "tipo": "riesgo_cardiovascular",
+      "paciente_id": "PAC001",
+      "sesion_id": null,
+      "fecha": "2026-03-31T16:18:47.356Z",
+      "datos_entrada": {
+        "edad": 45,
+        "sexo": "masculino",
+        "fumador": false,
+        "diabetes": false,
+        "cardiovascular": false,
+        "renal": false,
+        "hipertension": true,
+        "sistolica": 115,
+        "sistolica_fuente": "dispositivo",
+        "sistolica_medicion_id": "MED_1774910583226_1vcop511f",
+        "diastolica": 90,
+        "diastolica_fuente": "dispositivo",
+        "diastolica_medicion_id": "MED_1774910583226_1vcop511f",
+        "frecuencia": 68,
+        "frecuencia_fuente": "dispositivo",
+        "frecuencia_medicion_id": "MED_1774910583226_1vcop511f",
+        "conoceColesterol": false,
+        "colesterolTotal": null,
+        "ldl": null,
+        "hdl": null,
+        "peso": null,
+        "peso_fuente": "manual",
+        "peso_medicion_id": null,
+        "talla": null,
+        "hba1c": null
+      },
+      "resultado": {
+        "puntos": 1,
+        "porcentaje": "1%",
+        "categoria": "BAJO",
+        "descripcion": "Riesgo de evento cardiovascular a 10 años: 1%",
+        "recomendaciones": [
+          "Mantener estilo de vida saludable",
+          "Continuar con controles médicos anuales",
+          "Actividad física: mínimo 150 min/semana",
+          "Dieta: reducir sal, grasas saturadas y azúcares"
+        ]
+      },
+      "pdf_path": null,
+      "creado_por": "pac001",
+      "version_algoritmo": "PAHO_v1.0"
+    },
+    {
+      "id": "EVAL_1774981350685_hmnihxid2",
+      "tipo": "riesgo_cardiovascular",
+      "paciente_id": "PAC001",
+      "sesion_id": null,
+      "fecha": "2026-03-31T18:22:30.685Z",
+      "datos_entrada": {
+        "edad": 71,
+        "sexo": "femenino",
+        "fumador": false,
+        "diabetes": true,
+        "cardiovascular": false,
+        "renal": false,
+        "hipertension": true,
+        "sistolica": 115,
+        "sistolica_fuente": "dispositivo",
+        "sistolica_medicion_id": "MED_1774910583226_1vcop511f",
+        "diastolica": 90,
+        "diastolica_fuente": "dispositivo",
+        "diastolica_medicion_id": "MED_1774910583226_1vcop511f",
+        "frecuencia": 68,
+        "frecuencia_fuente": "dispositivo",
+        "frecuencia_medicion_id": "MED_1774910583226_1vcop511f",
+        "conoceColesterol": false,
+        "colesterolTotal": null,
+        "ldl": null,
+        "hdl": null,
+        "peso": 70,
+        "peso_fuente": "manual",
+        "peso_medicion_id": null,
+        "talla": 175,
+        "hba1c": 3
+      },
+      "resultado": {
+        "puntos": 10,
+        "porcentaje": "2%",
+        "categoria": "BAJO",
+        "descripcion": "Riesgo de evento cardiovascular a 10 años: 2%",
+        "recomendaciones": [
+          "Mantener estilo de vida saludable",
+          "Continuar con controles médicos anuales",
+          "Control estricto de glicemia (HbA1c < 7%)",
+          "Actividad física: mínimo 150 min/semana",
+          "Dieta: reducir sal, grasas saturadas y azúcares"
+        ]
+      },
+      "pdf_path": "/pdfs/evaluaciones/EVAL_1774981350685_hmnihxid2.pdf",
+      "creado_por": "pac001",
+      "version_algoritmo": "PAHO_v1.0"
+    }
+  ]
 }
