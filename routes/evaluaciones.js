@@ -106,6 +106,93 @@ router.post('/riesgo-cardiovascular', verifyToken, async (req, res) => {
 });
 
 /**
+ * POST /api/evaluaciones/hads
+ * Crear nueva evaluación HADS (Ansiedad + Depresión + Burnout)
+ * 
+ * Body: {
+ *   paciente_id: string,
+ *   resultado: {
+ *     ansiedad: { puntuacion, categoria, descripcion, clase },
+ *     depresion: { puntuacion, categoria, descripcion, clase },
+ *     burnout: { puntuacion, categoria, descripcion, clase }
+ *   },
+ *   respuestas: {
+ *     ansiedad: [0-3, 0-3, ...],
+ *     depresion: [0-3, 0-3, ...],
+ *     burnout: [0-4, 0-4, ...]
+ *   }
+ * }
+ */
+router.post('/hads', verifyToken, async (req, res) => {
+    try {
+        const { paciente_id, resultado, respuestas } = req.body;
+
+        // Validar datos de entrada
+        if (!paciente_id || !resultado) {
+            return res.status(400).json({
+                success: false,
+                error: 'Faltan datos requeridos (paciente_id, resultado)'
+            });
+        }
+
+        // Crear objeto de evaluación
+        const evaluacionData = {
+            tipo: 'hads',
+            paciente_id,
+            sesion_id: null,
+            datos_entrada: respuestas || {},
+            resultado: resultado,
+            creado_por: req.user.userId,
+            version_algoritmo: 'HADS_v1.0'
+        };
+
+        // Guardar evaluación en BD/JSON
+        const evaluacion = await evaluacionService.crearEvaluacion(evaluacionData);
+
+        // Buscar datos completos del paciente
+        let pacienteData = null;
+        try {
+            const pacientesFile = await fs.readFile(PACIENTES_FILE, 'utf8');
+            const pacientesJson = JSON.parse(pacientesFile);
+            pacienteData = pacientesJson.pacientes?.find(p => p.id === paciente_id);
+            
+            if (!pacienteData) {
+                console.warn(`⚠️ Paciente ${paciente_id} no encontrado en BD`);
+            }
+        } catch (error) {
+            console.error('❌ Error al buscar datos del paciente:', error);
+        }
+
+        // Generar PDF con datos del paciente
+        const pdfPath = await pdfService.generarPDFHADS(evaluacion, pacienteData);
+        
+        // Actualizar evaluación con ruta del PDF
+        await evaluacionService.actualizarPDFPath(evaluacion.id, pdfPath);
+
+        console.log(`✅ Evaluación HADS creada: ${evaluacion.id} - PDF: ${pdfPath}`);
+
+        res.status(201).json({
+            success: true,
+            mensaje: 'Evaluación HADS creada exitosamente',
+            data: {
+                evaluacion_id: evaluacion.id,
+                resultado: resultado,
+                pdf_url: `/api/evaluaciones/${evaluacion.id}/pdf`,
+                fecha_creacion: evaluacion.fecha
+            }
+        });
+
+    } catch (error) {
+        console.error('❌ Error al crear evaluación HADS:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Error al procesar evaluación HADS',
+            detalle: error.message
+        });
+    }
+});
+
+/**
  * GET /api/evaluaciones/:evaluacionId
  * Obtener detalles de una evaluación específica
  */

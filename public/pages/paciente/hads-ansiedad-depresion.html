@@ -1100,8 +1100,82 @@
             window.scrollTo(0, 0);
         }
 
-        function descargarReporte() {
-            alert('La funcionalidad de descarga de reporte estará disponible próximamente.');
+        async function descargarReporte() {
+            try {
+                // Verificar que hay resultados calculados
+                if (!resultadosHADS || !resultadosHADS.ansiedad) {
+                    alert('⚠️ Primero debe completar y calcular la evaluación');
+                    return;
+                }
+
+                // Obtener datos del usuario
+                const user = JSON.parse(localStorage.getItem('user') || '{}');
+                const token = localStorage.getItem('token');
+
+                if (!user.pacienteId || !token) {
+                    alert('⚠️ Error: No se encontró información del paciente');
+                    return;
+                }
+
+                // Preparar datos para enviar
+                const datos = {
+                    paciente_id: user.pacienteId,
+                    resultado: {
+                        ansiedad: resultadosHADS.ansiedad,
+                        depresion: resultadosHADS.depresion,
+                        burnout: resultadosHADS.burnout,
+                        recomendaciones: obtenerTodasRecomendaciones()
+                    },
+                    respuestas: obtenerDatosFormularioHADS()
+                };
+
+                // Enviar al servidor
+                const response = await fetch('/api/evaluaciones/hads', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(datos)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    // Descargar el PDF
+                    const pdfUrl = result.data.pdf_url;
+                    window.location.href = pdfUrl;
+                    
+                    alert('✅ Evaluación guardada y PDF generado correctamente');
+                } else {
+                    throw new Error(result.error || 'Error al generar reporte');
+                }
+
+            } catch (error) {
+                console.error('Error al descargar reporte:', error);
+                alert('❌ Error al generar el reporte: ' + error.message);
+            }
+        }
+
+        function obtenerTodasRecomendaciones() {
+            const recomendaciones = [];
+            
+            // Obtener recomendaciones de ansiedad
+            if (resultadosHADS.ansiedad) {
+                recomendaciones.push(...obtenerRecomendacionesAnsiedad(resultadosHADS.ansiedad));
+            }
+            
+            // Obtener recomendaciones de depresión
+            if (resultadosHADS.depresion) {
+                recomendaciones.push(...obtenerRecomendacionesDepresion(resultadosHADS.depresion));
+            }
+            
+            // Obtener recomendaciones de burnout
+            if (resultadosHADS.burnout) {
+                recomendaciones.push(...obtenerRecomendacionesBurnout(resultadosHADS.burnout));
+            }
+            
+            return recomendaciones;
         }
 
         function solicitarCita() {

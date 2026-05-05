@@ -8,6 +8,36 @@ const { ensureDirectory } = require('../utils/file-handler');
  */
 
 /**
+ * Agrega el membrete Click Vital al PDF
+ * @param {PDFDocument} doc - Documento PDF
+ * @returns {number} - Posición Y donde debe iniciar el contenido
+ */
+const agregarMembreteClickVital = (doc) => {
+  const membretePath = path.join(__dirname, '../public/membrete.jpg');
+  
+  try {
+    // Verificar si existe el membrete
+    if (fs.existsSync(membretePath)) {
+      // Agregar membrete en la parte superior
+      // Tamaño ajustado para que ocupe el ancho completo pero altura limitada
+      doc.image(membretePath, 0, 0, { 
+        width: 612, // Ancho completo de página Letter
+        height: 90   // Altura del membrete
+      });
+      
+      // Retornar posición Y donde debe empezar el contenido
+      return 100;
+    } else {
+      console.warn('⚠️ Membrete no encontrado, continuando sin membrete');
+      return 20;
+    }
+  } catch (error) {
+    console.error('❌ Error al cargar membrete:', error);
+    return 20;
+  }
+};
+
+/**
  * Genera PDF de evaluación de riesgo cardiovascular
  * @param {Object} evaluacion - Objeto completo de evaluación con resultado
  * @param {Object} pacienteData - Datos completos del paciente (opcional)
@@ -27,19 +57,22 @@ const generarPDFRiesgoCardiovascular = async (evaluacion, pacienteData = null) =
 
       doc.pipe(stream);
 
+      // ==================== MEMBRETE ====================
+      const startY = agregarMembreteClickVital(doc);
+      doc.y = startY;
+
       // ==================== HEADER ====================
-      doc.fontSize(20).font('Helvetica-Bold')
+      doc.fontSize(18).font('Helvetica-Bold')
         .text('EVALUACIÓN DE RIESGO CARDIOVASCULAR', { align: 'center' });
       
-      doc.fontSize(12).font('Helvetica')
+      doc.fontSize(11).font('Helvetica')
         .text('Método PAHO/OPS - Organización Panamericana de la Salud', { align: 'center' });
       
-      doc.moveDown();
-      doc.fontSize(10)
-        .text(`Fecha de Evaluación: ${new Date(evaluacion.fecha).toLocaleString('es-CO')}`, { align: 'right' })
-        .text(`ID Evaluación: ${evaluacion.id}`, { align: 'right' });
+      doc.moveDown(0.5);
+      doc.fontSize(9)
+        .text(`Fecha: ${new Date(evaluacion.fecha).toLocaleString('es-CO')} | ID: ${evaluacion.id}`, { align: 'right' });
 
-      doc.moveDown(1.5);
+      doc.moveDown(1);
 
       // ==================== INFORMACIÓN DEL PACIENTE ====================
       doc.fontSize(14).font('Helvetica-Bold')
@@ -272,21 +305,202 @@ const generarPDFRiesgoCardiovascular = async (evaluacion, pacienteData = null) =
 
 /**
  * Genera PDF de evaluación HADS
- * @param {Object} evaluacionData - Datos de la evaluación
+ * @param {Object} evaluacion - Objeto completo de evaluación con resultados
  * @param {Object} pacienteData - Datos del paciente
  * @returns {Promise<string>} - Ruta del PDF generado
  */
-const generarPDFHADS = async (evaluacionData, pacienteData) => {
-  // TODO: Implementar generación real de PDF
-  const pdfDir = path.join(__dirname, '../uploads/evaluacion-hads');
+const generarPDFHADS = async (evaluacion, pacienteData) => {
+  const pdfDir = path.join(__dirname, '../pdfs/evaluaciones');
   await ensureDirectory(pdfDir);
 
-  const filename = `${pacienteData.numero_documento}_${Date.now()}.pdf`;
+  const filename = `${evaluacion.id}.pdf`;
   const pdfPath = path.join(pdfDir, filename);
 
-  // Aquí se implementará la generación del PDF
+  return new Promise((resolve, reject) => {
+    try {
+      const doc = new PDFDocument({ margin: 50, size: 'LETTER' });
+      const stream = fs.createWriteStream(pdfPath);
 
-  return `/uploads/evaluacion-hads/${filename}`;
+      doc.pipe(stream);
+
+      // ==================== MEMBRETE ====================
+      const startY = agregarMembreteClickVital(doc);
+      doc.y = startY;
+
+      // ==================== HEADER ====================
+      doc.fontSize(18).font('Helvetica-Bold').fillColor('#8e44ad')
+        .text('EVALUACIÓN PSICOLÓGICA', { align: 'center' });
+      
+      doc.fontSize(12).font('Helvetica').fillColor('#000000')
+        .text('Escala HADS (Ansiedad y Depresión) + Burnout Laboral', { align: 'center' });
+      
+      doc.moveDown(0.5);
+      doc.fontSize(9)
+        .text(`Fecha: ${new Date(evaluacion.fecha).toLocaleString('es-CO')} | ID: ${evaluacion.id}`, { align: 'right' });
+
+      doc.moveDown(1);
+
+      // ==================== INFORMACIÓN DEL PACIENTE ====================
+      doc.fontSize(13).font('Helvetica-Bold')
+        .text('DATOS DEL PACIENTE');
+      
+      doc.moveTo(50, doc.y).lineTo(562, doc.y).stroke();
+      doc.moveDown(0.5);
+
+      doc.fontSize(10).font('Helvetica');
+
+      if (pacienteData) {
+        // Calcular edad
+        let edadTexto = '';
+        if (pacienteData.fecha_nacimiento) {
+          const fechaNac = new Date(pacienteData.fecha_nacimiento);
+          const hoy = new Date();
+          let edad = hoy.getFullYear() - fechaNac.getFullYear();
+          const mes = hoy.getMonth() - fechaNac.getMonth();
+          if (mes < 0 || (mes === 0 && hoy.getDate() < fechaNac.getDate())) {
+            edad--;
+          }
+          edadTexto = ` (${edad} años)`;
+        }
+        
+        doc.text(`Nombre: ${pacienteData.nombre} ${pacienteData.apellidos}`);
+        doc.text(`Documento: ${pacienteData.tipo_documento} Nro. ${pacienteData.numero_documento}`);
+        if (edadTexto) {
+          doc.text(`Edad: ${edadTexto.substring(2, edadTexto.length - 1)}`);
+        }
+        if (pacienteData.ocupacion) {
+          doc.text(`Ocupación: ${pacienteData.ocupacion}`);
+        }
+      } else {
+        doc.text(`Paciente ID: ${evaluacion.paciente_id}`);
+      }
+
+      doc.moveDown(1.5);
+
+      // ==================== RESULTADOS ====================
+      const resultados = evaluacion.resultado;
+
+      // Función helper para agregar resultado individual
+      const agregarResultado = (titulo, resultado, color) => {
+        // Verificar si necesitamos nueva página
+        if (doc.y > 650) {
+          doc.addPage();
+          doc.y = agregarMembreteClickVital(doc);
+        }
+
+        doc.fontSize(12).font('Helvetica-Bold').fillColor(color)
+          .text(titulo.toUpperCase(), { underline: true });
+        
+        doc.moveDown(0.3);
+        doc.fontSize(10).font('Helvetica').fillColor('#000000');
+
+        const puntuacion = resultado.puntuacion || resultado.promedio || resultado.puntuacionFormateada || 0;
+        const maxPuntuacion = resultado.maxPuntuacion || '';
+        const categoria = resultado.categoria || 'N/A';
+        const descripcion = resultado.descripcion || '';
+
+        doc.text(`Puntuación: ${puntuacion}${maxPuntuacion ? '/' + maxPuntuacion : ''}`);
+        
+        // Categoría con color de fondo
+        let categoriaColor;
+        switch (resultado.clase || categoria.toLowerCase()) {
+          case 'grave':
+          case 'alto':
+            categoriaColor = '#dc3545';
+            break;
+          case 'moderado':
+          case 'medio':
+            categoriaColor = '#ffc107';
+            break;
+          case 'leve':
+            categoriaColor = '#fd7e14';
+            break;
+          default:
+            categoriaColor = '#28a745';
+        }
+
+        const boxY = doc.y;
+        doc.rect(50, boxY, 200, 20)
+          .fillAndStroke(categoriaColor, '#000000');
+        
+        doc.fillColor('#FFFFFF')
+          .fontSize(11)
+          .font('Helvetica-Bold')
+          .text(categoria, 50, boxY + 5, { width: 200, align: 'center' });
+
+        doc.fillColor('#000000');
+        doc.y = boxY + 25;
+
+        doc.fontSize(9).font('Helvetica')
+          .text(descripcion, { width: 512, align: 'justify' });
+
+        doc.moveDown(1);
+      };
+
+      // Resultados de Ansiedad
+      if (resultados.ansiedad) {
+        agregarResultado('Ansiedad HADS', resultados.ansiedad, '#e74c3c');
+      }
+
+      // Resultados de Depresión
+      if (resultados.depresion) {
+        agregarResultado('Depresión HADS', resultados.depresion, '#3498db');
+      }
+
+      // Resultados de Burnout
+      if (resultados.burnout) {
+        agregarResultado('Burnout Laboral', resultados.burnout, '#e67e22');
+      }
+
+      doc.moveDown(1);
+
+      // ==================== RECOMENDACIONES ====================
+      if (resultados.recomendaciones && resultados.recomendaciones.length > 0) {
+        // Verificar espacio para recomendaciones
+        if (doc.y > 600) {
+          doc.addPage();
+          doc.y = agregarMembreteClickVital(doc);
+        }
+
+        doc.fontSize(13).font('Helvetica-Bold')
+          .text('RECOMENDACIONES GENERALES');
+        
+        doc.moveTo(50, doc.y).lineTo(562, doc.y).stroke();
+        doc.moveDown(0.5);
+
+        doc.fontSize(9).font('Helvetica');
+        resultados.recomendaciones.slice(0, 8).forEach((rec, index) => {
+          doc.text(`${index + 1}. ${rec}`, { indent: 10 });
+          doc.moveDown(0.2);
+        });
+      }
+
+      // ==================== FOOTER ====================
+      const pageHeight = doc.page.height;
+      doc.fontSize(8).font('Helvetica').fillColor('#666666')
+        .text(
+          `Documento generado el ${new Date().toLocaleString('es-CO')} | Sistema SoyBienmedico`,
+          50,
+          pageHeight - 50,
+          { align: 'center', width: 512 }
+        );
+
+      doc.end();
+
+      stream.on('finish', () => {
+        console.log(`✅ PDF HADS generado: ${filename}`);
+        resolve(`/pdfs/evaluaciones/${filename}`);
+      });
+
+      stream.on('error', (error) => {
+        reject(error);
+      });
+
+    } catch (error) {
+      console.error('❌ Error generando PDF HADS:', error);
+      reject(error);
+    }
+  });
 };
 
 /**
