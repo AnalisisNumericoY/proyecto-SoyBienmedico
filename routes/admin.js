@@ -148,7 +148,7 @@ router.post('/crear-paciente', verifyToken, checkAdminRole, async (req, res) => 
     // Validate required fields
     const requiredFields = ['tipo_documento', 'numero_documento', 'nombre', 'apellidos', 
                            'sexo', 'fecha_nacimiento', 'ocupacion', 'telefono', 
-                           'estado_civil', 'email', 'rh'];
+                           'estado_civil', 'email', 'rh', 'programa'];
     
     for (const field of requiredFields) {
       if (!pacienteData[field]) {
