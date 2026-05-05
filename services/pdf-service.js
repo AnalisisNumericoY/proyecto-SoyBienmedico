@@ -13,27 +13,31 @@ const { ensureDirectory } = require('../utils/file-handler');
  * @returns {number} - Posición Y donde debe iniciar el contenido
  */
 const agregarMembreteClickVital = (doc) => {
-  const membretePath = path.join(__dirname, '../public/membrete.jpg');
-  
   try {
-    // Verificar si existe el membrete
-    if (fs.existsSync(membretePath)) {
-      // Agregar membrete manteniendo proporción
-      // fit: ajusta la imagen dentro del área sin distorsionar
+    const membretePath = path.join(__dirname, '../public/membrete.jpg');
+    
+    // Verificar existencia del archivo
+    if (!fs.existsSync(membretePath)) {
+      console.warn('⚠️ Membrete no encontrado en:', membretePath);
+      return 20;
+    }
+    
+    // Intentar cargar y agregar la imagen
+    try {
       doc.image(membretePath, 0, 0, { 
-        fit: [612, 100],  // Área máxima: ancho completo, altura 100px
+        fit: [612, 100],
         align: 'center',
         valign: 'top'
       });
-      
-      // Retornar posición Y donde debe empezar el contenido
+      console.log('✅ Membrete agregado correctamente');
       return 110;
-    } else {
-      console.warn('⚠️ Membrete no encontrado, continuando sin membrete');
+    } catch (imageError) {
+      console.error('❌ Error al insertar imagen del membrete:', imageError.message);
       return 20;
     }
+    
   } catch (error) {
-    console.error('❌ Error al cargar membrete:', error);
+    console.error('❌ Error general al cargar membrete:', error.message);
     return 20;
   }
 };
