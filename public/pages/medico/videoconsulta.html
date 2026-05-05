@@ -728,11 +728,32 @@
         let socket = null;
         let roomId = null;
 
-        // Configuración WebRTC
+        // Configuración WebRTC con STUN + TURN para laptop-laptop
         const configuration = {
             iceServers: [
-                { urls: 'stun:stun.l.google.com:19302' }
-            ]
+                // STUN servers (para NATs simples - ya funciona celular-laptop)
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' },
+                
+                // TURN servers (para NATs complejos - arregla laptop-laptop)
+                {
+                    urls: 'turn:openrelay.metered.ca:80',
+                    username: 'openrelayproject',
+                    credential: 'openrelayproject'
+                },
+                {
+                    urls: 'turn:openrelay.metered.ca:443',
+                    username: 'openrelayproject',
+                    credential: 'openrelayproject'
+                },
+                {
+                    urls: 'turn:openrelay.metered.ca:443?transport=tcp',
+                    username: 'openrelayproject',
+                    credential: 'openrelayproject'
+                }
+            ],
+            // Intenta P2P primero, TURN como fallback (mantiene velocidad cuando sea posible)
+            iceTransportPolicy: 'all'
         };
 
         // Inicializar aplicación
