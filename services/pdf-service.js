@@ -18,15 +18,16 @@ const agregarMembreteClickVital = (doc) => {
   try {
     // Verificar si existe el membrete
     if (fs.existsSync(membretePath)) {
-      // Agregar membrete en la parte superior
-      // Tamaño ajustado para que ocupe el ancho completo pero altura limitada
+      // Agregar membrete manteniendo proporción
+      // fit: ajusta la imagen dentro del área sin distorsionar
       doc.image(membretePath, 0, 0, { 
-        width: 612, // Ancho completo de página Letter
-        height: 90   // Altura del membrete
+        fit: [612, 100],  // Área máxima: ancho completo, altura 100px
+        align: 'center',
+        valign: 'top'
       });
       
       // Retornar posición Y donde debe empezar el contenido
-      return 100;
+      return 110;
     } else {
       console.warn('⚠️ Membrete no encontrado, continuando sin membrete');
       return 20;

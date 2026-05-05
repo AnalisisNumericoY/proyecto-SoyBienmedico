@@ -1142,11 +1142,41 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    // Descargar el PDF
-                    const pdfUrl = result.data.pdf_url;
-                    window.location.href = pdfUrl;
+                    alert('✅ Evaluación guardada correctamente');
                     
-                    alert('✅ Evaluación guardada y PDF generado correctamente');
+                    // Descargar el PDF usando blob (igual que Riesgo Cardiovascular)
+                    const evaluacionId = result.data.evaluacion_id;
+                    console.log('📥 Descargando PDF de evaluación:', evaluacionId);
+                    
+                    fetch(`/api/evaluaciones/${evaluacionId}/pdf`, {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    })
+                    .then(res => {
+                        if (!res.ok) {
+                            throw new Error('Error al obtener el PDF');
+                        }
+                        return res.blob();
+                    })
+                    .then(blob => {
+                        // Crear URL del blob y descargar
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `evaluacion_hads_${evaluacionId}.pdf`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        window.URL.revokeObjectURL(url);
+                        
+                        console.log('✅ PDF descargado exitosamente');
+                    })
+                    .catch(error => {
+                        console.error('❌ Error descargando PDF:', error);
+                        alert('No se pudo descargar el reporte. Intente nuevamente.');
+                    });
                 } else {
                     throw new Error(result.error || 'Error al generar reporte');
                 }
