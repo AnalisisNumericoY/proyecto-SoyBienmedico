@@ -833,17 +833,19 @@
                 });
 
                 if (pacientesResponse.ok) {
-                    const pacientes = await pacientesResponse.json();
+                    const data = await pacientesResponse.json();
                     const pacienteSelect = document.getElementById('cita_paciente');
                     pacienteSelect.innerHTML = '<option value="">Seleccionar paciente...</option>';
                     
-                    pacientes.forEach(paciente => {
-                        pacienteSelect.innerHTML += `
-                            <option value="${paciente.id}">
-                                ${paciente.nombre} ${paciente.apellidos} - ${paciente.numero_documento}
-                            </option>
-                        `;
-                    });
+                    if (data.pacientes && data.pacientes.length > 0) {
+                        data.pacientes.forEach(paciente => {
+                            pacienteSelect.innerHTML += `
+                                <option value="${paciente.id}">
+                                    ${paciente.nombre} ${paciente.apellidos} - ${paciente.numero_documento}
+                                </option>
+                            `;
+                        });
+                    }
                 }
 
                 // Cargar médicos desde endpoint Supabase
@@ -854,17 +856,19 @@
                 });
 
                 if (medicosResponse.ok) {
-                    const medicos = await medicosResponse.json();
+                    const data = await medicosResponse.json();
                     const medicoSelect = document.getElementById('cita_medico');
                     medicoSelect.innerHTML = '<option value="">Seleccionar médico...</option>';
                     
-                    medicos.forEach(medico => {
-                        medicoSelect.innerHTML += `
-                            <option value="${medico.id}">
-                                Dr. ${medico.nombre} - ${medico.especialidad || 'General'}
-                            </option>
-                        `;
-                    });
+                    if (data.medicos && data.medicos.length > 0) {
+                        data.medicos.forEach(medico => {
+                            medicoSelect.innerHTML += `
+                                <option value="${medico.id}">
+                                    Dr. ${medico.nombre} - ${medico.especialidad || 'General'}
+                                </option>
+                            `;
+                        });
+                    }
                 }
             } catch (error) {
                 console.error('Error cargando datos:', error);
