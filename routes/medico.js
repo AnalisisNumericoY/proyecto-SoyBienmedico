@@ -1,13 +1,7 @@
 const express = require('express');
-const fs = require('fs').promises;
-const path = require('path');
 const { verifyToken } = require('./auth');
+const supabase = require('../config/supabase');
 const router = express.Router();
-
-// File paths
-const CITAS_FILE = path.join(__dirname, '../data/citas.json');
-const PACIENTES_FILE = path.join(__dirname, '../data/pacientes.json');
-const HISTORIAS_FILE = path.join(__dirname, '../data/historias-clinicas.json');
 
 // Middleware to check medico role
 const checkMedicoRole = (req, res, next) => {
@@ -20,40 +14,21 @@ const checkMedicoRole = (req, res, next) => {
   next();
 };
 
-// Helper function to load JSON file
-const loadJsonFile = async (filePath) => {
-  try {
-    const data = await fs.readFile(filePath, 'utf8');
-    return JSON.parse(data);
-  } catch (error) {
-    console.error(`Error loading ${filePath}:`, error);
-    return {};
-  }
-};
-
-// Helper function to save JSON file
-const saveJsonFile = async (filePath, data) => {
-  try {
-    await fs.writeFile(filePath, JSON.stringify(data, null, 2));
-    return true;
-  } catch (error) {
-    console.error(`Error saving ${filePath}:`, error);
-    return false;
-  }
-};
-
 // GET MIS CITAS
 router.get('/mis-citas', verifyToken, checkMedicoRole, async (req, res) => {
   try {
     const medicoId = req.user.medicoId;
     
-    const citasData = await loadJsonFile(CITAS_FILE);
-    const pacientesData = await loadJsonFile(PACIENTES_FILE);
+    const { data: citas } = await supabase
+      .from('citas')
+      .select('*')
+      .eq('medico_id', medicoId)
+      .order('fecha', { ascending: true });
 
-    const misCitas = citasData.citas?.filter(c => c.medico_id === medicoId) || [];
-    
-    const citasConDatos = misCitas.map(cita => {
-      const paciente = pacientesData.pacientes?.find(p => p.id === cita.paciente_id);
+    const { data: pacientes } = await supabase.from('pacientes').select('*');
+
+    const citasConDatos = (citas || []).map(cita => {
+      const paciente = pacientes?.find(p => p.id === cita.paciente_id);
       return {
         ...cita,
         paciente_nombre: paciente ? `${paciente.nombre} ${paciente.apellidos}` : 'Paciente no encontrado',
@@ -80,8 +55,12 @@ router.get('/paciente/:documento', verifyToken, checkMedicoRole, async (req, res
   try {
     const { documento } = req.params;
     
-    const pacientesData = await loadJsonFile(PACIENTES_FILE);
-    const paciente = pacientesData.pacientes?.find(p => p.numero_documento === documento);
+    const { data: pacientes } = await supabase
+      .from('pacientes')
+      .select('*')
+      .eq('numero_documento', documento);
+
+    const paciente = pacientes && pacientes.length > 0 ? pacientes[0] : null;
 
     if (!paciente) {
       return res.status(404).json({
@@ -117,8 +96,6 @@ router.post('/historia-clinica', verifyToken, checkMedicoRole, async (req, res) 
         message: 'ID del paciente y ID de cita son requeridos'
       });
     }
-
-    const historiasData = await loadJsonFile(HISTORIAS_FILE);
 
     // Create historia clinica
     const historiaId = `HC${Date.now()}`;
@@ -157,19 +134,18 @@ router.post('/historia-clinica', verifyToken, checkMedicoRole, async (req, res) 
       created_at: new Date().toISOString()
     };
 
-    if (!historiasData.historias) historiasData.historias = [];
-    historiasData.historias.push(nuevaHistoria);
+    const { data: historiaInserted, error } = await supabase
+      .from('historias_clinicas')
+      .insert([nuevaHistoria])
+      .select();
 
-    const saved = await saveJsonFile(HISTORIAS_FILE, historiasData);
-    if (saved) {
-      res.json({
-        success: true,
-        message: 'Historia clínica guardada exitosamente',
-        historia: nuevaHistoria
-      });
-    } else {
-      throw new Error('Error al guardar la historia clínica');
-    }
+    if (error) throw error;
+
+    res.json({
+      success: true,
+      message: 'Historia clínica guardada exitosamente',
+      historia: historiaInserted[0]
+    });
 
   } catch (error) {
     console.error('Error saving historia clinica:', error);
@@ -194,37 +170,38 @@ router.put('/cita/:citaId/estado', verifyToken, checkMedicoRole, async (req, res
       });
     }
 
-    const citasData = await loadJsonFile(CITAS_FILE);
+    // First, verify the cita belongs to this medico
+    const { data: citasCheck } = await supabase
+      .from('citas')
+      .select('*')
+      .eq('id', citaId)
+      .eq('medico_id', medicoId);
     
-    if (!citasData.citas) {
-      return res.status(404).json({
-        success: false,
-        message: 'No se encontraron citas'
-      });
-    }
-
-    const citaIndex = citasData.citas.findIndex(c => c.id === citaId && c.medico_id === medicoId);
-    
-    if (citaIndex === -1) {
+    if (!citasCheck || citasCheck.length === 0) {
       return res.status(404).json({
         success: false,
         message: 'Cita no encontrada o no autorizada'
       });
     }
 
-    citasData.citas[citaIndex].estado = estado;
-    citasData.citas[citaIndex].updated_at = new Date().toISOString();
+    // Update the cita
+    const { data: citaUpdated, error } = await supabase
+      .from('citas')
+      .update({ 
+        estado: estado,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', citaId)
+      .eq('medico_id', medicoId)
+      .select();
 
-    const saved = await saveJsonFile(CITAS_FILE, citasData);
-    if (saved) {
-      res.json({
-        success: true,
-        message: 'Estado de cita actualizado exitosamente',
-        cita: citasData.citas[citaIndex]
-      });
-    } else {
-      throw new Error('Error al actualizar la cita');
-    }
+    if (error) throw error;
+
+    res.json({
+      success: true,
+      message: 'Estado de cita actualizado exitosamente',
+      cita: citaUpdated[0]
+    });
 
   } catch (error) {
     console.error('Error updating cita status:', error);
