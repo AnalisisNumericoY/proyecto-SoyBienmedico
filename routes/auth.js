@@ -1,37 +1,11 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const fs = require('fs').promises;
-const path = require('path');
+const supabase = require('../config/supabase');
 const router = express.Router();
 
-// Path to JSON files
-const USERS_FILE = path.join(__dirname, '../data/users.json');
-
 // JWT Secret (should be in environment variables)
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-this-in-production';
-
-// Load users from JSON file
-const loadUsers = async () => {
-  try {
-    const data = await fs.readFile(USERS_FILE, 'utf8');
-    return JSON.parse(data);
-  } catch (error) {
-    console.error('Error loading users:', error);
-    return { users: [] };
-  }
-};
-
-// Save users to JSON file
-const saveUsers = async (usersData) => {
-  try {
-    await fs.writeFile(USERS_FILE, JSON.stringify(usersData, null, 2));
-    return true;
-  } catch (error) {
-    console.error('Error saving users:', error);
-    return false;
-  }
-};
+const JWT_SECRET = process.env.JWT_SECRET || 'soybienmedico2026';
 
 // Login endpoint
 router.post('/login', async (req, res) => {
@@ -46,11 +20,23 @@ router.post('/login', async (req, res) => {
       });
     }
 
-    // Load users
-    const usersData = await loadUsers();
-    const user = usersData.users.find(u => 
-      u.username === username && u.role === role
-    );
+    // Query user from Supabase
+    const { data: users, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('username', username)
+      .eq('role', role)
+      .limit(1);
+
+    if (error) {
+      console.error('Error querying Supabase:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Error del servidor al buscar usuario'
+      });
+    }
+
+    const user = users && users.length > 0 ? users[0] : null;
 
     if (!user) {
       return res.status(401).json({
@@ -166,17 +152,21 @@ router.post('/change-password', verifyToken, async (req, res) => {
       });
     }
 
-    const usersData = await loadUsers();
-    const userIndex = usersData.users.findIndex(u => u.id === userId);
+    // Query user from Supabase
+    const { data: users, error: queryError } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', userId)
+      .limit(1);
 
-    if (userIndex === -1) {
+    if (queryError || !users || users.length === 0) {
       return res.status(404).json({
         success: false,
         message: 'Usuario no encontrado'
       });
     }
 
-    const user = usersData.users[userIndex];
+    const user = users[0];
     const isValidPassword = currentPassword === 'password' || 
       await bcrypt.compare(currentPassword, user.password);
 
@@ -191,10 +181,13 @@ router.post('/change-password', verifyToken, async (req, res) => {
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
     
-    usersData.users[userIndex].password = hashedPassword;
-    
-    const saved = await saveUsers(usersData);
-    if (!saved) {
+    // Update password in Supabase
+    const { error: updateError } = await supabase
+      .from('users')
+      .update({ password: hashedPassword })
+      .eq('id', userId);
+
+    if (updateError) {
       throw new Error('Error al guardar la nueva contraseña');
     }
 
