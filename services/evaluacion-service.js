@@ -1,8 +1,5 @@
-const path = require('path');
-const { loadJsonFile, saveJsonFile } = require('../utils/file-handler');
+const supabase = require('../config/supabase');
 const { getCurrentTimestamp } = require('../utils/date-helpers');
-
-const EVALUACIONES_FILE = path.join(__dirname, '../data/evaluaciones.json');
 
 /**
  * Servicio para gestión de evaluaciones (Riesgo Cardiovascular, HADS, etc.)
@@ -15,25 +12,29 @@ const EVALUACIONES_FILE = path.join(__dirname, '../data/evaluaciones.json');
  * @returns {Promise<Object>}
  */
 const guardarRiesgoCardiovascular = async (evaluacionData) => {
-  const data = await loadJsonFile(EVALUACIONES_FILE);
-  if (!data.riesgo_cardiovascular) data.riesgo_cardiovascular = [];
-
   const nuevaEvaluacion = {
     id: `RCARDIO_${Date.now()}`,
+    tipo: 'riesgo_cardiovascular',
     paciente_id: evaluacionData.paciente_id,
     numero_documento: evaluacionData.numero_documento,
-    fecha_evaluacion: getCurrentTimestamp(),
+    fecha: getCurrentTimestamp(),
     resultado: evaluacionData.resultado,
     score: evaluacionData.score,
-    datos_medicion: evaluacionData.datos_medicion,
+    datos_entrada: evaluacionData.datos_medicion || {},
     pdf_path: evaluacionData.pdf_path || null,
-    requiere_consulta: evaluacionData.requiere_consulta || false
+    requiere_consulta: evaluacionData.requiere_consulta || false,
+    creado_por: evaluacionData.creado_por || null,
+    version_algoritmo: '1.0'
   };
 
-  data.riesgo_cardiovascular.push(nuevaEvaluacion);
-  await saveJsonFile(EVALUACIONES_FILE, data);
+  const { data, error } = await supabase
+    .from('evaluaciones')
+    .insert([nuevaEvaluacion])
+    .select();
 
-  return nuevaEvaluacion;
+  if (error) throw error;
+
+  return data[0];
 };
 
 /**
@@ -42,24 +43,31 @@ const guardarRiesgoCardiovascular = async (evaluacionData) => {
  * @returns {Promise<Object>}
  */
 const guardarHADS = async (evaluacionData) => {
-  const data = await loadJsonFile(EVALUACIONES_FILE);
-  if (!data.hads) data.hads = [];
-
   const nuevaEvaluacion = {
     id: `HADS_${Date.now()}`,
+    tipo: 'hads',
     paciente_id: evaluacionData.paciente_id,
     numero_documento: evaluacionData.numero_documento,
-    fecha_evaluacion: getCurrentTimestamp(),
-    ansiedad: evaluacionData.ansiedad,
-    depresion: evaluacionData.depresion,
-    burnout: evaluacionData.burnout || null,
-    pdf_path: evaluacionData.pdf_path || null
+    fecha: getCurrentTimestamp(),
+    resultado: {
+      ansiedad: evaluacionData.ansiedad,
+      depresion: evaluacionData.depresion,
+      burnout: evaluacionData.burnout || null
+    },
+    datos_entrada: evaluacionData.datos_entrada || {},
+    pdf_path: evaluacionData.pdf_path || null,
+    creado_por: evaluacionData.creado_por || null,
+    version_algoritmo: '1.0'
   };
 
-  data.hads.push(nuevaEvaluacion);
-  await saveJsonFile(EVALUACIONES_FILE, data);
+  const { data, error } = await supabase
+    .from('evaluaciones')
+    .insert([nuevaEvaluacion])
+    .select();
 
-  return nuevaEvaluacion;
+  if (error) throw error;
+
+  return data[0];
 };
 
 /**
@@ -68,12 +76,16 @@ const guardarHADS = async (evaluacionData) => {
  * @returns {Promise<Array>}
  */
 const getRiesgoCardiovascularByPaciente = async (pacienteId) => {
-  const data = await loadJsonFile(EVALUACIONES_FILE);
-  const evaluaciones = data.riesgo_cardiovascular || [];
+  const { data, error } = await supabase
+    .from('evaluaciones')
+    .select('*')
+    .eq('paciente_id', pacienteId)
+    .eq('tipo', 'riesgo_cardiovascular')
+    .order('fecha', { ascending: false });
 
-  return evaluaciones
-    .filter(e => e.paciente_id === pacienteId)
-    .sort((a, b) => new Date(b.fecha_evaluacion) - new Date(a.fecha_evaluacion));
+  if (error) throw error;
+
+  return data || [];
 };
 
 /**
@@ -82,12 +94,16 @@ const getRiesgoCardiovascularByPaciente = async (pacienteId) => {
  * @returns {Promise<Array>}
  */
 const getHADSByPaciente = async (pacienteId) => {
-  const data = await loadJsonFile(EVALUACIONES_FILE);
-  const evaluaciones = data.hads || [];
+  const { data, error } = await supabase
+    .from('evaluaciones')
+    .select('*')
+    .eq('paciente_id', pacienteId)
+    .eq('tipo', 'hads')
+    .order('fecha', { ascending: false });
 
-  return evaluaciones
-    .filter(e => e.paciente_id === pacienteId)
-    .sort((a, b) => new Date(b.fecha_evaluacion) - new Date(a.fecha_evaluacion));
+  if (error) throw error;
+
+  return data || [];
 };
 
 /**
@@ -136,11 +152,7 @@ const getResumenEvaluaciones = async (pacienteId) => {
  * @returns {Promise<Object>}
  */
 const crearEvaluacion = async (evaluacionData) => {
-  const data = await loadJsonFile(EVALUACIONES_FILE);
-  if (!data.evaluaciones) data.evaluaciones = [];
-
   // Generar ID único
-  const tipoPrefix = evaluacionData.tipo.toUpperCase().replace(/_/g, '');
   const id = `EVAL_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
   const nuevaEvaluacion = {
@@ -156,11 +168,15 @@ const crearEvaluacion = async (evaluacionData) => {
     version_algoritmo: evaluacionData.version_algoritmo || '1.0'
   };
 
-  data.evaluaciones.push(nuevaEvaluacion);
-  await saveJsonFile(EVALUACIONES_FILE, data);
+  const { data, error } = await supabase
+    .from('evaluaciones')
+    .insert([nuevaEvaluacion])
+    .select();
+
+  if (error) throw error;
 
   console.log(`✅ Evaluación creada: ${id} - Tipo: ${evaluacionData.tipo}`);
-  return nuevaEvaluacion;
+  return data[0];
 };
 
 /**
@@ -169,10 +185,15 @@ const crearEvaluacion = async (evaluacionData) => {
  * @returns {Promise<Object|null>}
  */
 const obtenerEvaluacionPorId = async (evaluacionId) => {
-  const data = await loadJsonFile(EVALUACIONES_FILE);
-  const evaluaciones = data.evaluaciones || [];
+  const { data, error } = await supabase
+    .from('evaluaciones')
+    .select('*')
+    .eq('id', evaluacionId)
+    .limit(1);
 
-  return evaluaciones.find(e => e.id === evaluacionId) || null;
+  if (error) throw error;
+
+  return data && data.length > 0 ? data[0] : null;
 };
 
 /**
@@ -184,21 +205,23 @@ const obtenerEvaluacionPorId = async (evaluacionId) => {
  * @returns {Promise<Array>}
  */
 const obtenerEvaluacionesPorPaciente = async (pacienteId, tipo = null, limit = 50, offset = 0) => {
-  const data = await loadJsonFile(EVALUACIONES_FILE);
-  const evaluaciones = data.evaluaciones || [];
-
-  let filtradas = evaluaciones.filter(e => e.paciente_id === pacienteId);
+  let query = supabase
+    .from('evaluaciones')
+    .select('*')
+    .eq('paciente_id', pacienteId)
+    .order('fecha', { ascending: false })
+    .range(offset, offset + limit - 1);
 
   // Filtrar por tipo si se especifica
   if (tipo) {
-    filtradas = filtradas.filter(e => e.tipo === tipo);
+    query = query.eq('tipo', tipo);
   }
 
-  // Ordenar por fecha (más reciente primero)
-  filtradas.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+  const { data, error } = await query;
 
-  // Aplicar paginación
-  return filtradas.slice(offset, offset + limit);
+  if (error) throw error;
+
+  return data || [];
 };
 
 /**
@@ -208,15 +231,14 @@ const obtenerEvaluacionesPorPaciente = async (pacienteId, tipo = null, limit = 5
  * @returns {Promise<void>}
  */
 const actualizarPDFPath = async (evaluacionId, pdfPath) => {
-  const data = await loadJsonFile(EVALUACIONES_FILE);
-  if (!data.evaluaciones) return;
+  const { error } = await supabase
+    .from('evaluaciones')
+    .update({ pdf_path: pdfPath })
+    .eq('id', evaluacionId);
 
-  const evaluacion = data.evaluaciones.find(e => e.id === evaluacionId);
-  if (evaluacion) {
-    evaluacion.pdf_path = pdfPath;
-    await saveJsonFile(EVALUACIONES_FILE, data);
-    console.log(`✅ PDF actualizado para evaluación ${evaluacionId}: ${pdfPath}`);
-  }
+  if (error) throw error;
+
+  console.log(`✅ PDF actualizado para evaluación ${evaluacionId}: ${pdfPath}`);
 };
 
 /**
@@ -225,21 +247,23 @@ const actualizarPDFPath = async (evaluacionId, pdfPath) => {
  * @returns {Promise<Object>}
  */
 const obtenerEstadisticasPaciente = async (pacienteId) => {
-  const data = await loadJsonFile(EVALUACIONES_FILE);
-  const evaluaciones = (data.evaluaciones || []).filter(e => e.paciente_id === pacienteId);
+  const { data: evaluaciones } = await supabase
+    .from('evaluaciones')
+    .select('*')
+    .eq('paciente_id', pacienteId)
+    .order('fecha', { ascending: false });
 
   const stats = {
-    total: evaluaciones.length,
+    total: evaluaciones?.length || 0,
     por_tipo: {},
     ultima_evaluacion: null
   };
 
-  evaluaciones.forEach(e => {
-    stats.por_tipo[e.tipo] = (stats.por_tipo[e.tipo] || 0) + 1;
-  });
+  if (evaluaciones && evaluaciones.length > 0) {
+    evaluaciones.forEach(e => {
+      stats.por_tipo[e.tipo] = (stats.por_tipo[e.tipo] || 0) + 1;
+    });
 
-  if (evaluaciones.length > 0) {
-    evaluaciones.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
     stats.ultima_evaluacion = {
       id: evaluaciones[0].id,
       tipo: evaluaciones[0].tipo,
