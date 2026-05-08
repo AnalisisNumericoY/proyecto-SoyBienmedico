@@ -5,7 +5,7 @@ const supabase = require('../config/supabase');
 const router = express.Router();
 
 // JWT Secret (should be in environment variables)
-const JWT_SECRET = process.env.JWT_SECRET || 'soybienmedico2026';
+const JWT_SECRET = process.env.JWT_SECRET || 'SoyBienmedico_JWT_Secret_Key_2025_Railway_Secure';
 
 // Login endpoint
 router.post('/login', async (req, res) => {

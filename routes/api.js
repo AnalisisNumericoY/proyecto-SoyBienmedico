@@ -432,7 +432,7 @@ const optionalAuth = (req, res, next) => {
     // Si hay token, intentar verificarlo
     try {
       const jwt = require('jsonwebtoken');
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'soyBienmedico_secret_key_2024');
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'SoyBienmedico_JWT_Secret_Key_2025_Railway_Secure');
       req.user = decoded;
       console.log('🔐 Token verificado - Usuario autenticado:', decoded.userId);
     } catch (error) {
