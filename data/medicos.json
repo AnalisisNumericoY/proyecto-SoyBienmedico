@@ -1,5 +1,5 @@
 {
-  "medicos": [
+"medicos": [
     {
       "id": "DOC001",
       "nombre": "Dr. Juan Carlos",
@@ -20,6 +20,28 @@
       "telefono": "3046385897",
       "especialidad": "Cardiología",
       "created_at": "2025-08-05T03:23:18.593Z",
+      "active": true
+    },
+    {
+      "id": "MED1778003326118",
+      "nombre": "Nelly Velásquez López",
+      "identificacion": "52810933",
+      "registro_medico": "52810933",
+      "correo_electronico": "nellyvelo272@gmail.com",
+      "telefono": "+34 663 26 47 78",
+      "especialidad": "Cardiología",
+      "created_at": "2026-05-05T17:48:46.118Z",
+      "active": true
+    },
+    {
+      "id": "MED1778021611937",
+      "nombre": "Lina Marcela Agamez Berrío",
+      "identificacion": "23180259",
+      "registro_medico": "23180259",
+      "correo_electronico": "linaagamez3@gmail.com",
+      "telefono": "+573003604161",
+      "especialidad": "Medicina Interna",
+      "created_at": "2026-05-05T22:53:31.937Z",
       "active": true
     }
   ]

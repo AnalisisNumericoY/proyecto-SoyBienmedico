@@ -70,6 +70,10 @@ app.get('/debug/data', async (req, res) => {
     const PACIENTES_FILE = path.join(__dirname, 'data/pacientes.json');
     const HISTORIAS_FILE = path.join(__dirname, 'data/historias-clinicas.json');
     const USERS_FILE = path.join(__dirname, 'data/users.json');
+    const EVALUACIONES_FILE = path.join(__dirname, 'data/evaluaciones.json');
+    const MEDICIONES_FILE = path.join(__dirname, 'data/mediciones-temporales.json');
+    const SESIONES_FILE = path.join(__dirname, 'data/sesiones-medicion.json');
+    const CAPSULAS_FILE = path.join(__dirname, 'data/capsulas.json');
 
     console.log('Loading debug data...');
     
@@ -78,10 +82,16 @@ app.get('/debug/data', async (req, res) => {
     const pacientesData = await loadJsonFile(PACIENTES_FILE);
     const historiasData = await loadJsonFile(HISTORIAS_FILE);
     const usersData = await loadJsonFile(USERS_FILE);
+    const evaluacionesData = await loadJsonFile(EVALUACIONES_FILE);
+    const medicionesData = await loadJsonFile(MEDICIONES_FILE);
+    const sesionesData = await loadJsonFile(SESIONES_FILE);
+    const capsulasData = await loadJsonFile(CAPSULAS_FILE);
 
     console.log('Citas loaded:', citasData.citas?.length || 0);
     console.log('Medicos loaded:', medicosData.medicos?.length || 0);
     console.log('Pacientes loaded:', pacientesData.pacientes?.length || 0);
+    console.log('Evaluaciones loaded:', evaluacionesData.evaluaciones?.length || 0);
+    console.log('Historias loaded:', historiasData.historias?.length || 0);
 
     res.json({
       success: true,
@@ -89,7 +99,11 @@ app.get('/debug/data', async (req, res) => {
       medicos: medicosData.medicos || [],
       pacientes: pacientesData.pacientes || [],
       historias: historiasData.historias || [],
-      users: usersData.users || []
+      users: usersData.users || [],
+      evaluaciones: evaluacionesData.evaluaciones || [],
+      mediciones_temporales: medicionesData.mediciones || [],
+      sesiones_medicion: sesionesData.sesiones || [],
+      capsulas: capsulasData.capsulas || []
     });
 
   } catch (error) {

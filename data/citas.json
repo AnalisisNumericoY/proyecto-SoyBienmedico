@@ -1,5 +1,5 @@
 {
-  "citas": [
+"citas": [
     {
       "id": "CITA001",
       "paciente_id": "PAC001",
@@ -188,6 +188,218 @@
       "motivo": "vamos a las 11:10 pm",
       "room_id": "room_CITA1757995302268_1757995302268",
       "created_at": "2025-09-16T04:01:42.268Z"
+    },
+    {
+      "id": "CITA1777998239399",
+      "paciente_id": "PAC001",
+      "medico_id": "DOC001",
+      "fecha": "2026-05-05",
+      "hora": "11:30",
+      "estado": "completada",
+      "motivo": "se necesita revisar al paciente ",
+      "room_id": "room_CITA1777998239399_1777998239399",
+      "created_at": "2026-05-05T16:23:59.399Z",
+      "updated_at": "2026-05-05T16:58:42.424Z"
+    },
+    {
+      "id": "CITA1778000114860",
+      "paciente_id": "PAC001",
+      "medico_id": "DOC001",
+      "fecha": "2026-05-05",
+      "hora": "12:01",
+      "estado": "completada",
+      "motivo": "se necesita revisar",
+      "room_id": "room_CITA1778000114860_1778000114861",
+      "created_at": "2026-05-05T16:55:14.861Z",
+      "updated_at": "2026-05-05T17:02:25.528Z"
+    },
+    {
+      "id": "CITA1778001102029",
+      "paciente_id": "PAC001",
+      "medico_id": "DOC001",
+      "fecha": "2026-05-05",
+      "hora": "12:15",
+      "estado": "completada",
+      "motivo": "revision de rutimna",
+      "room_id": "room_CITA1778001102029_1778001102029",
+      "created_at": "2026-05-05T17:11:42.029Z",
+      "updated_at": "2026-05-05T17:25:37.945Z"
+    },
+    {
+      "id": "CITA1778003595555",
+      "paciente_id": "PAC1778003561294",
+      "medico_id": "MED1778003326118",
+      "fecha": "2026-05-05",
+      "hora": "12:53",
+      "estado": "programada",
+      "motivo": "Prueba",
+      "room_id": "room_CITA1778003595555_1778003595555",
+      "created_at": "2026-05-05T17:53:15.555Z"
+    },
+    {
+      "id": "CITA1778003770612",
+      "paciente_id": "PAC1778003561294",
+      "medico_id": "MED1778003326118",
+      "fecha": "2026-05-05",
+      "hora": "13:00",
+      "estado": "programada",
+      "motivo": "primera vez",
+      "room_id": "room_CITA1778003770612_1778003770612",
+      "created_at": "2026-05-05T17:56:10.612Z"
+    },
+    {
+      "id": "CITA1778004537862",
+      "paciente_id": "PAC1778003561294",
+      "medico_id": "MED1778003326118",
+      "fecha": "2026-05-05",
+      "hora": "13:15",
+      "estado": "programada",
+      "motivo": "primera vez",
+      "room_id": "room_CITA1778004537862_1778004537862",
+      "created_at": "2026-05-05T18:08:57.862Z"
+    },
+    {
+      "id": "CITA1778012112509",
+      "paciente_id": "PAC1778003561294",
+      "medico_id": "MED1778003326118",
+      "fecha": "2026-05-05",
+      "hora": "15:18",
+      "estado": "completada",
+      "motivo": "primera vez",
+      "room_id": "room_CITA1778012112509_1778012112509",
+      "created_at": "2026-05-05T20:15:12.509Z",
+      "updated_at": "2026-05-05T20:28:08.346Z"
+    },
+    {
+      "id": "CITA1778013025401",
+      "paciente_id": "PAC1778003561294",
+      "medico_id": "MED1778003326118",
+      "fecha": "2026-05-05",
+      "hora": "15:33",
+      "estado": "completada",
+      "motivo": "seguimiento",
+      "room_id": "room_CITA1778013025401_1778013025401",
+      "created_at": "2026-05-05T20:30:25.401Z",
+      "updated_at": "2026-05-05T20:45:07.449Z"
+    },
+    {
+      "id": "CITA1778021983003",
+      "paciente_id": "PAC1778003561294",
+      "medico_id": "MED1778021611937",
+      "fecha": "2026-05-05",
+      "hora": "18:45",
+      "estado": "completada",
+      "motivo": "Primera vez",
+      "room_id": "room_CITA1778021983003_1778021983003",
+      "created_at": "2026-05-05T22:59:43.003Z",
+      "updated_at": "2026-05-05T23:10:35.821Z"
+    },
+    {
+      "id": "CITA1778093353982",
+      "paciente_id": "PAC1778092849338",
+      "medico_id": "MED1778021611937",
+      "fecha": "2026-05-06",
+      "hora": "13:55",
+      "estado": "programada",
+      "motivo": "Primera vez",
+      "room_id": "room_CITA1778093353982_1778093353982",
+      "created_at": "2026-05-06T18:49:13.982Z"
+    },
+    {
+      "id": "CITA1778094421747",
+      "paciente_id": "PAC1778092849338",
+      "medico_id": "MED1778021611937",
+      "fecha": "2026-05-06",
+      "hora": "14:08",
+      "estado": "completada",
+      "motivo": "Primera Vez",
+      "room_id": "room_CITA1778094421747_1778094421747",
+      "created_at": "2026-05-06T19:07:01.747Z",
+      "updated_at": "2026-05-06T19:11:12.808Z"
+    },
+    {
+      "id": "CITA1778095058530",
+      "paciente_id": "PAC1778092849338",
+      "medico_id": "MED1778021611937",
+      "fecha": "2026-05-06",
+      "hora": "14:30",
+      "estado": "completada",
+      "motivo": "Primera vez",
+      "room_id": "room_CITA1778095058530_1778095058531",
+      "created_at": "2026-05-06T19:17:38.531Z",
+      "updated_at": "2026-05-06T19:20:54.668Z"
+    },
+    {
+      "id": "CITA1778095350793",
+      "paciente_id": "PAC1778092849338",
+      "medico_id": "MED1778021611937",
+      "fecha": "2026-05-06",
+      "hora": "15:00",
+      "estado": "completada",
+      "motivo": "primera vez",
+      "room_id": "room_CITA1778095350793_1778095350793",
+      "created_at": "2026-05-06T19:22:30.793Z",
+      "updated_at": "2026-05-06T19:49:23.342Z"
+    },
+    {
+      "id": "CITA1778097600129",
+      "paciente_id": "PAC1778096971673",
+      "medico_id": "MED1778021611937",
+      "fecha": "2026-05-06",
+      "hora": "15:30",
+      "estado": "completada",
+      "motivo": "Primera vez",
+      "room_id": "room_CITA1778097600129_1778097600129",
+      "created_at": "2026-05-06T20:00:00.129Z",
+      "updated_at": "2026-05-06T20:21:58.577Z"
+    },
+    {
+      "id": "CITA1778098578417",
+      "paciente_id": "PAC1778098148735",
+      "medico_id": "MED1778021611937",
+      "fecha": "2026-05-06",
+      "hora": "16:17",
+      "estado": "completada",
+      "motivo": "Primera vez",
+      "room_id": "room_CITA1778098578417_1778098578417",
+      "created_at": "2026-05-06T20:16:18.417Z",
+      "updated_at": "2026-05-06T20:28:54.825Z"
+    },
+    {
+      "id": "CITA1778098609121",
+      "paciente_id": "PAC1778098378557",
+      "medico_id": "MED1778021611937",
+      "fecha": "2026-05-06",
+      "hora": "16:30",
+      "estado": "completada",
+      "motivo": "Primera vez",
+      "room_id": "room_CITA1778098609121_1778098609121",
+      "created_at": "2026-05-06T20:16:49.121Z",
+      "updated_at": "2026-05-06T20:37:54.402Z"
+    },
+    {
+      "id": "CITA1778099010652",
+      "paciente_id": "PAC1778098834492",
+      "medico_id": "MED1778021611937",
+      "fecha": "2026-05-06",
+      "hora": "17:23",
+      "estado": "completada",
+      "motivo": "Primera Vez",
+      "room_id": "room_CITA1778099010652_1778099010652",
+      "created_at": "2026-05-06T20:23:30.652Z",
+      "updated_at": "2026-05-06T20:43:10.343Z"
+    },
+    {
+      "id": "CITA1778100586490",
+      "paciente_id": "PAC1778100563940",
+      "medico_id": "MED1778021611937",
+      "fecha": "2026-05-06",
+      "hora": "18:49",
+      "estado": "completada",
+      "motivo": "Primera Vez",
+      "room_id": "room_CITA1778100586490_1778100586490",
+      "created_at": "2026-05-06T20:49:46.490Z",
+      "updated_at": "2026-05-06T20:55:02.626Z"
     }
   ]
 }

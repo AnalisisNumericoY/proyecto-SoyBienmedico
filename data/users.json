@@ -1,5 +1,5 @@
 {
-  "users": [
+"users": [
     {
       "id": "admin001",
       "username": "admin",
@@ -46,6 +46,380 @@
       "medico_id": "MED1754364198593",
       "paciente_id": null,
       "created_at": "2025-08-05T03:23:18.968Z",
+      "active": true
+    },
+    {
+      "id": "user_MED1778003326118",
+      "username": "medico_52810933",
+      "password": "$2a$10$ecGptKcGa.zgIO./fEFe9uLR0c0xX8kOZ7Dc8NyRKg3HX6kdLhmaO",
+      "role": "medico",
+      "email": "nellyvelo272@gmail.com",
+      "medico_id": "MED1778003326118",
+      "paciente_id": null,
+      "created_at": "2026-05-05T17:48:46.182Z",
+      "active": true
+    },
+    {
+      "id": "user_PAC1778003561294",
+      "username": "paciente_1037072361",
+      "password": "$2a$10$DYMqINhoJya9PEjAtLkxW.f5feiyqxaLQm3zkwFUlmYiE/bzuUphm",
+      "role": "paciente",
+      "email": "daniqr19@gmail.com",
+      "medico_id": null,
+      "paciente_id": "PAC1778003561294",
+      "created_at": "2026-05-05T17:52:41.360Z",
+      "active": true
+    },
+    {
+      "id": "user_MED1778021611937",
+      "username": "medico_23180259",
+      "password": "$2a$10$z6rea/gSugqh1kkX6Lc.he1SwuCj/6KdGH3Wt36AR4JYDtgY20RCC",
+      "role": "medico",
+      "email": "linaagamez3@gmail.com",
+      "medico_id": "MED1778021611937",
+      "paciente_id": null,
+      "created_at": "2026-05-05T22:53:32.002Z",
+      "active": true
+    },
+    {
+      "id": "user_PAC1778075345601",
+      "username": "paciente_41954777",
+      "password": "$2a$10$WvMt5cU367BHpFV7KVYqm.xm59F/8mwEWmWUGSEP0hg6llqd0vVya",
+      "role": "paciente",
+      "email": "LS_MARCELA@YAHOO.ES",
+      "medico_id": null,
+      "paciente_id": "PAC1778075345601",
+      "created_at": "2026-05-06T13:49:05.667Z",
+      "active": true
+    },
+    {
+      "id": "user_PAC1778077943236",
+      "username": "paciente_92528365",
+      "password": "$2a$10$k9SYgbVixgXrZid6pmvyGOeRZay9wkwEtPb8OeSagdQNCPwtVNCH.",
+      "role": "paciente",
+      "email": "pandresvargas@gmail.com",
+      "medico_id": null,
+      "paciente_id": "PAC1778077943236",
+      "created_at": "2026-05-06T14:32:23.307Z",
+      "active": true
+    },
+    {
+      "id": "user_PAC1778079644387",
+      "username": "paciente_42820711",
+      "password": "$2a$10$WORMsTHCJkPuB0A6R6ZxKebZOF9xLJEvv8BRpUCkBWLEVzw8rpTcC",
+      "role": "paciente",
+      "email": "clickvital@gmail.com",
+      "medico_id": null,
+      "paciente_id": "PAC1778079644387",
+      "created_at": "2026-05-06T15:00:44.453Z",
+      "active": true
+    },
+    {
+      "id": "user_PAC1778080709247",
+      "username": "paciente_21975943",
+      "password": "$2a$10$q1kosFtWei5SJbwv70GIJO6HfHv07S9FscJDS.O4TTwgkW09p.OdC",
+      "role": "paciente",
+      "email": "clickvital@gmail.com.co",
+      "medico_id": null,
+      "paciente_id": "PAC1778080709247",
+      "created_at": "2026-05-06T15:18:29.311Z",
+      "active": true
+    },
+    {
+      "id": "user_PAC1778081432650",
+      "username": "paciente_30399748",
+      "password": "$2a$10$ma0l.y37aspZIU1e9.5O8ufk.rHs6Z0VyOUX9I1lGGtvwszpSWu1G",
+      "role": "paciente",
+      "email": "limagig@gmail.com",
+      "medico_id": null,
+      "paciente_id": "PAC1778081432650",
+      "created_at": "2026-05-06T15:30:32.723Z",
+      "active": true
+    },
+    {
+      "id": "user_PAC1778081652333",
+      "username": "paciente_43499418",
+      "password": "$2a$10$LHrndzQq00J9aEE3B3ZjBO9no79zTuMoTtEz/VqLYqKcpQTQ4kY8i",
+      "role": "paciente",
+      "email": "adrianamariagiraldoj1@gmail.com",
+      "medico_id": null,
+      "paciente_id": "PAC1778081652333",
+      "created_at": "2026-05-06T15:34:12.398Z",
+      "active": true
+    },
+    {
+      "id": "user_PAC1778082195279",
+      "username": "paciente_15318055",
+      "password": "$2a$10$BcHPyj7VCYQqnGgU4g3HYeUYPNLxgJ3UfascYUZEN4idADCZrQ6.q",
+      "role": "paciente",
+      "email": "eussearturo@yahoo.com",
+      "medico_id": null,
+      "paciente_id": "PAC1778082195279",
+      "created_at": "2026-05-06T15:43:15.344Z",
+      "active": true
+    },
+    {
+      "id": "user_PAC1778082421443",
+      "username": "paciente_70900241",
+      "password": "$2a$10$9/CB3p5qv/SzlZQvCi.dNe3.0T51XHnddjPi6hpswV4BbEQSoC2Ca",
+      "role": "paciente",
+      "email": "gaboparra759@yahoo.com",
+      "medico_id": null,
+      "paciente_id": "PAC1778082421443",
+      "created_at": "2026-05-06T15:47:01.511Z",
+      "active": true
+    },
+    {
+      "id": "user_PAC1778082723602",
+      "username": "paciente_32334035",
+      "password": "$2a$10$Ab9OiZWtPAutetwlyIZyWOn2jvPuk1o9pwqee6LJbK8KGNEaVYM7u",
+      "role": "paciente",
+      "email": "soniamontoyae@gmail.com",
+      "medico_id": null,
+      "paciente_id": "PAC1778082723602",
+      "created_at": "2026-05-06T15:52:03.666Z",
+      "active": true
+    },
+    {
+      "id": "user_PAC1778082955991",
+      "username": "paciente_21384169",
+      "password": "$2a$10$vSGdVKRGG7TEIc5JGvVzle6KjG9bROhuv1pBy3gVUln7k07U2.vH.",
+      "role": "paciente",
+      "email": "silviamoncada119@gmail.com",
+      "medico_id": null,
+      "paciente_id": "PAC1778082955991",
+      "created_at": "2026-05-06T15:55:56.055Z",
+      "active": true
+    },
+    {
+      "id": "user_PAC1778083149538",
+      "username": "paciente_41371110",
+      "password": "$2a$10$OG3qOuRnwdgBIY4pxxXLgeKCaXk21ipURRYasd6DgrynvNkvV/koK",
+      "role": "paciente",
+      "email": "edithyo.alarcon@gmail.com",
+      "medico_id": null,
+      "paciente_id": "PAC1778083149538",
+      "created_at": "2026-05-06T15:59:09.603Z",
+      "active": true
+    },
+    {
+      "id": "user_PAC1778083491169",
+      "username": "paciente_42822513",
+      "password": "$2a$10$rYlgCvCZHp2gNjGbD2ovWe4caq6vQyOEt7aJ2DlGD9z1yp539JWGm",
+      "role": "paciente",
+      "email": "gomez18l@hotmail.com",
+      "medico_id": null,
+      "paciente_id": "PAC1778083491169",
+      "created_at": "2026-05-06T16:04:51.233Z",
+      "active": true
+    },
+    {
+      "id": "user_PAC1778084063926",
+      "username": "paciente_42998927",
+      "password": "$2a$10$xRlciS3LOkYZtdwPD0a9fujap9CB1PVwH1Is0IrzeH3.KU/zPn4Vy",
+      "role": "paciente",
+      "email": "luciela@gmail.com",
+      "medico_id": null,
+      "paciente_id": "PAC1778084063926",
+      "created_at": "2026-05-06T16:14:23.993Z",
+      "active": true
+    },
+    {
+      "id": "user_PAC1778084257480",
+      "username": "paciente_30570349",
+      "password": "$2a$10$.xtYy1lm165WX4SNkS89AOiERKB6U9o6ACB8pDPHez2a1Md5BEuBi",
+      "role": "paciente",
+      "email": "elda349@hotmail.com",
+      "medico_id": null,
+      "paciente_id": "PAC1778084257480",
+      "created_at": "2026-05-06T16:17:37.545Z",
+      "active": true
+    },
+    {
+      "id": "user_PAC1778084416681",
+      "username": "paciente_3563305",
+      "password": "$2a$10$UsCeUErTV8IqvmvUXYakvelKGKQZX1C8o0z4VA2H2BUhqyso6TbB6",
+      "role": "paciente",
+      "email": "jara7805@gmail.com",
+      "medico_id": null,
+      "paciente_id": "PAC1778084416681",
+      "created_at": "2026-05-06T16:20:16.749Z",
+      "active": true
+    },
+    {
+      "id": "user_PAC1778084573637",
+      "username": "paciente_98659131",
+      "password": "$2a$10$BG2thJxVfcTayKCtCcWL8.4DYZRRF4qrC7N6DWqqOpMSSz2S/vODq",
+      "role": "paciente",
+      "email": "judioza8a@hotmail.com",
+      "medico_id": null,
+      "paciente_id": "PAC1778084573637",
+      "created_at": "2026-05-06T16:22:53.701Z",
+      "active": true
+    },
+    {
+      "id": "user_PAC1778085438703",
+      "username": "paciente_7361451",
+      "password": "$2a$10$JoOYLI7xh3yaPwYkS6WbP.bKAyae8wOZiBfKzTEVinJwEyAiafcFy",
+      "role": "paciente",
+      "email": "pedro1960.rivero@gmail.com",
+      "medico_id": null,
+      "paciente_id": "PAC1778085438703",
+      "created_at": "2026-05-06T16:37:18.769Z",
+      "active": true
+    },
+    {
+      "id": "user_PAC1778088154227",
+      "username": "paciente_42822628",
+      "password": "$2a$10$lSfBq4xaDHd1F47NesrJXesQE2GRIag6dQPOQnegD6JrQMGogJPVW",
+      "role": "paciente",
+      "email": "angelaarbo65@gmail.com",
+      "medico_id": null,
+      "paciente_id": "PAC1778088154227",
+      "created_at": "2026-05-06T17:22:34.292Z",
+      "active": true
+    },
+    {
+      "id": "user_PAC1778090298083",
+      "username": "paciente_1027801563",
+      "password": "$2a$10$rt6ZMCYqjcD1Ps4tNHXZQevs.0m5oLTIZ.yDOSKzS7IpQnSus4.42",
+      "role": "paciente",
+      "email": "jmazomartinez54@gmail.com",
+      "medico_id": null,
+      "paciente_id": "PAC1778090298083",
+      "created_at": "2026-05-06T17:58:18.154Z",
+      "active": true
+    },
+    {
+      "id": "user_PAC1778090563467",
+      "username": "paciente_1013457143",
+      "password": "$2a$10$4wDpv6QC31cO3Shy7kIVduHZ4Jxf1cM8PdSS01wuwy7l1bNCN8S/C",
+      "role": "paciente",
+      "email": "andresorozco0405@gmail.com",
+      "medico_id": null,
+      "paciente_id": "PAC1778090563467",
+      "created_at": "2026-05-06T18:02:43.603Z",
+      "active": true
+    },
+    {
+      "id": "user_PAC1778092849338",
+      "username": "paciente_43670097",
+      "password": "$2a$10$2JN7IUXkJxyUiwy7x.4H2eQBVivdqYX40.Z4JdKp1PoClkUDjhD6K",
+      "role": "paciente",
+      "email": "beatrizgaces@hotmail.com",
+      "medico_id": null,
+      "paciente_id": "PAC1778092849338",
+      "created_at": "2026-05-06T18:40:49.410Z",
+      "active": true
+    },
+    {
+      "id": "user_PAC1778093845998",
+      "username": "paciente_1004975",
+      "password": "$2a$10$iiYPHHqK0IOcpanoJ50O7OTQXZv4ACUZP9fliYPnsmgU.9wVCz5Mm",
+      "role": "paciente",
+      "email": "milanyelau74@gmail.com",
+      "medico_id": null,
+      "paciente_id": "PAC1778093845998",
+      "created_at": "2026-05-06T18:57:26.068Z",
+      "active": true
+    },
+    {
+      "id": "user_PAC1778094840292",
+      "username": "paciente_40778670",
+      "password": "$2a$10$7nv/Ae9tfKqFU3FZtug4oev1mQ.SlIeqBeeIwNtVEPfVdEJYFOKuK",
+      "role": "paciente",
+      "email": "emedinag23@hotmail.com",
+      "medico_id": null,
+      "paciente_id": "PAC1778094840292",
+      "created_at": "2026-05-06T19:14:00.356Z",
+      "active": true
+    },
+    {
+      "id": "user_PAC1778096971607",
+      "username": "paciente_43592197",
+      "password": "$2a$10$S9saMuLln2WE7XNR2ccA3e4uJmSER9O56K3XK2O4tY20FGqTaSUcS",
+      "role": "paciente",
+      "email": "weenbedoya25@hotmail.com",
+      "medico_id": null,
+      "paciente_id": "PAC1778096971607",
+      "created_at": "2026-05-06T19:49:31.672Z",
+      "active": true
+    },
+    {
+      "id": "user_PAC1778096971673",
+      "username": "paciente_43592197",
+      "password": "$2a$10$cPFq9wbL/3Vc0HkwqlbNW.maHk/9Co3xIsfFfDtnY7ejsFGEYtkSm",
+      "role": "paciente",
+      "email": "weenbedoya25@hotmail.com",
+      "medico_id": null,
+      "paciente_id": "PAC1778096971673",
+      "created_at": "2026-05-06T19:49:31.737Z",
+      "active": true
+    },
+    {
+      "id": "user_PAC1778098148735",
+      "username": "paciente_43084143",
+      "password": "$2a$10$jZXAko79dPXacUb7AzhpkO2jwaF1NjcwWbgFXpKTq30Ep/99pSDRK",
+      "role": "paciente",
+      "email": "dorobelzv@gmail.com",
+      "medico_id": null,
+      "paciente_id": "PAC1778098148735",
+      "created_at": "2026-05-06T20:09:08.801Z",
+      "active": true
+    },
+    {
+      "id": "user_PAC1778098378557",
+      "username": "paciente_45473152",
+      "password": "$2a$10$LDC4cQ5qIjxOxHE2Xc.aAO3FwUSBfxOXuuUPG6Be/mxZBy6JgYC.G",
+      "role": "paciente",
+      "email": "alida@gmail",
+      "medico_id": null,
+      "paciente_id": "PAC1778098378557",
+      "created_at": "2026-05-06T20:12:58.622Z",
+      "active": true
+    },
+    {
+      "id": "user_PAC1778098834492",
+      "username": "paciente_22210658",
+      "password": "$2a$10$.ZM58/H2gwgaTtZQYyWxUubDWQaz7dHQ6H0Z295u2QbiX8pv9QJja",
+      "role": "paciente",
+      "email": "natyru14@hotmail.com",
+      "medico_id": null,
+      "paciente_id": "PAC1778098834492",
+      "created_at": "2026-05-06T20:20:34.556Z",
+      "active": true
+    },
+    {
+      "id": "user_PAC1778099726274",
+      "username": "paciente_40778670",
+      "password": "$2a$10$3/.46iB1QDoLD9ZPdJwm3e6JloKJigf6Ey7eWXSskVDthhwf3ZYi.",
+      "role": "paciente",
+      "email": "emedinag23@hotmail.com",
+      "medico_id": null,
+      "paciente_id": "PAC1778099726274",
+      "created_at": "2026-05-06T20:35:26.339Z",
+      "active": true
+    },
+    {
+      "id": "user_PAC1778100563940",
+      "username": "paciente_42878565",
+      "password": "$2a$10$QZnj1nwdFJmMUcdXht25.uX4uMH1E0rCvU1dJGlf27ZGSYK2OVbU6",
+      "role": "paciente",
+      "email": "angelanotiene@gmail.com",
+      "medico_id": null,
+      "paciente_id": "PAC1778100563940",
+      "created_at": "2026-05-06T20:49:24.004Z",
+      "active": true
+    },
+    {
+      "id": "user_PAC1778104810239",
+      "username": "paciente_3002431319",
+      "password": "$2a$10$ln/kFko6TYWQH4dErnH2muBIC3NUUF/XL.AY4Gc3QJGi429BbNZVW",
+      "role": "paciente",
+      "email": "correo@hotmail.com",
+      "medico_id": null,
+      "paciente_id": "PAC1778104810239",
+      "created_at": "2026-05-06T22:00:10.305Z",
       "active": true
     }
   ]
