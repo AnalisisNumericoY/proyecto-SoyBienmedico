@@ -2131,14 +2131,23 @@
             try {
                 const token = localStorage.getItem('token');
                 
+                console.log('📄 Generando PDF...');
                 // Generar PDF
                 const pdfResult = await generatePDF(historiaClinica);
                 
-                // Crear FormData para enviar PDF y metadatos
+                // DESCARGAR PDF LOCALMENTE (por seguridad)
+                const downloadLink = document.createElement('a');
+                downloadLink.href = URL.createObjectURL(pdfResult.blob);
+                downloadLink.download = pdfResult.fileName;
+                downloadLink.click();
+                console.log('💾 PDF descargado localmente:', pdfResult.fileName);
+                
+                // Crear FormData para enviar PDF y metadatos al servidor
                 const uploadFormData = new FormData();
                 uploadFormData.append('pdf', pdfResult.blob, pdfResult.fileName);
                 uploadFormData.append('historiaData', JSON.stringify(historiaClinica));
                 
+                console.log('📤 Enviando historia clínica al servidor...');
                 // Enviar a backend
                 const response = await fetch('/medico/historia-clinica', {
                     method: 'POST',
@@ -2150,7 +2159,8 @@
 
                 if (response.ok) {
                     const result = await response.json();
-                    alert('✅ Historia clínica guardada exitosamente\n\n📄 PDF subido a Supabase Storage');
+                    console.log('✅ Respuesta del servidor:', result);
+                    alert('✅ Historia clínica guardada exitosamente\n\n📄 PDF descargado en tu computadora\n☁️  PDF subido a Supabase Storage\n📧 Email enviado al paciente y administración');
                     
                     // Preguntar si quiere finalizar la consulta
                     if (confirm('¿Desea finalizar la consulta ahora?')) {
@@ -2158,10 +2168,11 @@
                     }
                 } else {
                     const errorData = await response.json();
+                    console.error('❌ Error del servidor:', errorData);
                     throw new Error(errorData.message || 'Error al guardar la historia clínica');
                 }
             } catch (error) {
-                console.error('Error:', error);
+                console.error('❌ Error completo:', error);
                 alert('❌ Error al guardar la historia clínica: ' + error.message);
             }
         });

@@ -2,6 +2,7 @@ const express = require('express');
 const { verifyToken } = require('./auth');
 const supabase = require('../config/supabase');
 const multer = require('multer');
+const { sendHistoriaClinica } = require('../services/email-service');
 const router = express.Router();
 
 // Configurar multer para almacenar archivos en memoria
@@ -101,21 +102,39 @@ router.get('/paciente/:documento', verifyToken, checkMedicoRole, async (req, res
 // SAVE HISTORIA CLINICA CON PDF
 router.post('/historia-clinica', verifyToken, checkMedicoRole, upload.single('pdf'), async (req, res) => {
   try {
+    console.log('📥 Recibiendo historia clínica...');
     const medicoId = req.user.medicoId;
     
     // Parse historiaData from form data
     const historiaData = JSON.parse(req.body.historiaData);
+    console.log('📋 Datos de historia:', Object.keys(historiaData));
 
     // Validate required fields
     if (!historiaData.paciente_id || !historiaData.cita_id) {
+      console.error('❌ Faltan campos requeridos');
       return res.status(400).json({
         success: false,
         message: 'ID del paciente y ID de cita son requeridos'
       });
     }
 
-    // Create historia clinica
+    // Obtener datos del paciente y médico para el email
+    const { data: paciente } = await supabase
+      .from('pacientes')
+      .select('nombre, email, numero_documento')
+      .eq('id', historiaData.paciente_id)
+      .single();
+
+    const { data: medico } = await supabase
+      .from('medicos')
+      .select('nombre, email, especialidad, registro_medico')
+      .eq('id', medicoId)
+      .single();
+
+    // Create historia clinica ID
     const historiaId = `HC${Date.now()}`;
+    
+    // Construir objeto con los campos REALES del formulario
     const nuevaHistoria = {
       id: historiaId,
       cita_id: historiaData.cita_id,
@@ -123,40 +142,40 @@ router.post('/historia-clinica', verifyToken, checkMedicoRole, upload.single('pd
       medico_id: medicoId,
       fecha_consulta: historiaData.fecha_consulta || new Date().toISOString(),
       
-      // Información clínica
+      // Campos del formulario de videoconsulta
       motivo_consulta: historiaData.motivo_consulta || '',
-      sintomas_actuales: historiaData.sintomas_actuales || '',
-      tiempo_evolucion: historiaData.tiempo_evolucion || '',
-      intensidad_dolor: historiaData.intensidad_dolor || '',
+      objeto_teleorientacion: historiaData.objeto_teleorientacion || '',
+      antecedentes: historiaData.antecedentes || '',
       
-      // Signos vitales
-      presion_arterial: historiaData.presion_arterial || '',
-      frecuencia_cardiaca: parseInt(historiaData.frecuencia_cardiaca) || null,
-      temperatura: parseFloat(historiaData.temperatura) || null,
-      saturacion_oxigeno: parseInt(historiaData.saturacion_oxigeno) || null,
+      // Signos vitales y antropométricos
+      tabaquismo: historiaData.tabaquismo || '',
+      presion_sistolica: historiaData.presion_sistolica ? parseInt(historiaData.presion_sistolica) : null,
+      presion_diastolica: historiaData.presion_diastolica ? parseInt(historiaData.presion_diastolica) : null,
+      peso: historiaData.peso ? parseFloat(historiaData.peso) : null,
+      talla: historiaData.talla ? parseInt(historiaData.talla) : null,
+      actividad_fisica: historiaData.actividad_fisica || '',
+      frecuencia_cardiaca: historiaData.frecuencia_cardiaca ? parseInt(historiaData.frecuencia_cardiaca) : null,
+      oximetria: historiaData.oximetria ? parseFloat(historiaData.oximetria) : null,
+      glucometria: historiaData.glucometria ? parseFloat(historiaData.glucometria) : null,
       
-      // Examen y diagnóstico
-      examen_fisico: historiaData.examen_fisico || '',
-      diagnostico_principal: historiaData.diagnostico_principal || '',
-      diagnostico_secundario: historiaData.diagnostico_secundario || '',
-      
-      // Tratamiento
-      medicamentos: historiaData.medicamentos || '',
-      recomendaciones: historiaData.recomendaciones || '',
-      
-      // Seguimiento
-      proxima_consulta: historiaData.proxima_consulta || '',
-      examenes: historiaData.examenes || '',
+      // Descripción general y conducta
+      descripcion_general: historiaData.descripcion_general || '',
+      conducta: historiaData.conducta || '',
+      especialidad_requerida: historiaData.especialidad_requerida || '',
       
       created_at: new Date().toISOString()
     };
 
+    console.log('💾 Guardando en Supabase tabla historias_clinicas...');
+
     // Si hay archivo PDF, subirlo a Supabase Storage
     let pdfUrl = null;
     if (req.file) {
+      console.log('📄 PDF recibido, tamaño:', req.file.size, 'bytes');
       const fileName = `${historiaId}_${Date.now()}.pdf`;
       const filePath = `${historiaData.paciente_id}/${fileName}`;
       
+      console.log('⬆️  Subiendo PDF a Supabase Storage...');
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('historias-clinicas-pdf')
         .upload(filePath, req.file.buffer, {
@@ -166,9 +185,11 @@ router.post('/historia-clinica', verifyToken, checkMedicoRole, upload.single('pd
         });
 
       if (uploadError) {
-        console.error('Error uploading PDF to Supabase Storage:', uploadError);
+        console.error('❌ Error uploading PDF to Supabase Storage:', uploadError);
         throw uploadError;
       }
+
+      console.log('✅ PDF subido correctamente');
 
       // Obtener URL pública del archivo
       const { data: publicUrlData } = supabase.storage
@@ -177,6 +198,33 @@ router.post('/historia-clinica', verifyToken, checkMedicoRole, upload.single('pd
       
       pdfUrl = publicUrlData.publicUrl;
       nuevaHistoria.pdf_path = pdfUrl;
+      
+      console.log('🔗 URL pública del PDF:', pdfUrl);
+
+      // Enviar email con PDF adjunto a paciente (con copia a admin)
+      try {
+        console.log('📧 Enviando email con PDF adjunto...');
+        const adminEmail = process.env.ADMIN_EMAIL || 'administracion@soybienmedico.com';
+        
+        const emailResult = await sendHistoriaClinica({
+          pacienteEmail: paciente.email,
+          pacienteNombre: paciente.nombre,
+          medicoNombre: medico.nombre,
+          pdfBuffer: req.file.buffer,
+          pdfFileName: fileName,
+          adminEmail: adminEmail
+        });
+
+        if (emailResult.success) {
+          console.log('✅ Email enviado correctamente a:', paciente.email);
+        } else {
+          console.warn('⚠️  Error al enviar email (continuando):', emailResult.error);
+        }
+      } catch (emailError) {
+        console.warn('⚠️  Error al enviar email (continuando):', emailError.message);
+      }
+    } else {
+      console.warn('⚠️  No se recibió archivo PDF');
     }
 
     const { data: historiaInserted, error } = await supabase
@@ -184,7 +232,12 @@ router.post('/historia-clinica', verifyToken, checkMedicoRole, upload.single('pd
       .insert([nuevaHistoria])
       .select();
 
-    if (error) throw error;
+    if (error) {
+      console.error('❌ Error insertando en Supabase:', error);
+      throw error;
+    }
+
+    console.log('✅ Historia clínica guardada exitosamente, ID:', historiaId);
 
     res.json({
       success: true,
@@ -194,7 +247,7 @@ router.post('/historia-clinica', verifyToken, checkMedicoRole, upload.single('pd
     });
 
   } catch (error) {
-    console.error('Error saving historia clinica:', error);
+    console.error('❌ Error saving historia clinica:', error);
     res.status(500).json({
       success: false,
       message: 'Error interno del servidor: ' + error.message
