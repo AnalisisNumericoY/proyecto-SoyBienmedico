@@ -142,12 +142,36 @@ router.get('/cita/:citaId', verifyToken, checkPacienteRole, async (req, res) => 
     const { citaId } = req.params;
     const pacienteId = req.user.pacienteId;
 
-    // Get cita
+    // ========== LOGS DE DIAGNÓSTICO (TEMPORAL) ==========
+    console.log('=== DIAGNÓSTICO /paciente/cita/:citaId ===');
+    console.log('1. citaId recibido en URL:', citaId);
+    console.log('2. pacienteId del token (req.user.pacienteId):', pacienteId);
+    console.log('3. Usuario completo del token:', req.user);
+
+    // Get cita SIN filtrar por paciente_id primero (para ver qué hay)
+    const { data: citasSinFiltro, error: citaErrorSinFiltro } = await supabase
+      .from('citas')
+      .select('*')
+      .eq('id', citaId);
+
+    console.log('4. Cita encontrada (sin filtrar por paciente):', citasSinFiltro);
+    if (citasSinFiltro && citasSinFiltro.length > 0) {
+      console.log('5. paciente_id de la cita en DB:', citasSinFiltro[0].paciente_id);
+      console.log('6. ¿Coinciden los IDs?', citasSinFiltro[0].paciente_id === pacienteId);
+    } else {
+      console.log('5. NO SE ENCONTRÓ LA CITA con ese ID');
+    }
+
+    // Get cita CON filtro de paciente (comportamiento original)
     const { data: citas, error: citaError } = await supabase
       .from('citas')
       .select('*')
       .eq('id', citaId)
       .eq('paciente_id', pacienteId);
+
+    console.log('7. Cita encontrada CON filtro de paciente:', citas);
+    console.log('=== FIN DIAGNÓSTICO ===');
+    // ====================================================
 
     if (citaError) throw citaError;
 
