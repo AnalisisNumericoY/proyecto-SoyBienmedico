@@ -212,4 +212,53 @@ router.put('/cita/:citaId/estado', verifyToken, checkMedicoRole, async (req, res
   }
 });
 
+// GET CITA BY ID (para videoconsulta)
+router.get('/cita/:citaId', verifyToken, checkMedicoRole, async (req, res) => {
+  try {
+    const { citaId } = req.params;
+    const medicoId = req.user.medicoId;
+
+    // Get cita
+    const { data: citas, error: citaError } = await supabase
+      .from('citas')
+      .select('*')
+      .eq('id', citaId)
+      .eq('medico_id', medicoId);
+
+    if (citaError) throw citaError;
+
+    const cita = citas && citas.length > 0 ? citas[0] : null;
+
+    if (!cita) {
+      return res.status(404).json({
+        success: false,
+        message: 'Cita no encontrada'
+      });
+    }
+
+    // Get paciente data
+    const { data: pacientes, error: pacienteError } = await supabase
+      .from('pacientes')
+      .select('*')
+      .eq('id', cita.paciente_id);
+
+    if (pacienteError) throw pacienteError;
+
+    const paciente = pacientes && pacientes.length > 0 ? pacientes[0] : null;
+
+    res.json({
+      success: true,
+      cita: cita,
+      paciente: paciente
+    });
+
+  } catch (error) {
+    console.error('Error getting cita:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error interno del servidor'
+    });
+  }
+});
+
 module.exports = router;

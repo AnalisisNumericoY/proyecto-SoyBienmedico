@@ -136,4 +136,53 @@ router.get('/historia/:id/pdf', verifyToken, checkPacienteRole, async (req, res)
   }
 });
 
+// GET CITA BY ID (para videoconsulta)
+router.get('/cita/:citaId', verifyToken, checkPacienteRole, async (req, res) => {
+  try {
+    const { citaId } = req.params;
+    const pacienteId = req.user.pacienteId;
+
+    // Get cita
+    const { data: citas, error: citaError } = await supabase
+      .from('citas')
+      .select('*')
+      .eq('id', citaId)
+      .eq('paciente_id', pacienteId);
+
+    if (citaError) throw citaError;
+
+    const cita = citas && citas.length > 0 ? citas[0] : null;
+
+    if (!cita) {
+      return res.status(404).json({
+        success: false,
+        message: 'Cita no encontrada'
+      });
+    }
+
+    // Get medico data
+    const { data: medicos, error: medicoError } = await supabase
+      .from('medicos')
+      .select('*')
+      .eq('id', cita.medico_id);
+
+    if (medicoError) throw medicoError;
+
+    const medico = medicos && medicos.length > 0 ? medicos[0] : null;
+
+    res.json({
+      success: true,
+      cita: cita,
+      medico: medico
+    });
+
+  } catch (error) {
+    console.error('Error getting cita:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error interno del servidor'
+    });
+  }
+});
+
 module.exports = router;

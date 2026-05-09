@@ -659,4 +659,28 @@ router.delete('/paciente/:id', verifyToken, checkAdminRole, async (req, res) => 
   }
 });
 
+// GET ALL CITAS (para actividad reciente)
+router.get('/citas', verifyToken, checkAdminRole, async (req, res) => {
+  try {
+    const { data: citas, error } = await supabase
+      .from('citas')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(10);
+
+    if (error) throw error;
+
+    res.json({
+      success: true,
+      citas: citas || []
+    });
+  } catch (error) {
+    console.error('Error getting citas:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error interno del servidor'
+    });
+  }
+});
+
 module.exports = router;

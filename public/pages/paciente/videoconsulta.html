@@ -517,7 +517,7 @@
         async function loadConsultationInfo() {
             try {
                 const token = localStorage.getItem('token');
-                const response = await fetch('/debug/data', {
+                const response = await fetch(`/paciente/cita/${citaId}`, {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
@@ -526,24 +526,16 @@
                 if (response.ok) {
                     const data = await response.json();
                     
-                    // Encontrar la cita
-                    citaData = data.citas?.find(c => c.id === citaId);
-                    if (!citaData) {
-                        throw new Error('Cita no encontrada');
+                    citaData = data.cita;
+                    medicoData = data.medico;
+
+                    if (!citaData || !medicoData) {
+                        throw new Error('Cita o médico no encontrado');
                     }
 
-                    // Encontrar el médico
-                    medicoData = data.medicos?.find(m => m.id === citaData.medico_id);
-                    if (!medicoData) {
-                        throw new Error('Médico no encontrado');
-                    }
-
-                    // Encontrar el paciente
+                    // Obtener datos del paciente del localStorage
                     const user = JSON.parse(localStorage.getItem('user'));
-                    pacienteData = data.pacientes?.find(p => p.id === user.pacienteId);
-                    if (!pacienteData) {
-                        throw new Error('Paciente no encontrado');
-                    }
+                    pacienteData = { id: user.pacienteId };
 
                     // Mostrar información de la cita
                     document.getElementById('appointmentDetails').innerHTML = `
@@ -558,14 +550,15 @@
                         <p><strong>Nombre:</strong> Dr. ${medicoData.nombre}</p>
                         <p><strong>Especialidad:</strong> ${medicoData.especialidad || 'Medicina General'}</p>
                         <p><strong>Registro:</strong> ${medicoData.registro_medico || 'N/A'}</p>
-                        <p><strong>Email:</strong> ${medicoData.email}</p>
+                        <p><strong>Email:</strong> ${medicoData.correo_electronico || medicoData.email || 'N/A'}</p>
                     `;
 
                     // Actualizar estado de consulta
                     document.getElementById('consultationStatus').textContent = 'Conectado - En espera del médico';
 
                 } else {
-                    throw new Error('Error al cargar datos');
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Error al cargar datos');
                 }
             } catch (error) {
                 console.error('Error:', error);

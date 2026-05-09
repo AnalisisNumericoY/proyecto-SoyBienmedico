@@ -822,7 +822,7 @@
         async function loadPatientInfo() {
             try {
                 const token = localStorage.getItem('token');
-                const response = await fetch('/debug/data', {
+                const response = await fetch(`/medico/cita/${citaId}`, {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
@@ -831,24 +831,22 @@
                 if (response.ok) {
                     const data = await response.json();
                     
-                    // Encontrar la cita
-                    const cita = data.citas?.find(c => c.id === citaId);
-                    if (!cita) {
-                        throw new Error('Cita no encontrada');
+                    const cita = data.cita;
+                    pacienteData = data.paciente;
+
+                    if (!cita || !pacienteData) {
+                        throw new Error('Cita o paciente no encontrado');
                     }
 
-                    // Encontrar el paciente
-                    pacienteData = data.pacientes?.find(p => p.id === cita.paciente_id);
-                    if (!pacienteData) {
-                        throw new Error('Paciente no encontrado');
-                    }
-
-                    // Encontrar el médico
+                    // Obtener datos del médico del localStorage
                     const user = JSON.parse(localStorage.getItem('user'));
-                    medicoData = data.medicos?.find(m => m.id === user.medicoId);
-                    if (!medicoData) {
-                        throw new Error('Médico no encontrado');
-                    }
+                    // Cargar datos del médico desde el endpoint
+                    const medicoResponse = await fetch(`/medico/paciente/${pacienteData.numero_documento}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    
+                    // Usar datos básicos del usuario si no hay respuesta del médico
+                    medicoData = { numero_registro: user.medicoId };
 
                     // Mostrar información del paciente
                     document.getElementById('patientDetails').innerHTML = `
@@ -871,8 +869,6 @@
                     if (cita.motivo) {
                         document.getElementById('motivoConsulta').value = cita.motivo;
                     }
-
-                    console.log('Información del paciente cargada y formulario pre-llenado');
 
                     console.log('Información del paciente cargada y formulario pre-llenado');
                 } else {

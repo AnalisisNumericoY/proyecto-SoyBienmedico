@@ -684,25 +684,39 @@
                 const token = localStorage.getItem('token');
                 console.log('Cargando estadísticas...');
                 
-                const response = await fetch('/debug/data', {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
+                // Cargar pacientes desde Supabase
+                const pacientesResponse = await fetch('/admin/pacientes', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                // Cargar médicos desde Supabase
+                const medicosResponse = await fetch('/admin/medicos', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                // Cargar citas recientes desde Supabase
+                const citasResponse = await fetch('/admin/citas', {
+                    headers: { 'Authorization': `Bearer ${token}` }
                 });
 
-                console.log('Response status:', response.status);
-
-                if (response.ok) {
-                    const data = await response.json();
-                    console.log('Datos recibidos:', data);
+                if (pacientesResponse.ok && medicosResponse.ok && citasResponse.ok) {
+                    const pacientesData = await pacientesResponse.json();
+                    const medicosData = await medicosResponse.json();
+                    const citasData = await citasResponse.json();
                     
-                    document.getElementById('totalUsers').textContent = data.users?.length || 0;
-                    document.getElementById('totalMedicos').textContent = data.medicos?.length || 0;
-                    document.getElementById('totalPacientes').textContent = data.pacientes?.length || 0;
-                    document.getElementById('totalCitas').textContent = data.citas?.length || 0;
+                    const pacientes = pacientesData.pacientes || [];
+                    const medicos = medicosData.medicos || [];
+                    const citas = citasData.citas || [];
+                    
+                    console.log('Datos recibidos:', { pacientes, medicos, citas });
+                    
+                    document.getElementById('totalUsers').textContent = pacientes.length + medicos.length + 1; // +1 admin
+                    document.getElementById('totalMedicos').textContent = medicos.length;
+                    document.getElementById('totalPacientes').textContent = pacientes.length;
+                    document.getElementById('totalCitas').textContent = citas.length;
 
                     // Mostrar actividad reciente
-                    showRecentActivity(data);
+                    showRecentActivity(citas);
                 } else {
                     throw new Error('Error al cargar estadísticas');
                 }
@@ -714,28 +728,17 @@
         }
 
         // Mostrar actividad reciente
-        function showRecentActivity(data) {
+        function showRecentActivity(citas) {
             const activityDiv = document.getElementById('recentActivity');
             const activities = [];
 
-            // Agregar últimas citas
-            if (data.citas && data.citas.length > 0) {
-                data.citas.slice(-3).forEach(cita => {
+            // Agregar últimas citas (ya vienen ordenadas desc, tomar las primeras 5)
+            if (citas && citas.length > 0) {
+                citas.slice(0, 5).forEach(cita => {
                     activities.push({
                         icon: 'calendar-alt',
-                        text: `Nueva cita programada para ${cita.fecha}`,
+                        text: `Cita programada para ${cita.fecha} a las ${cita.hora}`,
                         time: new Date(cita.created_at || Date.now()).toLocaleString()
-                    });
-                });
-            }
-
-            // Agregar últimos usuarios
-            if (data.users && data.users.length > 0) {
-                data.users.slice(-2).forEach(user => {
-                    activities.push({
-                        icon: 'user-plus',
-                        text: `Nuevo ${user.role} registrado: ${user.username}`,
-                        time: new Date(user.created_at || Date.now()).toLocaleString()
                     });
                 });
             }
