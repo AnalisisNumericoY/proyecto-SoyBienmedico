@@ -680,7 +680,7 @@
                 </div>
 
                 <div class="form-actions">
-                    <button type="button" onclick="console.log('🖱️ Botón Guardar Historia Clínica clickeado'); guardarHistoriaClinica()" class="btn-save">
+                    <button type="submit" class="btn-save">
                         <i class="fas fa-save"></i> Guardar Historia Clínica y Generar PDF
                     </button>
                     <button type="button" onclick="console.log('🖱️ Botón Finalizar Consulta clickeado'); finalizarConsulta()" class="btn-secondary">
@@ -1629,85 +1629,7 @@
         }
 
         // Guardar historia clínica
-        async function guardarHistoriaClinica() {
-            try {
-                console.log('🔄 Iniciando guardado de historia clínica...');
-                
-                // Obtener datos del formulario usando los nuevos IDs
-                const historiaData = {
-                    paciente_id: pacienteData.id,
-                    medico_id: medicoData.id,
-                    cita_id: citaId,
-                    
-                    // Datos de la consulta
-                    fecha_consulta: document.getElementById('fechaConsulta').value,
-                    registro_medico_doctor: document.getElementById('registroMedicoDoctor').value,
-                    
-                    // Identificación del paciente
-                    identificacion_paciente: document.getElementById('identificacionPaciente').value,
-                    nombre_completo_paciente: document.getElementById('nombreCompletoPaciente').value,
-                    
-                    // Campos principales del formulario
-                    motivo_consulta: document.getElementById('motivoConsulta').value,
-                    objeto_teleorientacion: document.getElementById('objetoTeleorientacion').value,
-                    antecedentes: document.getElementById('antecedentes').value,
-                    
-                    // Signos vitales y medidas
-                    tabaquismo: document.getElementById('tabaquismo').value,
-                    presion_sistolica: document.getElementById('presionSistolica').value,
-                    presion_diastolica: document.getElementById('presionDiastolica').value,
-                    peso: document.getElementById('peso').value,
-                    talla: document.getElementById('talla').value,
-                    actividad_fisica: document.getElementById('actividadFisica').value,
-                    frecuencia_cardiaca: document.getElementById('frecuenciaCardiaca').value,
-                    oximetria: document.getElementById('oximetria').value,
-                    glucometria: document.getElementById('glucometria').value,
-                    
-                    // Descripción general
-                    descripcion_general: document.getElementById('descripcionGeneral').value,
-                    
-                    // Conducta y especialidad
-                    conducta: document.getElementById('conducta').value,
-                    especialidad_requerida: document.getElementById('especialidadRequerida').value,
-                    
-                    // Firma digital
-                    firma_digital: firmaCanvas ? firmaCanvas.toDataURL() : null,
-                    
-                    // Metadatos
-                    hora_consulta: new Date().toLocaleTimeString('es-ES'),
-                    timestamp: new Date().toISOString()
-                };
-                
-                console.log('📝 Datos recopilados:', historiaData);
-                
-                // Validar campos obligatorios
-                if (!historiaData.registro_medico_doctor || !historiaData.motivo_consulta) {
-                    alert('Por favor complete los campos obligatorios:\n- Registro médico del doctor\n- Motivo de consulta');
-                    return;
-                }
-                
-                console.log('✅ Validación completada, generando PDF...');
-                
-                // Generar PDF con los nuevos campos
-                const fileName = generatePDF(historiaData);
-                
-                // Actualizar estado de la cita a "completada"
-                await updateAppointmentStatus('completada');
-                
-                alert(`✅ Historia clínica guardada exitosamente!\n\n📄 PDF generado: ${fileName}\n\n💾 El archivo se ha descargado a su carpeta de Descargas.`);
-                
-                // Preguntar si desea finalizar la consulta
-                const continuar = confirm('¿Desea finalizar la consulta ahora?');
-                
-                if (continuar) {
-                    finalizarConsulta();
-                }
-                
-            } catch (error) {
-                console.error('❌ Error:', error);
-                alert('Error al guardar la historia clínica: ' + error.message);
-            }
-        }
+
 
         // Inicializar video
         async function initializeVideo() {
