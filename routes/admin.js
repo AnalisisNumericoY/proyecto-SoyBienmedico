@@ -662,17 +662,26 @@ router.delete('/paciente/:id', verifyToken, checkAdminRole, async (req, res) => 
 // GET ALL CITAS (para actividad reciente)
 router.get('/citas', verifyToken, checkAdminRole, async (req, res) => {
   try {
+    // Obtener todas las citas y ordenarlas en el backend
     const { data: citas, error } = await supabase
       .from('citas')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(10);
+      .select('*');
 
     if (error) throw error;
 
+    // Ordenar por created_at (o por ID si created_at es null), más reciente primero
+    const citasOrdenadas = (citas || []).sort((a, b) => {
+      const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
+      const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+      return dateB - dateA; // Descendente
+    });
+
+    // Tomar las últimas 10
+    const citasRecientes = citasOrdenadas.slice(0, 10);
+
     res.json({
       success: true,
-      citas: citas || []
+      citas: citasRecientes
     });
   } catch (error) {
     console.error('Error getting citas:', error);

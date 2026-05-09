@@ -496,9 +496,8 @@
                 return;
             }
 
-            // Obtener información del médico
-            const medico = medicosData.find(m => m.id === cita.medico_id);
-            const medicoNombre = medico ? medico.nombre : 'Médico no encontrado';
+            // Usar el nombre del médico que ya viene en la cita desde el backend
+            const medicoNombre = cita.medico_nombre || 'Médico no encontrado';
 
             // Verificar el estado de la cita
             if (cita.estado === 'completada') {
