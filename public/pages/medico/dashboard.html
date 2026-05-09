@@ -289,7 +289,9 @@
         async function loadMedicoData() {
             try {
                 const token = localStorage.getItem('token');
-                const response = await fetch('/debug/data', {
+                
+                // Cargar citas desde Supabase
+                const response = await fetch('/medico/mis-citas', {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
@@ -297,24 +299,15 @@
 
                 if (response.ok) {
                     const data = await response.json();
+                    const misCitas = data.citas || [];
                     
                     // Obtener fecha de hoy (fecha local, no UTC)
                     const today = new Date();
                     const hoy = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-                    
-                    // Filtrar citas del médico actual
-                    const misCitas = data.citas?.filter(cita => 
-                        cita.medico_id === currentUser.medicoId
-                    ) || [];
 
                     // Contar pacientes únicos
                     const pacientesUnicos = new Set(misCitas.map(cita => cita.paciente_id));
                     
-                    // Filtrar historias del médico
-                    const misHistorias = data.historias?.filter(historia => 
-                        historia.medico_id === currentUser.medicoId
-                    ) || [];
-
                     // Obtener momento actual
                     const now = new Date();
 
@@ -337,11 +330,11 @@
                     document.getElementById('citasHoy').textContent = citasHoy.length;
                     document.getElementById('totalCitas').textContent = misCitas.length;
                     document.getElementById('totalPacientes').textContent = pacientesUnicos.size;
-                    document.getElementById('totalHistorias').textContent = misHistorias.length;
+                    document.getElementById('totalHistorias').textContent = 0; // TODO: cargar historias
 
-                    // Mostrar citas
-                    mostrarCitasHoy(citasHoy, data.pacientes);
-                    mostrarProximasCitas(misCitas, data.pacientes);
+                    // Mostrar citas (los datos ya vienen con info del paciente)
+                    mostrarCitasHoy(citasHoy, null);
+                    mostrarProximasCitas(misCitas, null);
                 } else {
                     throw new Error('Error al cargar datos');
                 }
@@ -364,10 +357,7 @@
             }
 
             container.innerHTML = citas.map(cita => {
-                const paciente = pacientes?.find(p => p.id === cita.paciente_id);
-                const pacienteNombre = paciente ? 
-                    `${paciente.nombre} ${paciente.apellidos}` : 
-                    'Paciente no encontrado';
+                const pacienteNombre = cita.paciente_nombre || 'Paciente no encontrado';
 
                 return `
                     <div class="appointment-card">
@@ -410,10 +400,7 @@
             }
 
             container.innerHTML = citasFuturas.map(cita => {
-                const paciente = pacientes?.find(p => p.id === cita.paciente_id);
-                const pacienteNombre = paciente ? 
-                    `${paciente.nombre} ${paciente.apellidos}` : 
-                    'Paciente no encontrado';
+                const pacienteNombre = cita.paciente_nombre || 'Paciente no encontrado';
 
                 return `
                     <div class="appointment-card">
