@@ -694,8 +694,8 @@
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 
-                // Cargar citas recientes desde Supabase
-                const citasResponse = await fetch('/admin/citas', {
+                // Cargar citas recientes desde Supabase (con timestamp para evitar caché)
+                const citasResponse = await fetch(`/admin/citas?t=${Date.now()}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
 
