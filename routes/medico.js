@@ -1,7 +1,22 @@
 const express = require('express');
 const { verifyToken } = require('./auth');
 const supabase = require('../config/supabase');
+const multer = require('multer');
 const router = express.Router();
+
+// Configurar multer para almacenar archivos en memoria
+const storage = multer.memoryStorage();
+const upload = multer({ 
+  storage: storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // Límite de 5MB
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === 'application/pdf') {
+      cb(null, true);
+    } else {
+      cb(new Error('Solo se permiten archivos PDF'), false);
+    }
+  }
+});
 
 // Middleware to check medico role
 const checkMedicoRole = (req, res, next) => {
@@ -83,11 +98,13 @@ router.get('/paciente/:documento', verifyToken, checkMedicoRole, async (req, res
   }
 });
 
-// SAVE HISTORIA CLINICA
-router.post('/historia-clinica', verifyToken, checkMedicoRole, async (req, res) => {
+// SAVE HISTORIA CLINICA CON PDF
+router.post('/historia-clinica', verifyToken, checkMedicoRole, upload.single('pdf'), async (req, res) => {
   try {
     const medicoId = req.user.medicoId;
-    const historiaData = req.body;
+    
+    // Parse historiaData from form data
+    const historiaData = JSON.parse(req.body.historiaData);
 
     // Validate required fields
     if (!historiaData.paciente_id || !historiaData.cita_id) {
@@ -134,6 +151,34 @@ router.post('/historia-clinica', verifyToken, checkMedicoRole, async (req, res) 
       created_at: new Date().toISOString()
     };
 
+    // Si hay archivo PDF, subirlo a Supabase Storage
+    let pdfUrl = null;
+    if (req.file) {
+      const fileName = `${historiaId}_${Date.now()}.pdf`;
+      const filePath = `${historiaData.paciente_id}/${fileName}`;
+      
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('historias-clinicas-pdf')
+        .upload(filePath, req.file.buffer, {
+          contentType: 'application/pdf',
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (uploadError) {
+        console.error('Error uploading PDF to Supabase Storage:', uploadError);
+        throw uploadError;
+      }
+
+      // Obtener URL pública del archivo
+      const { data: publicUrlData } = supabase.storage
+        .from('historias-clinicas-pdf')
+        .getPublicUrl(filePath);
+      
+      pdfUrl = publicUrlData.publicUrl;
+      nuevaHistoria.pdf_path = pdfUrl;
+    }
+
     const { data: historiaInserted, error } = await supabase
       .from('historias_clinicas')
       .insert([nuevaHistoria])
@@ -144,14 +189,15 @@ router.post('/historia-clinica', verifyToken, checkMedicoRole, async (req, res) 
     res.json({
       success: true,
       message: 'Historia clínica guardada exitosamente',
-      historia: historiaInserted[0]
+      historia: historiaInserted[0],
+      pdfUrl: pdfUrl
     });
 
   } catch (error) {
     console.error('Error saving historia clinica:', error);
     res.status(500).json({
       success: false,
-      message: 'Error interno del servidor'
+      message: 'Error interno del servidor: ' + error.message
     });
   }
 });

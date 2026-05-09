@@ -1396,11 +1396,11 @@
                 doc.text(`Registro Médico: ${historiaData.registro_medico_doctor}`, margin + 10, yPosition + 55);
                 doc.text(`Fecha: ${historiaData.fecha_consulta} - ${historiaData.hora_consulta}`, pageWidth - margin - 10, yPosition + 50, { align: 'right' });
                 
-                // Guardar PDF
+                // Retornar PDF como Blob en lugar de descargarlo
+                const pdfBlob = doc.output('blob');
                 const fileName = `Teleorientacion_${pacienteData.numero_documento}_${historiaData.fecha_consulta}.pdf`;
-                doc.save(fileName);
                 
-                return fileName;
+                return { blob: pdfBlob, fileName: fileName };
                 
             } catch (error) {
                 console.error('Error al generar PDF con membrete:', error);
@@ -2117,26 +2117,48 @@
             historiaClinica.fecha_consulta = new Date().toISOString();
             historiaClinica.medico_id = JSON.parse(localStorage.getItem('user')).medicoId;
             
+            // Agregar datos del paciente y médico para el PDF
+            historiaClinica.identificacion_paciente = pacienteData.numero_documento;
+            historiaClinica.nombre_completo_paciente = pacienteData.nombre;
+            historiaClinica.registro_medico_doctor = medicoData.registro_medico || 'No especificado';
+            historiaClinica.hora_consulta = new Date().toLocaleTimeString('es-ES');
+            
+            // Capturar firma digital si existe
+            if (firmaCanvas) {
+                historiaClinica.firma_digital = firmaCanvas.toDataURL();
+            }
+            
             try {
                 const token = localStorage.getItem('token');
+                
+                // Generar PDF
+                const pdfResult = await generatePDF(historiaClinica);
+                
+                // Crear FormData para enviar PDF y metadatos
+                const uploadFormData = new FormData();
+                uploadFormData.append('pdf', pdfResult.blob, pdfResult.fileName);
+                uploadFormData.append('historiaData', JSON.stringify(historiaClinica));
+                
+                // Enviar a backend
                 const response = await fetch('/medico/historia-clinica', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`
                     },
-                    body: JSON.stringify(historiaClinica)
+                    body: uploadFormData
                 });
 
                 if (response.ok) {
-                    alert('✅ Historia clínica guardada exitosamente');
+                    const result = await response.json();
+                    alert('✅ Historia clínica guardada exitosamente\n\n📄 PDF subido a Supabase Storage');
                     
                     // Preguntar si quiere finalizar la consulta
                     if (confirm('¿Desea finalizar la consulta ahora?')) {
                         endCall();
                     }
                 } else {
-                    throw new Error('Error al guardar la historia clínica');
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Error al guardar la historia clínica');
                 }
             } catch (error) {
                 console.error('Error:', error);

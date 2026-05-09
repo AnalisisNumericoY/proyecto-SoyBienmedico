@@ -115,15 +115,27 @@ router.get('/historia/:id/pdf', verifyToken, checkPacienteRole, async (req, res)
       });
     }
 
-    const pdfPath = path.join(__dirname, '..', historia.pdf_path);
-    
-    try {
-      await fs.access(pdfPath);
-      res.sendFile(pdfPath);
-    } catch (error) {
-      res.status(404).json({
+    // Verificar si el PDF está en Supabase Storage o en filesystem local
+    if (historia.pdf_path && historia.pdf_path.includes('supabase.co')) {
+      // PDF está en Supabase Storage - redirigir a la URL pública
+      return res.redirect(historia.pdf_path);
+    } else if (historia.pdf_path) {
+      // PDF está en filesystem local (para historias antiguas)
+      const pdfPath = path.join(__dirname, '..', historia.pdf_path);
+      
+      try {
+        await fs.access(pdfPath);
+        res.sendFile(pdfPath);
+      } catch (error) {
+        res.status(404).json({
+          success: false,
+          message: 'Archivo PDF no encontrado en servidor local'
+        });
+      }
+    } else {
+      return res.status(404).json({
         success: false,
-        message: 'Archivo PDF no encontrado'
+        message: 'Esta historia clínica no tiene PDF asociado'
       });
     }
 
