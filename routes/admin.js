@@ -490,17 +490,27 @@ router.get('/pacientes', verifyToken, checkAdminRole, async (req, res) => {
 // GET ALL CITAS
 router.get('/citas', verifyToken, checkAdminRole, async (req, res) => {
   try {
+    // Obtener todas las citas
     const { data: citas, error: citasError } = await supabase
       .from('citas')
-      .select('*')
-      .order('fecha', { ascending: true });
+      .select('*');
 
     if (citasError) throw citasError;
+
+    // Ordenar por created_at descendente (más recientes primero)
+    const citasOrdenadas = (citas || []).sort((a, b) => {
+      const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
+      const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+      return dateB - dateA;
+    });
+
+    // Tomar las últimas 10
+    const citasRecientes = citasOrdenadas.slice(0, 10);
 
     const { data: medicos } = await supabase.from('medicos').select('*');
     const { data: pacientes } = await supabase.from('pacientes').select('*');
 
-    const citasConDatos = (citas || []).map(cita => {
+    const citasConDatos = citasRecientes.map(cita => {
       const medico = medicos?.find(m => m.id === cita.medico_id);
       const paciente = pacientes?.find(p => p.id === cita.paciente_id);
       return {
@@ -652,39 +662,6 @@ router.delete('/paciente/:id', verifyToken, checkAdminRole, async (req, res) => 
 
   } catch (error) {
     console.error('Error deleting paciente:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error interno del servidor'
-    });
-  }
-});
-
-// GET ALL CITAS (para actividad reciente)
-router.get('/citas', verifyToken, checkAdminRole, async (req, res) => {
-  try {
-    // Obtener todas las citas y ordenarlas en el backend
-    const { data: citas, error } = await supabase
-      .from('citas')
-      .select('*');
-
-    if (error) throw error;
-
-    // Ordenar por created_at (o por ID si created_at es null), más reciente primero
-    const citasOrdenadas = (citas || []).sort((a, b) => {
-      const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
-      const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
-      return dateB - dateA; // Descendente
-    });
-
-    // Tomar las últimas 10
-    const citasRecientes = citasOrdenadas.slice(0, 10);
-
-    res.json({
-      success: true,
-      citas: citasRecientes
-    });
-  } catch (error) {
-    console.error('Error getting citas:', error);
     res.status(500).json({
       success: false,
       message: 'Error interno del servidor'
