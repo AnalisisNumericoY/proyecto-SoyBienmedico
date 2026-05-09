@@ -369,11 +369,14 @@
                 });
 
                 if (citasResponse.ok && historiasResponse.ok) {
-                    const citasData = await citasResponse.json();
-                    const historiasData = await historiasResponse.json();
+                    const citasDataResponse = await citasResponse.json();
+                    const historiasDataResponse = await historiasResponse.json();
                     
-                    const misCitas = citasData.citas || [];
-                    const misHistorias = historiasData.historias || [];
+                    const misCitas = citasDataResponse.citas || [];
+                    const misHistorias = historiasDataResponse.historias || [];
+                    
+                    // Actualizar variables globales para unirseConsulta()
+                    citasData = misCitas;
 
                     // Obtener citas futuras
                     const ahora = new Date();
