@@ -2,12 +2,8 @@ const express = require('express');
 const fs = require('fs').promises;
 const path = require('path');
 const { verifyToken } = require('./auth');
+const supabase = require('../config/supabase');
 const router = express.Router();
-
-// File paths
-const CITAS_FILE = path.join(__dirname, '../data/citas.json');
-const MEDICOS_FILE = path.join(__dirname, '../data/medicos.json');
-const HISTORIAS_FILE = path.join(__dirname, '../data/historias-clinicas.json');
 
 // Middleware to check paciente role
 const checkPacienteRole = (req, res, next) => {
@@ -20,29 +16,23 @@ const checkPacienteRole = (req, res, next) => {
   next();
 };
 
-// Helper function to load JSON file
-const loadJsonFile = async (filePath) => {
-  try {
-    const data = await fs.readFile(filePath, 'utf8');
-    return JSON.parse(data);
-  } catch (error) {
-    console.error(`Error loading ${filePath}:`, error);
-    return {};
-  }
-};
-
 // GET MIS CITAS
 router.get('/mis-citas', verifyToken, checkPacienteRole, async (req, res) => {
   try {
     const pacienteId = req.user.pacienteId;
     
-    const citasData = await loadJsonFile(CITAS_FILE);
-    const medicosData = await loadJsonFile(MEDICOS_FILE);
+    const { data: citas, error: citasError } = await supabase
+      .from('citas')
+      .select('*')
+      .eq('paciente_id', pacienteId)
+      .order('fecha', { ascending: true });
 
-    const misCitas = citasData.citas?.filter(c => c.paciente_id === pacienteId) || [];
-    
-    const citasConDatos = misCitas.map(cita => {
-      const medico = medicosData.medicos?.find(m => m.id === cita.medico_id);
+    if (citasError) throw citasError;
+
+    const { data: medicos } = await supabase.from('medicos').select('*');
+
+    const citasConDatos = (citas || []).map(cita => {
+      const medico = medicos?.find(m => m.id === cita.medico_id);
       return {
         ...cita,
         medico_nombre: medico ? medico.nombre : 'Médico no encontrado',
@@ -69,13 +59,18 @@ router.get('/mis-historias', verifyToken, checkPacienteRole, async (req, res) =>
   try {
     const pacienteId = req.user.pacienteId;
     
-    const historiasData = await loadJsonFile(HISTORIAS_FILE);
-    const medicosData = await loadJsonFile(MEDICOS_FILE);
+    const { data: historias, error: historiasError } = await supabase
+      .from('historias_clinicas')
+      .select('*')
+      .eq('paciente_id', pacienteId)
+      .order('fecha_consulta', { ascending: false });
 
-    const misHistorias = historiasData.historias?.filter(h => h.paciente_id === pacienteId) || [];
-    
-    const historiasConDatos = misHistorias.map(historia => {
-      const medico = medicosData.medicos?.find(m => m.id === historia.medico_id);
+    if (historiasError) throw historiasError;
+
+    const { data: medicos } = await supabase.from('medicos').select('*');
+
+    const historiasConDatos = (historias || []).map(historia => {
+      const medico = medicos?.find(m => m.id === historia.medico_id);
       return {
         ...historia,
         medico_nombre: medico ? medico.nombre : 'Médico no encontrado',
@@ -103,10 +98,15 @@ router.get('/historia/:id/pdf', verifyToken, checkPacienteRole, async (req, res)
     const { id } = req.params;
     const pacienteId = req.user.pacienteId;
     
-    const historiasData = await loadJsonFile(HISTORIAS_FILE);
-    const historia = historiasData.historias?.find(h => 
-      h.id === id && h.paciente_id === pacienteId
-    );
+    const { data: historias, error } = await supabase
+      .from('historias_clinicas')
+      .select('*')
+      .eq('id', id)
+      .eq('paciente_id', pacienteId);
+
+    if (error) throw error;
+
+    const historia = historias && historias.length > 0 ? historias[0] : null;
 
     if (!historia) {
       return res.status(404).json({
