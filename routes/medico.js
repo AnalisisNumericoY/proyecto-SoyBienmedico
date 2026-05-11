@@ -137,7 +137,7 @@ router.post('/historia-clinica', verifyToken, checkMedicoRole, upload.single('pd
     
     const { data: medico, error: medicoError } = await supabase
       .from('medicos')
-      .select('nombre, email, especialidad, registro_medico')
+      .select('nombre, correo_electronico, especialidad, registro_medico')
       .eq('id', medicoId)
       .single();
     
