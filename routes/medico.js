@@ -361,10 +361,21 @@ router.get('/cita/:citaId', verifyToken, checkMedicoRole, async (req, res) => {
 
     const paciente = pacientes && pacientes.length > 0 ? pacientes[0] : null;
 
+    // Get medico data
+    const { data: medicos, error: medicoError } = await supabase
+      .from('medicos')
+      .select('*')
+      .eq('id', cita.medico_id);
+
+    if (medicoError) throw medicoError;
+
+    const medico = medicos && medicos.length > 0 ? medicos[0] : null;
+
     res.json({
       success: true,
       cita: cita,
-      paciente: paciente
+      paciente: paciente,
+      medico: medico
     });
 
   } catch (error) {

@@ -3,10 +3,16 @@ const nodemailer = require('nodemailer');
 // Configuración del transporter de Nodemailer
 // IMPORTANTE: Configurar variables de entorno en Railway
 const transporter = nodemailer.createTransport({
-  service: 'gmail', // Puedes cambiar a otro servicio (outlook, yahoo, etc.)
+  host: 'smtp.gmail.com',
+  port: 587,                    // Puerto TLS (más compatible que 465)
+  secure: false,                // false para TLS, true para SSL
   auth: {
-    user: process.env.EMAIL_USER || 'soybienmedico@gmail.com', // Email del sistema
-    pass: process.env.EMAIL_PASSWORD || '' // Contraseña de aplicación de Gmail
+    user: process.env.EMAIL_USER || 'soybienmedico@gmail.com',
+    pass: process.env.EMAIL_PASSWORD || ''
+  },
+  family: 4,                    // Forzar IPv4 (evita problemas con IPv6)
+  tls: {
+    rejectUnauthorized: false   // Permitir certificados autofirmados si es necesario
   }
 });
 

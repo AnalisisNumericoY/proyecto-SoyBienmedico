@@ -833,20 +833,13 @@
                     
                     const cita = data.cita;
                     pacienteData = data.paciente;
+                    medicoData = data.medico;  // Datos completos del médico desde el backend
 
-                    if (!cita || !pacienteData) {
-                        throw new Error('Cita o paciente no encontrado');
+                    if (!cita || !pacienteData || !medicoData) {
+                        throw new Error('Cita, paciente o médico no encontrado');
                     }
 
-                    // Obtener datos del médico del localStorage
-                    const user = JSON.parse(localStorage.getItem('user'));
-                    // Cargar datos del médico desde el endpoint
-                    const medicoResponse = await fetch(`/medico/paciente/${pacienteData.numero_documento}`, {
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    });
-                    
-                    // Usar datos básicos del usuario si no hay respuesta del médico
-                    medicoData = { numero_registro: user.medicoId };
+                    console.log('✅ Datos del médico cargados:', medicoData);
 
                     // Mostrar información del paciente
                     document.getElementById('patientDetails').innerHTML = `
@@ -861,7 +854,7 @@
 
                     // Pre-llenar campos del formulario
                     document.getElementById('fechaConsulta').value = new Date().toISOString().split('T')[0];
-                    document.getElementById('registroMedicoDoctor').value = medicoData?.numero_registro || '';
+                    document.getElementById('registroMedicoDoctor').value = medicoData?.registro_medico || '';
                     document.getElementById('identificacionPaciente').value = pacienteData.numero_documento;
                     document.getElementById('nombreCompletoPaciente').value = `${pacienteData.nombre} ${pacienteData.apellidos}`;
                     
