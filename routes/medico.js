@@ -105,6 +105,13 @@ router.post('/historia-clinica', verifyToken, checkMedicoRole, upload.single('pd
     console.log('📥 Recibiendo historia clínica...');
     const medicoId = req.user.medicoId;
     
+    // 🔍 LOGS DE DEBUGGING
+    console.log('🔍 TOKEN COMPLETO (req.user):', JSON.stringify(req.user, null, 2));
+    console.log('🔍 medicoId extraído:', medicoId);
+    console.log('🔍 Tipo de medicoId:', typeof medicoId);
+    console.log('🔍 medicoId es undefined?:', medicoId === undefined);
+    console.log('🔍 medicoId es null?:', medicoId === null);
+    
     // Parse historiaData from form data
     const historiaData = JSON.parse(req.body.historiaData);
     console.log('📋 Datos de historia:', Object.keys(historiaData));
@@ -125,11 +132,20 @@ router.post('/historia-clinica', verifyToken, checkMedicoRole, upload.single('pd
       .eq('id', historiaData.paciente_id)
       .single();
 
-    const { data: medico } = await supabase
+    console.log('🔍 BUSCANDO MÉDICO EN SUPABASE...');
+    console.log('🔍 Query: SELECT * FROM medicos WHERE id =', medicoId);
+    
+    const { data: medico, error: medicoError } = await supabase
       .from('medicos')
       .select('nombre, email, especialidad, registro_medico')
       .eq('id', medicoId)
       .single();
+    
+    console.log('📊 RESULTADO BÚSQUEDA MÉDICO:');
+    console.log('  - data:', medico);
+    console.log('  - error:', medicoError);
+    console.log('  - medico es null?:', medico === null);
+    console.log('  - medico es undefined?:', medico === undefined);
 
     // Create historia clinica ID
     const historiaId = `HC${Date.now()}`;
