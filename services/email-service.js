@@ -1,25 +1,17 @@
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 
-// Configuración del transporter de Nodemailer
-// IMPORTANTE: Configurar variables de entorno en Railway
-const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 587,                    // Puerto TLS (más compatible que 465)
-  secure: false,                // false para TLS, true para SSL
-  auth: {
-    user: process.env.EMAIL_USER || 'soybienmedico@gmail.com',
-    pass: process.env.EMAIL_PASSWORD || ''
-  },
-  family: 4,                    // Forzar IPv4 (evita problemas con IPv6)
-  tls: {
-    rejectUnauthorized: false   // Permitir certificados autofirmados si es necesario
-  }
-});
+// Configuración de Resend
+// IMPORTANTE: Configurar RESEND_API_KEY en Railway
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+// Email remitente (debe estar verificado en Resend o usar onboarding@resend.dev)
+const FROM_EMAIL = process.env.FROM_EMAIL || 'onboarding@resend.dev';
+const FROM_NAME = 'SoyBienmedico';
 
 /**
- * Servicio reutilizable para envío de correos electrónicos
+ * Servicio reutilizable para envío de correos electrónicos con Resend
  * @param {Object} options - Opciones del correo
- * @param {string} options.to - Destinatario(s) separados por coma
+ * @param {string} options.to - Destinatario(s) (array o string)
  * @param {string} options.cc - Copia (opcional)
  * @param {string} options.subject - Asunto del correo
  * @param {string} options.html - Contenido HTML del correo
@@ -28,35 +20,39 @@ const transporter = nodemailer.createTransport({
  */
 async function sendEmail({ to, cc, subject, html, attachments = [] }) {
   try {
-    const mailOptions = {
-      from: `"SoyBienmedico" <${process.env.EMAIL_USER || 'soybienmedico@gmail.com'}>`,
-      to: to,
+    const emailData = {
+      from: `${FROM_NAME} <${FROM_EMAIL}>`,
+      to: Array.isArray(to) ? to : [to],
       subject: subject,
       html: html
     };
 
     // Agregar CC si existe
     if (cc) {
-      mailOptions.cc = cc;
+      emailData.cc = Array.isArray(cc) ? cc : [cc];
     }
 
     // Agregar adjuntos si existen
     if (attachments && attachments.length > 0) {
-      mailOptions.attachments = attachments;
+      emailData.attachments = attachments.map(att => ({
+        filename: att.filename,
+        content: att.content.toString('base64'), // Resend requiere base64
+        contentType: att.contentType || 'application/octet-stream'
+      }));
     }
 
-    const info = await transporter.sendMail(mailOptions);
+    const data = await resend.emails.send(emailData);
     
-    console.log('✅ Email enviado:', info.messageId);
+    console.log('✅ Email enviado con Resend:', data.id);
     return {
       success: true,
-      messageId: info.messageId,
+      messageId: data.id,
       to: to,
       subject: subject
     };
 
   } catch (error) {
-    console.error('❌ Error enviando email:', error);
+    console.error('❌ Error enviando email con Resend:', error);
     return {
       success: false,
       error: error.message
