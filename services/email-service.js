@@ -176,7 +176,7 @@ async function sendMedicoCredentials({ email, nombre, username, password, especi
 /**
  * Enviar historia clínica por correo
  */
-async function sendHistoriaClinica({ pacienteEmail, pacienteNombre, medicoNombre, pdfBuffer, pdfFileName, adminEmail }) {
+async function sendHistoriaClinica({ pacienteEmail, pacienteNombre, pdfBuffer, pdfFileName, adminEmail }) {
   const html = `
     <!DOCTYPE html>
     <html>
@@ -197,11 +197,10 @@ async function sendHistoriaClinica({ pacienteEmail, pacienteNombre, medicoNombre
         </div>
         <div class="content">
           <p>Hola <strong>${pacienteNombre}</strong>,</p>
-          <p>Tu historia clínica de la teleconsulta realizada con <strong>Dr. ${medicoNombre}</strong> está adjunta en este correo.</p>
+          <p>Tu historia clínica de la teleconsulta está adjunta en este correo.</p>
           
           <div class="info-box">
             <p><strong>📋 Documento:</strong> Historia Clínica - Teleorientación</p>
-            <p><strong>👨‍⚕️ Médico:</strong> ${medicoNombre}</p>
             <p><strong>📅 Fecha:</strong> ${new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
           </div>
           
@@ -226,7 +225,7 @@ async function sendHistoriaClinica({ pacienteEmail, pacienteNombre, medicoNombre
   return await sendEmail({
     to: pacienteEmail,
     cc: adminEmail, // Copia a administradora
-    subject: `📄 Historia Clínica - Teleconsulta con Dr. ${medicoNombre}`,
+    subject: `📄 Historia Clínica - Teleconsulta`,
     html: html,
     attachments: [
       {

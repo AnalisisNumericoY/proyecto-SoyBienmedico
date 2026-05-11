@@ -118,17 +118,11 @@ router.post('/historia-clinica', verifyToken, checkMedicoRole, upload.single('pd
       });
     }
 
-    // Obtener datos del paciente y médico para el email
+    // Obtener datos del paciente para el email
     const { data: paciente } = await supabase
       .from('pacientes')
       .select('nombre, email, numero_documento')
       .eq('id', historiaData.paciente_id)
-      .single();
-
-    const { data: medico } = await supabase
-      .from('medicos')
-      .select('nombre, email, especialidad, registro_medico')
-      .eq('id', medicoId)
       .single();
 
     // Create historia clinica ID
@@ -209,7 +203,6 @@ router.post('/historia-clinica', verifyToken, checkMedicoRole, upload.single('pd
         const emailResult = await sendHistoriaClinica({
           pacienteEmail: paciente.email,
           pacienteNombre: paciente.nombre,
-          medicoNombre: medico.nombre,
           pdfBuffer: req.file.buffer,
           pdfFileName: fileName,
           adminEmail: adminEmail
