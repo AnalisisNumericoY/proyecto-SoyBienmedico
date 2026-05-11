@@ -5,6 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Administrador - SoyBienmedico</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- jQuery (requerido para Select2) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- Select2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    
+    <!-- Select2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -192,6 +201,48 @@
             .action-buttons {
                 grid-template-columns: 1fr;
             }
+        }
+
+        /* Estilos personalizados para Select2 */
+        .select2-container--default .select2-selection--single {
+            border: 2px solid #e1e5e9 !important;
+            border-radius: 8px !important;
+            height: 48px !important;
+            padding: 8px !important;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: 30px !important;
+            color: #333 !important;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 46px !important;
+        }
+
+        .select2-container--default.select2-container--focus .select2-selection--single {
+            border-color: #667eea !important;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
+        }
+
+        .select2-dropdown {
+            border: 2px solid #667eea !important;
+            border-radius: 8px !important;
+        }
+
+        .select2-container--default .select2-results__option--highlighted[aria-selected] {
+            background-color: #667eea !important;
+        }
+
+        .select2-search--dropdown .select2-search__field {
+            border: 2px solid #e1e5e9 !important;
+            border-radius: 6px !important;
+            padding: 8px !important;
+        }
+
+        .select2-search--dropdown .select2-search__field:focus {
+            border-color: #667eea !important;
+            outline: none !important;
         }
     </style>
 </head>
@@ -808,6 +859,9 @@
             } else if (modalId === 'pacienteModal') {
                 document.getElementById('createPacienteForm').reset();
             } else if (modalId === 'citaModal') {
+                // Destruir Select2 antes de resetear
+                $('#cita_paciente').select2('destroy');
+                $('#cita_medico').select2('destroy');
                 document.getElementById('programarCitaForm').reset();
             }
         }
@@ -873,10 +927,51 @@
                         });
                     }
                 }
+
+                // Inicializar Select2 después de cargar los datos
+                initializeSelect2();
+                
             } catch (error) {
                 console.error('Error cargando datos:', error);
                 alert('Error cargando datos para la cita. Por favor, intente de nuevo.');
             }
+        }
+
+        // Inicializar Select2 en los selects
+        function initializeSelect2() {
+            // Destruir instancias previas si existen
+            $('#cita_paciente').select2('destroy');
+            $('#cita_medico').select2('destroy');
+            
+            // Configurar Select2 para pacientes
+            $('#cita_paciente').select2({
+                placeholder: '🔍 Buscar paciente por nombre o documento...',
+                allowClear: true,
+                width: '100%',
+                language: {
+                    noResults: function() {
+                        return "No se encontraron pacientes";
+                    },
+                    searching: function() {
+                        return "Buscando...";
+                    }
+                }
+            });
+            
+            // Configurar Select2 para médicos
+            $('#cita_medico').select2({
+                placeholder: '🔍 Buscar médico por nombre o especialidad...',
+                allowClear: true,
+                width: '100%',
+                language: {
+                    noResults: function() {
+                        return "No se encontraron médicos";
+                    },
+                    searching: function() {
+                        return "Buscando...";
+                    }
+                }
+            });
         }
 
         // Manejar envío de formulario de médico
