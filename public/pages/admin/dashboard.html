@@ -6,14 +6,8 @@
     <title>Dashboard Administrador - SoyBienmedico</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
-    <!-- jQuery (requerido para Select2) -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    
     <!-- Select2 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    
-    <!-- Select2 JS -->
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -859,9 +853,19 @@
             } else if (modalId === 'pacienteModal') {
                 document.getElementById('createPacienteForm').reset();
             } else if (modalId === 'citaModal') {
-                // Destruir Select2 antes de resetear
-                $('#cita_paciente').select2('destroy');
-                $('#cita_medico').select2('destroy');
+                // Destruir Select2 solo si está inicializado
+                try {
+                    if (typeof $ !== 'undefined' && typeof $.fn.select2 !== 'undefined') {
+                        if ($('#cita_paciente').hasClass('select2-hidden-accessible')) {
+                            $('#cita_paciente').select2('destroy');
+                        }
+                        if ($('#cita_medico').hasClass('select2-hidden-accessible')) {
+                            $('#cita_medico').select2('destroy');
+                        }
+                    }
+                } catch (e) {
+                    console.warn('⚠️ Error cerrando Select2:', e);
+                }
                 document.getElementById('programarCitaForm').reset();
             }
         }
@@ -882,6 +886,8 @@
             try {
                 const token = localStorage.getItem('token');
                 
+                console.log('📋 Cargando datos para modal de citas...');
+                
                 // Cargar pacientes desde endpoint Supabase
                 const pacientesResponse = await fetch('/admin/pacientes', {
                     headers: {
@@ -898,10 +904,11 @@
                         data.pacientes.forEach(paciente => {
                             pacienteSelect.innerHTML += `
                                 <option value="${paciente.id}">
-                                    ${paciente.nombre} ${paciente.apellidos} - ${paciente.numero_documento}
+                                    ${paciente.nombre} ${paciente.apellidos} - Doc: ${paciente.numero_documento}
                                 </option>
                             `;
                         });
+                        console.log(`✅ ${data.pacientes.length} pacientes cargados`);
                     }
                 }
 
@@ -919,12 +926,15 @@
                     
                     if (data.medicos && data.medicos.length > 0) {
                         data.medicos.forEach(medico => {
+                            // Formato mejorado: Nombre primero para búsqueda fácil
+                            const nombreMedico = medico.nombre.replace(/^Dr\.?\s*/i, ''); // Quitar "Dr" del inicio para display
                             medicoSelect.innerHTML += `
                                 <option value="${medico.id}">
-                                    Dr. ${medico.nombre} - ${medico.especialidad || 'General'}
+                                    ${nombreMedico} (${medico.especialidad || 'General'}) - Reg: ${medico.registro_medico || 'N/A'}
                                 </option>
                             `;
                         });
+                        console.log(`✅ ${data.medicos.length} médicos cargados`);
                     }
                 }
 
@@ -932,46 +942,74 @@
                 initializeSelect2();
                 
             } catch (error) {
-                console.error('Error cargando datos:', error);
+                console.error('❌ Error cargando datos:', error);
                 alert('Error cargando datos para la cita. Por favor, intente de nuevo.');
             }
         }
 
         // Inicializar Select2 en los selects
         function initializeSelect2() {
-            // Destruir instancias previas si existen
-            $('#cita_paciente').select2('destroy');
-            $('#cita_medico').select2('destroy');
+            console.log('🔧 Intentando inicializar Select2...');
             
-            // Configurar Select2 para pacientes
-            $('#cita_paciente').select2({
-                placeholder: '🔍 Buscar paciente por nombre o documento...',
-                allowClear: true,
-                width: '100%',
-                language: {
-                    noResults: function() {
-                        return "No se encontraron pacientes";
-                    },
-                    searching: function() {
-                        return "Buscando...";
-                    }
-                }
-            });
+            // VERIFICACIÓN 1: ¿Existe jQuery?
+            if (typeof $ === 'undefined') {
+                console.error('❌ jQuery no está cargado. Usando select normal.');
+                return;
+            }
+            console.log('✅ jQuery cargado correctamente');
             
-            // Configurar Select2 para médicos
-            $('#cita_medico').select2({
-                placeholder: '🔍 Buscar médico por nombre o especialidad...',
-                allowClear: true,
-                width: '100%',
-                language: {
-                    noResults: function() {
-                        return "No se encontraron médicos";
-                    },
-                    searching: function() {
-                        return "Buscando...";
-                    }
+            // VERIFICACIÓN 2: ¿Existe Select2?
+            if (typeof $.fn.select2 === 'undefined') {
+                console.error('❌ Select2 no está cargado. Usando select normal.');
+                return;
+            }
+            console.log('✅ Select2 cargado correctamente');
+            
+            try {
+                // Destruir instancias previas si existen
+                if ($('#cita_paciente').hasClass('select2-hidden-accessible')) {
+                    $('#cita_paciente').select2('destroy');
                 }
-            });
+                if ($('#cita_medico').hasClass('select2-hidden-accessible')) {
+                    $('#cita_medico').select2('destroy');
+                }
+                
+                // Configurar Select2 para pacientes
+                $('#cita_paciente').select2({
+                    placeholder: '🔍 Buscar paciente por nombre o documento...',
+                    allowClear: true,
+                    width: '100%',
+                    language: {
+                        noResults: function() {
+                            return "No se encontraron pacientes";
+                        },
+                        searching: function() {
+                            return "Buscando...";
+                        }
+                    }
+                });
+                console.log('✅ Select2 inicializado en campo pacientes');
+                
+                // Configurar Select2 para médicos
+                $('#cita_medico').select2({
+                    placeholder: '🔍 Buscar médico por nombre o especialidad...',
+                    allowClear: true,
+                    width: '100%',
+                    language: {
+                        noResults: function() {
+                            return "No se encontraron médicos";
+                        },
+                        searching: function() {
+                            return "Buscando...";
+                        }
+                    }
+                });
+                console.log('✅ Select2 inicializado en campo médicos');
+                
+            } catch (error) {
+                console.error('❌ Error al inicializar Select2:', error);
+                console.log('ℹ️ Los campos funcionarán como select normal');
+            }
         }
 
         // Manejar envío de formulario de médico
@@ -1081,6 +1119,21 @@
         function verReportes() {
             alert('Panel de reportes estará disponible en la próxima versión.');
         }
+    </script>
+
+    <!-- jQuery (debe cargar ANTES de Select2) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- Select2 JS (debe cargar DESPUÉS de jQuery) -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    
+    <script>
+        // Verificar que las librerías se cargaron correctamente
+        window.addEventListener('load', function() {
+            console.log('🚀 Página cargada completamente');
+            console.log('📦 jQuery disponible:', typeof $ !== 'undefined');
+            console.log('📦 Select2 disponible:', typeof $.fn !== 'undefined' && typeof $.fn.select2 !== 'undefined');
+        });
     </script>
 </body>
 </html>
