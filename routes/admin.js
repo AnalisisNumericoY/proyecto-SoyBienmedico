@@ -681,9 +681,8 @@ router.get('/historias-clinicas', verifyToken, checkAdminRole, async (req, res) 
         medico_id,
         fecha_consulta,
         motivo_consulta,
-        diagnostico,
-        tratamiento,
-        pdf_url,
+        diagnostico_principal,
+        pdf_path,
         created_at,
         pacientes:paciente_id (
           nombre,
@@ -707,9 +706,8 @@ router.get('/historias-clinicas', verifyToken, checkAdminRole, async (req, res) 
       id: h.id,
       fechaConsulta: h.fecha_consulta,
       motivoConsulta: h.motivo_consulta || 'No especificado',
-      diagnostico: h.diagnostico || '',
-      tratamiento: h.tratamiento || '',
-      pdfUrl: h.pdf_url || '',
+      diagnostico: h.diagnostico_principal || '',
+      pdfUrl: h.pdf_path || '',
       paciente: {
         id: h.paciente_id,
         nombre: h.pacientes?.nombre || 'Desconocido',
