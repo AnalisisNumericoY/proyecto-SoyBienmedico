@@ -687,8 +687,8 @@ router.get('/historias-clinicas', verifyToken, checkAdminRole, async (req, res) 
         created_at,
         pacientes:paciente_id (
           nombre,
-          correo_electronico,
-          identificacion
+          email,
+          numero_documento
         ),
         medicos:medico_id (
           nombre,
@@ -713,8 +713,8 @@ router.get('/historias-clinicas', verifyToken, checkAdminRole, async (req, res) 
       paciente: {
         id: h.paciente_id,
         nombre: h.pacientes?.nombre || 'Desconocido',
-        email: h.pacientes?.correo_electronico || '',
-        identificacion: h.pacientes?.identificacion || ''
+        email: h.pacientes?.email || '',
+        identificacion: h.pacientes?.numero_documento || ''
       },
       medico: {
         id: h.medico_id,
