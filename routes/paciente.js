@@ -197,4 +197,71 @@ router.get('/cita/:citaId', verifyToken, checkPacienteRole, async (req, res) => 
   }
 });
 
+// GET MIS HISTORIAS CLINICAS
+router.get('/historias-clinicas', verifyToken, checkPacienteRole, async (req, res) => {
+  try {
+    const pacienteId = req.user.pacienteId;
+
+    if (!pacienteId) {
+      return res.status(400).json({
+        success: false,
+        message: 'ID de paciente no encontrado en el token'
+      });
+    }
+
+    // Get historias clinicas del paciente logueado
+    const { data: historias, error } = await supabase
+      .from('historias_clinicas')
+      .select(`
+        id,
+        paciente_id,
+        medico_id,
+        fecha_consulta,
+        motivo_consulta,
+        diagnostico_principal,
+        pdf_path,
+        created_at,
+        medicos:medico_id (
+          nombre,
+          especialidad
+        )
+      `)
+      .eq('paciente_id', pacienteId)
+      .order('fecha_consulta', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching historias clinicas del paciente:', error);
+      throw error;
+    }
+
+    // Format response
+    const historiasFormateadas = (historias || []).map(h => ({
+      id: h.id,
+      fechaConsulta: h.fecha_consulta,
+      motivoConsulta: h.motivo_consulta || 'No especificado',
+      diagnostico: h.diagnostico_principal || '',
+      pdfUrl: h.pdf_path || '',
+      medico: {
+        id: h.medico_id,
+        nombre: h.medicos?.nombre || 'Desconocido',
+        especialidad: h.medicos?.especialidad || ''
+      }
+    }));
+
+    res.json({
+      success: true,
+      historias: historiasFormateadas,
+      total: historiasFormateadas.length
+    });
+
+  } catch (error) {
+    console.error('Error loading historias clinicas del paciente:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al cargar las historias clínicas',
+      error: error.message
+    });
+  }
+});
+
 module.exports = router;
