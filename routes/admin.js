@@ -669,4 +669,74 @@ router.delete('/paciente/:id', verifyToken, checkAdminRole, async (req, res) => 
   }
 });
 
+// GET ALL HISTORIAS CLINICAS (with JOIN to pacientes and medicos)
+router.get('/historias-clinicas', verifyToken, checkAdminRole, async (req, res) => {
+  try {
+    // Get all historias clinicas from Supabase with patient and doctor info
+    const { data: historias, error } = await supabase
+      .from('historias_clinicas')
+      .select(`
+        id,
+        paciente_id,
+        medico_id,
+        fecha_consulta,
+        motivo_consulta,
+        diagnostico,
+        tratamiento,
+        pdf_url,
+        created_at,
+        pacientes:paciente_id (
+          nombre,
+          correo_electronico,
+          identificacion
+        ),
+        medicos:medico_id (
+          nombre,
+          especialidad
+        )
+      `)
+      .order('fecha_consulta', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching historias clinicas:', error);
+      throw error;
+    }
+
+    // Format response
+    const historiasFormateadas = historias.map(h => ({
+      id: h.id,
+      fechaConsulta: h.fecha_consulta,
+      motivoConsulta: h.motivo_consulta || 'No especificado',
+      diagnostico: h.diagnostico || '',
+      tratamiento: h.tratamiento || '',
+      pdfUrl: h.pdf_url || '',
+      paciente: {
+        id: h.paciente_id,
+        nombre: h.pacientes?.nombre || 'Desconocido',
+        email: h.pacientes?.correo_electronico || '',
+        identificacion: h.pacientes?.identificacion || ''
+      },
+      medico: {
+        id: h.medico_id,
+        nombre: h.medicos?.nombre || 'Desconocido',
+        especialidad: h.medicos?.especialidad || ''
+      }
+    }));
+
+    res.json({
+      success: true,
+      historias: historiasFormateadas,
+      total: historiasFormateadas.length
+    });
+
+  } catch (error) {
+    console.error('Error loading historias clinicas:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al cargar las historias clínicas',
+      error: error.message
+    });
+  }
+});
+
 module.exports = router;

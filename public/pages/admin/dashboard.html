@@ -534,6 +534,65 @@
         </div>
     </div>
 
+    <!-- Modal Historias Clínicas -->
+    <div id="historiasModal" class="modal">
+        <div class="modal-content modal-content-wide">
+            <div class="modal-header">
+                <h2><i class="fas fa-file-medical"></i> Historias Clínicas</h2>
+                <span class="close" onclick="closeModal('historiasModal')">&times;</span>
+            </div>
+            
+            <!-- Filtros de búsqueda -->
+            <div class="historias-filters">
+                <div class="filter-group">
+                    <label for="searchPaciente"><i class="fas fa-search"></i> Buscar Paciente:</label>
+                    <input type="text" id="searchPaciente" placeholder="Nombre o identificación..." onkeyup="filtrarHistorias()">
+                </div>
+                <div class="filter-group">
+                    <label for="filterFecha"><i class="fas fa-calendar"></i> Filtrar por Fecha:</label>
+                    <input type="date" id="filterFecha" onchange="filtrarHistorias()">
+                </div>
+                <div class="filter-group">
+                    <button class="btn-clear-filters" onclick="clearFilters()">
+                        <i class="fas fa-times"></i> Limpiar Filtros
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tabla de historias -->
+            <div class="historias-table-container">
+                <div id="historiasLoading" class="loading-historias">
+                    <i class="fas fa-spinner fa-spin"></i> Cargando historias clínicas...
+                </div>
+                <div id="historiasError" class="error-historias" style="display: none;">
+                    <i class="fas fa-exclamation-triangle"></i> Error al cargar historias clínicas
+                </div>
+                <div id="historiasEmpty" class="empty-historias" style="display: none;">
+                    <i class="fas fa-folder-open"></i> No hay historias clínicas registradas
+                </div>
+                <table id="historiasTable" class="historias-table" style="display: none;">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Paciente</th>
+                            <th>Médico</th>
+                            <th>Motivo</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historiasTableBody">
+                        <!-- Se llena dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="modal-footer">
+                <p class="historias-count">Total: <strong id="historiasCount">0</strong> historias clínicas</p>
+                <button type="button" class="btn-cancel" onclick="closeModal('historiasModal')">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Estilos para los modales -->
     <style>
         .modal {
@@ -700,6 +759,206 @@
                 flex-direction: column;
             }
         }
+
+        /* Estilos específicos para modal de historias clínicas */
+        .modal-content-wide {
+            max-width: 1200px;
+        }
+
+        .historias-filters {
+            padding: 1.5rem 2rem;
+            background: #f8f9fa;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: flex-end;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .filter-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #333;
+            font-size: 0.9rem;
+        }
+
+        .filter-group input[type="text"],
+        .filter-group input[type="date"] {
+            width: 100%;
+            padding: 0.6rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            transition: border-color 0.3s;
+        }
+
+        .filter-group input[type="text"]:focus,
+        .filter-group input[type="date"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn-clear-filters {
+            padding: 0.6rem 1.2rem;
+            background: #f44336;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.3s;
+        }
+
+        .btn-clear-filters:hover {
+            background: #d32f2f;
+        }
+
+        .historias-table-container {
+            padding: 2rem;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .loading-historias,
+        .error-historias,
+        .empty-historias {
+            text-align: center;
+            padding: 3rem;
+            font-size: 1.1rem;
+            color: #666;
+        }
+
+        .error-historias {
+            color: #f44336;
+        }
+
+        .loading-historias i,
+        .error-historias i,
+        .empty-historias i {
+            font-size: 3rem;
+            display: block;
+            margin-bottom: 1rem;
+        }
+
+        .historias-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        .historias-table thead {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .historias-table th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+        }
+
+        .historias-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 0.95rem;
+        }
+
+        .historias-table tbody tr {
+            transition: background 0.2s;
+        }
+
+        .historias-table tbody tr:hover {
+            background: #f5f5f5;
+        }
+
+        .historias-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-action {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .btn-download {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .btn-download:hover {
+            background: #45a049;
+        }
+
+        .btn-email {
+            background: #2196F3;
+            color: white;
+        }
+
+        .btn-email:hover {
+            background: #0b7dda;
+        }
+
+        .modal-footer {
+            padding: 1rem 2rem;
+            background: #f8f9fa;
+            border-top: 2px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .historias-count {
+            margin: 0;
+            font-size: 0.95rem;
+            color: #666;
+        }
+
+        @media (max-width: 768px) {
+            .historias-filters {
+                flex-direction: column;
+            }
+
+            .filter-group {
+                width: 100%;
+            }
+
+            .historias-table {
+                font-size: 0.85rem;
+            }
+
+            .historias-table th,
+            .historias-table td {
+                padding: 0.5rem;
+            }
+
+            .historias-actions {
+                flex-direction: column;
+            }
+
+            .modal-footer {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
     </style>
 
     <script>
@@ -808,8 +1067,176 @@
         }
 
         // Funciones de acción
-        function verHistoriasClinicas() {
-            alert('Panel de historias clínicas estará disponible en la próxima versión.');
+        let historiasData = []; // Almacenar todas las historias cargadas
+        let filteredHistorias = []; // Historias filtradas
+
+        async function verHistoriasClinicas() {
+            const modal = document.getElementById('historiasModal');
+            modal.style.display = 'block';
+            await loadHistoriasClinicas();
+        }
+
+        async function loadHistoriasClinicas() {
+            const loadingDiv = document.getElementById('historiasLoading');
+            const errorDiv = document.getElementById('historiasError');
+            const emptyDiv = document.getElementById('historiasEmpty');
+            const table = document.getElementById('historiasTable');
+            const tbody = document.getElementById('historiasTableBody');
+
+            // Mostrar loading
+            loadingDiv.style.display = 'block';
+            errorDiv.style.display = 'none';
+            emptyDiv.style.display = 'none';
+            table.style.display = 'none';
+
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/admin/historias-clinicas', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Error al cargar historias clínicas');
+                }
+
+                const data = await response.json();
+                historiasData = data.historias || [];
+                filteredHistorias = [...historiasData];
+
+                loadingDiv.style.display = 'none';
+
+                if (historiasData.length === 0) {
+                    emptyDiv.style.display = 'block';
+                } else {
+                    table.style.display = 'table';
+                    renderHistoriasTable();
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                loadingDiv.style.display = 'none';
+                errorDiv.style.display = 'block';
+                errorDiv.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Error: ${error.message}`;
+            }
+        }
+
+        function renderHistoriasTable() {
+            const tbody = document.getElementById('historiasTableBody');
+            const countElement = document.getElementById('historiasCount');
+
+            tbody.innerHTML = '';
+            countElement.textContent = filteredHistorias.length;
+
+            if (filteredHistorias.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 2rem; color: #999;">
+                            <i class="fas fa-filter"></i> No se encontraron resultados con los filtros aplicados
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            filteredHistorias.forEach(historia => {
+                const fechaFormateada = new Date(historia.fechaConsulta).toLocaleDateString('es-CO', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                });
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${fechaFormateada}</td>
+                    <td>
+                        <strong>${historia.paciente.nombre}</strong><br>
+                        <small style="color: #666;">${historia.paciente.identificacion}</small>
+                    </td>
+                    <td>
+                        ${historia.medico.nombre}<br>
+                        <small style="color: #666;">${historia.medico.especialidad}</small>
+                    </td>
+                    <td>${historia.motivoConsulta}</td>
+                    <td class="historias-actions">
+                        <button class="btn-action btn-download" onclick="downloadPDF('${historia.pdfUrl}', '${historia.paciente.nombre}')">
+                            <i class="fas fa-download"></i> Descargar
+                        </button>
+                        <button class="btn-action btn-email" onclick="prepareEmail('${historia.paciente.email}', '${historia.pdfUrl}', '${historia.paciente.nombre}', '${fechaFormateada}')">
+                            <i class="fas fa-envelope"></i> Email
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function filtrarHistorias() {
+            const searchValue = document.getElementById('searchPaciente').value.toLowerCase();
+            const fechaValue = document.getElementById('filterFecha').value;
+
+            filteredHistorias = historiasData.filter(historia => {
+                // Filtrar por nombre o identificación del paciente
+                const matchesSearch = !searchValue || 
+                    historia.paciente.nombre.toLowerCase().includes(searchValue) ||
+                    historia.paciente.identificacion.toLowerCase().includes(searchValue);
+
+                // Filtrar por fecha
+                const matchesFecha = !fechaValue || 
+                    historia.fechaConsulta.startsWith(fechaValue);
+
+                return matchesSearch && matchesFecha;
+            });
+
+            renderHistoriasTable();
+        }
+
+        function clearFilters() {
+            document.getElementById('searchPaciente').value = '';
+            document.getElementById('filterFecha').value = '';
+            filteredHistorias = [...historiasData];
+            renderHistoriasTable();
+        }
+
+        function downloadPDF(url, pacienteNombre) {
+            if (!url) {
+                alert('⚠️ PDF no disponible para esta historia clínica');
+                return;
+            }
+
+            // Crear un elemento <a> temporal para forzar la descarga
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `Historia_Clinica_${pacienteNombre.replace(/\s+/g, '_')}.pdf`;
+            link.target = '_blank';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function prepareEmail(pacienteEmail, pdfUrl, pacienteNombre, fecha) {
+            if (!pacienteEmail) {
+                alert('⚠️ El paciente no tiene correo electrónico registrado');
+                return;
+            }
+
+            // Crear el contenido del email
+            const subject = encodeURIComponent('Historia Clínica - Teleconsulta SoyBien');
+            const body = encodeURIComponent(
+                `Estimado/a ${pacienteNombre},\n\n` +
+                `Adjunto encontrará su historia clínica correspondiente a la consulta del ${fecha}.\n\n` +
+                `Puede descargar el documento desde el siguiente enlace:\n` +
+                `${pdfUrl}\n\n` +
+                `Si tiene alguna pregunta o inquietud, no dude en contactarnos.\n\n` +
+                `Saludos cordiales,\n` +
+                `Equipo SoyBien`
+            );
+
+            // Abrir cliente de email con datos pre-llenados
+            // El admin puede editar el destinatario, asunto y mensaje antes de enviar
+            const mailtoLink = `mailto:${pacienteEmail}?subject=${subject}&body=${body}`;
+            window.location.href = mailtoLink;
         }
 
         function logout() {
@@ -1112,10 +1539,6 @@
                 alert('❌ Error de conexión: ' + error.message);
             }
         });
-
-        function verHistoriasClinicas() {
-            alert('Panel de historias clínicas estará disponible en la próxima versión.');
-        }
 
         function verReportes() {
             alert('Panel de reportes estará disponible en la próxima versión.');
