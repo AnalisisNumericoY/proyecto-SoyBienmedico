@@ -908,13 +908,13 @@
             background: #45a049;
         }
 
-        .btn-email {
-            background: #2196F3;
+        .btn-copy {
+            background: #FF9800;
             color: white;
         }
 
-        .btn-email:hover {
-            background: #0b7dda;
+        .btn-copy:hover {
+            background: #F57C00;
         }
 
         .modal-footer {
@@ -1163,8 +1163,8 @@
                         <button class="btn-action btn-download" onclick="downloadPDF('${historia.pdfUrl}', '${historia.paciente.nombre}')">
                             <i class="fas fa-download"></i> Descargar
                         </button>
-                        <button class="btn-action btn-email" onclick="prepareEmail('${historia.paciente.email}', '${historia.pdfUrl}', '${historia.paciente.nombre}', '${fechaFormateada}')">
-                            <i class="fas fa-envelope"></i> Email
+                        <button class="btn-action btn-copy" onclick="copyMessageToClipboard('${historia.pdfUrl}', '${historia.paciente.nombre}', '${fechaFormateada}')">
+                            <i class="fas fa-copy"></i> Copiar Mensaje
                         </button>
                     </td>
                 `;
@@ -1215,28 +1215,45 @@
             document.body.removeChild(link);
         }
 
-        function prepareEmail(pacienteEmail, pdfUrl, pacienteNombre, fecha) {
-            if (!pacienteEmail) {
-                alert('⚠️ El paciente no tiene correo electrónico registrado');
+        async function copyMessageToClipboard(pdfUrl, pacienteNombre, fecha) {
+            if (!pdfUrl) {
+                alert('⚠️ PDF no disponible para esta historia clínica');
                 return;
             }
 
-            // Crear el contenido del email
-            const subject = encodeURIComponent('Historia Clínica - Teleconsulta SoyBien');
-            const body = encodeURIComponent(
-                `Estimado/a ${pacienteNombre},\n\n` +
-                `Adjunto encontrará su historia clínica correspondiente a la consulta del ${fecha}.\n\n` +
-                `Puede descargar el documento desde el siguiente enlace:\n` +
-                `${pdfUrl}\n\n` +
-                `Si tiene alguna pregunta o inquietud, no dude en contactarnos.\n\n` +
-                `Saludos cordiales,\n` +
-                `Equipo SoyBien`
-            );
+            // Crear el mensaje con la plantilla
+            const mensaje = 
+`Hola ${pacienteNombre},
 
-            // Abrir cliente de email con datos pre-llenados
-            // El admin puede editar el destinatario, asunto y mensaje antes de enviar
-            const mailtoLink = `mailto:${pacienteEmail}?subject=${subject}&body=${body}`;
-            window.location.href = mailtoLink;
+Te envío tu historia clínica de la consulta del ${fecha}.
+
+Puedes descargarla en este enlace:
+${pdfUrl}
+
+Cualquier duda estamos a tus órdenes.
+
+Saludos,
+Equipo SoyBien`;
+
+            try {
+                // Copiar al portapapeles usando la API moderna
+                await navigator.clipboard.writeText(mensaje);
+                
+                // Mostrar confirmación visual
+                const originalText = event.target.closest('button').innerHTML;
+                event.target.closest('button').innerHTML = '<i class="fas fa-check"></i> ¡Copiado!';
+                event.target.closest('button').style.background = '#4CAF50';
+                
+                // Restaurar después de 2 segundos
+                setTimeout(() => {
+                    event.target.closest('button').innerHTML = originalText;
+                    event.target.closest('button').style.background = '#FF9800';
+                }, 2000);
+                
+            } catch (err) {
+                console.error('Error al copiar:', err);
+                alert('✅ Mensaje copiado al portapapeles\n\nPuedes pegarlo en WhatsApp, Email, SMS, etc.');
+            }
         }
 
         function logout() {
