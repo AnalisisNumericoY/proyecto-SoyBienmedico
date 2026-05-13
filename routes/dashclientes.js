@@ -6,13 +6,7 @@
 const express = require('express');
 const router = express.Router();
 const { verifyToken } = require('./auth');
-const { createClient } = require('@supabase/supabase-js');
-
-// Supabase client
-const supabase = createClient(
-    process.env.SUPABASE_URL,
-    process.env.SUPABASE_KEY
-);
+const supabase = require('../config/supabase');
 
 // ---------------------------------------------------------------------------
 // MIDDLEWARE: Verificar rol cliente
