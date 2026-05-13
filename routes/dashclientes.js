@@ -238,7 +238,6 @@ router.get('/jornadas/:clienteId', verifyToken, checkClienteRole, async (req, re
                 programa:programas!inner (
                     id,
                     nombre,
-                    descripcion,
                     cliente_id
                 ),
                 sede:sedes (
@@ -325,7 +324,6 @@ router.get('/jornada/:jornadaId', verifyToken, checkClienteRole, async (req, res
                 programa:programas (
                     id,
                     nombre,
-                    descripcion,
                     cliente_id,
                     cliente:clientes (
                         id,
