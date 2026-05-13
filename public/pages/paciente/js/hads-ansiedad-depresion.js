@@ -8,6 +8,62 @@
 let resultadosHADS = {};
 
 /**
+ * Cargar jornadas activas del día actual
+ */
+async function cargarJornadasDelDiaHADS() {
+  const selectJornada = document.getElementById('jornada_id');
+  if (!selectJornada) return;
+  
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    
+    const hoy = new Date().toISOString().split('T')[0];
+    
+    const response = await fetch('/api/jornadas?activas_solo=true', {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    
+    if (!response.ok) throw new Error('Error al cargar jornadas');
+    
+    const result = await response.json();
+    
+    if (result.success && result.jornadas) {
+      const jornadasHoy = result.jornadas.filter(j => j.fecha === hoy);
+      
+      selectJornada.innerHTML = '<option value="">Sin jornada (evaluación individual)</option>';
+      
+      if (jornadasHoy.length === 0) {
+        const option = document.createElement('option');
+        option.value = '';
+        option.textContent = 'No hay jornadas activas para hoy';
+        option.disabled = true;
+        selectJornada.appendChild(option);
+      } else {
+        jornadasHoy.forEach(jornada => {
+          const option = document.createElement('option');
+          option.value = jornada.id;
+          const sede = jornada.sede_nombre ? `${jornada.sede_nombre} (${jornada.sede_ciudad})` : 'Virtual/Móvil';
+          option.textContent = `${jornada.programa_nombre} - ${sede}`;
+          selectJornada.appendChild(option);
+        });
+        console.log(`✅ ${jornadasHoy.length} jornada(s) activa(s) para hoy cargadas`);
+      }
+    }
+  } catch (error) {
+    console.error('❌ Error al cargar jornadas:', error);
+    selectJornada.innerHTML = '<option value="">Sin jornada (evaluación individual)</option>';
+  }
+}
+
+// Cargar jornadas al inicio
+document.addEventListener('DOMContentLoaded', () => {
+  cargarJornadasDelDiaHADS();
+});
+
+/**
  * Función principal para calcular resultados HADS + Burnout
  */
 function calcularResultadosHADS() {

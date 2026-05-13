@@ -25,6 +25,65 @@ window.pollingIntervalos = pollingIntervalos;
 window.evaluacionId = evaluacionId;
 
 /**
+ * Cargar jornadas activas del día actual
+ */
+async function cargarJornadasDelDia() {
+  const selectJornada = document.getElementById('jornada_id');
+  if (!selectJornada) return; // Si no existe el select, salir
+  
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    
+    // Obtener fecha de hoy
+    const hoy = new Date().toISOString().split('T')[0];
+    
+    // Fetch jornadas activas
+    const response = await fetch('/api/jornadas?activas_solo=true', {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    
+    if (!response.ok) throw new Error('Error al cargar jornadas');
+    
+    const result = await response.json();
+    
+    if (result.success && result.jornadas) {
+      // Filtrar jornadas de hoy
+      const jornadasHoy = result.jornadas.filter(j => j.fecha === hoy);
+      
+      selectJornada.innerHTML = '<option value="">Sin jornada (evaluación individual)</option>';
+      
+      if (jornadasHoy.length === 0) {
+        const option = document.createElement('option');
+        option.value = '';
+        option.textContent = 'No hay jornadas activas para hoy';
+        option.disabled = true;
+        selectJornada.appendChild(option);
+      } else {
+        jornadasHoy.forEach(jornada => {
+          const option = document.createElement('option');
+          option.value = jornada.id;
+          const sede = jornada.sede_nombre ? `${jornada.sede_nombre} (${jornada.sede_ciudad})` : 'Virtual/Móvil';
+          option.textContent = `${jornada.programa_nombre} - ${sede}`;
+          selectJornada.appendChild(option);
+        });
+        console.log(`✅ ${jornadasHoy.length} jornada(s) activa(s) para hoy cargadas`);
+      }
+    }
+  } catch (error) {
+    console.error('❌ Error al cargar jornadas:', error);
+    selectJornada.innerHTML = '<option value="">Sin jornada (evaluación individual)</option>';
+  }
+}
+
+// Cargar jornadas al inicio
+document.addEventListener('DOMContentLoaded', () => {
+  cargarJornadasDelDia();
+});
+
+/**
  * Mapeo de campos del formulario a campos de dispositivos IoT
  */
 const MAPEO_CAMPOS_IOT = {
@@ -306,6 +365,7 @@ async function guardarEvaluacionBackend(datos, resultados) {
         // Preparar datos para backend con trazabilidad IoT
         const datosBackend = {
             paciente_id: user.pacienteId,
+            jornada_id: document.getElementById('jornada_id')?.value || null,
             datos_entrada: {
                 // Datos demográficos
                 edad: datos.edad,

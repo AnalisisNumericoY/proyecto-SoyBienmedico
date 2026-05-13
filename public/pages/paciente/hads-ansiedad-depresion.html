@@ -441,6 +441,25 @@
                 <div class="progress-text" id="progressText">0 de 21 preguntas completadas</div>
 
                 <form id="hadsForm">
+                    <!-- Jornada (Opcional) -->
+                    <div style="background: white; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem; border-left: 4px solid #667eea;">
+                        <h4 style="color: #667eea; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-clipboard-list"></i> Jornada (Opcional)
+                        </h4>
+                        <p style="color: #666; margin-bottom: 1rem; font-size: 0.9rem;">
+                            Si esta evaluación se realiza en una jornada de salud, selecciónela aquí. De lo contrario, déjelo vacío.
+                        </p>
+                        <div style="display: grid; gap: 0.5rem;">
+                            <label for="jornada_id" style="font-weight: 600; color: #333; font-size: 0.9rem;">Jornada:</label>
+                            <select id="jornada_id" name="jornada_id" style="padding: 10px; border: 2px solid #e1e5e9; border-radius: 6px; font-size: 1rem;">
+                                <option value="">Cargando jornadas del día...</option>
+                            </select>
+                            <small style="color: #666; font-size: 0.85rem; font-style: italic;">
+                                Mostrando solo jornadas activas de hoy
+                            </small>
+                        </div>
+                    </div>
+
                     <!-- HADS - Ansiedad -->
                     <div class="test-section">
                         <div class="test-header ansiedad">
@@ -1120,6 +1139,7 @@
                 // Preparar datos para enviar
                 const datos = {
                     paciente_id: user.pacienteId,
+                    jornada_id: document.getElementById('jornada_id')?.value || null,
                     resultado: {
                         ansiedad: resultadosHADS.ansiedad,
                         depresion: resultadosHADS.depresion,

@@ -484,6 +484,25 @@
                 </div>
 
                 <form id="riesgoForm">
+                    <!-- Jornada (Opcional) -->
+                    <div class="form-section">
+                        <h3><i class="fas fa-clipboard-list"></i> Jornada (Opcional)</h3>
+                        <p style="color: #666; margin-bottom: 1rem; font-size: 0.9rem;">
+                            Si esta evaluación se realiza en una jornada de salud, selecciónela aquí. De lo contrario, déjelo vacío.
+                        </p>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="jornada_id">Jornada</label>
+                                <select id="jornada_id" name="jornada_id">
+                                    <option value="">Cargando jornadas del día...</option>
+                                </select>
+                                <small style="display: block; margin-top: 0.5rem; color: #666; font-size: 0.85rem;">
+                                    Mostrando solo jornadas activas de hoy
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Datos Demográficos -->
                     <div class="form-section">
                         <h3><i class="fas fa-user"></i> Datos Demográficos</h3>

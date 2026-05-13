@@ -33,7 +33,7 @@ const PACIENTES_FILE = path.join(__dirname, '../data/pacientes.json');
  */
 router.post('/riesgo-cardiovascular', verifyToken, async (req, res) => {
     try {
-        const { paciente_id, sesion_id, datos_entrada, creado_por } = req.body;
+        const { paciente_id, sesion_id, jornada_id, datos_entrada, creado_por } = req.body;
 
         // Validar datos de entrada
         const validacion = validarEvaluacionRiesgo(datos_entrada);
@@ -53,6 +53,7 @@ router.post('/riesgo-cardiovascular', verifyToken, async (req, res) => {
             tipo: 'riesgo_cardiovascular',
             paciente_id,
             sesion_id: sesion_id || null,
+            jornada_id: jornada_id || null,
             datos_entrada,
             resultado,
             creado_por: creado_por || req.user.userId,
@@ -125,7 +126,7 @@ router.post('/riesgo-cardiovascular', verifyToken, async (req, res) => {
  */
 router.post('/hads', verifyToken, async (req, res) => {
     try {
-        const { paciente_id, resultado, respuestas } = req.body;
+        const { paciente_id, jornada_id, resultado, respuestas } = req.body;
 
         // Validar datos de entrada
         if (!paciente_id || !resultado) {
@@ -140,6 +141,7 @@ router.post('/hads', verifyToken, async (req, res) => {
             tipo: 'hads',
             paciente_id,
             sesion_id: null,
+            jornada_id: jornada_id || null,
             datos_entrada: respuestas || {},
             resultado: resultado,
             creado_por: req.user.userId,

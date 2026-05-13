@@ -160,6 +160,7 @@ const crearEvaluacion = async (evaluacionData) => {
     tipo: evaluacionData.tipo,
     paciente_id: evaluacionData.paciente_id,
     sesion_id: evaluacionData.sesion_id || null,
+    jornada_id: evaluacionData.jornada_id || null,
     fecha: getCurrentTimestamp(),
     datos_entrada: evaluacionData.datos_entrada,
     resultado: evaluacionData.resultado,
@@ -175,7 +176,7 @@ const crearEvaluacion = async (evaluacionData) => {
 
   if (error) throw error;
 
-  console.log(`✅ Evaluación creada: ${id} - Tipo: ${evaluacionData.tipo}`);
+  console.log(`✅ Evaluación creada: ${id} - Tipo: ${evaluacionData.tipo}${evaluacionData.jornada_id ? ` - Jornada: ${evaluacionData.jornada_id}` : ''}`);
   return data[0];
 };
 
