@@ -21,10 +21,12 @@ router.post('/login', async (req, res) => {
     }
 
     // Query user from Supabase
+    // Si username contiene @, buscar por email; si no, por username
+    const isEmail = username.includes('@');
     const { data: users, error } = await supabase
       .from('users')
       .select('*')
-      .eq('username', username)
+      .eq(isEmail ? 'email' : 'username', username)
       .eq('role', role)
       .limit(1);
 

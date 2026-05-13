@@ -91,13 +91,13 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     
     try {
         // Llamada al API de autenticación
-        const response = await fetch('/api/auth/login', {
+        const response = await fetch('/auth/login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                email: email,
+                username: email,
                 password: password,
                 role: 'cliente' // Forzar role cliente
             })
