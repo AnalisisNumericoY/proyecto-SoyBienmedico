@@ -110,7 +110,7 @@
             $('#breadcrumbOverview').attr('href', `dashclientes-overview.html?id=${clienteId}`);
             
             // Mostrar nombre de usuario
-            const user = JSON.parse(localStorage.getItem('dashclientesUser'));
+            const user = JSON.parse(localStorage.getItem('user'));
             $('#userName').text(user.email || user.nombre || 'Usuario');
             
             // Cargar jornadas
@@ -123,7 +123,7 @@
                 $('#errorState').hide();
                 $('#jornadasContent').hide();
                 
-                const token = localStorage.getItem('dashclientesToken');
+                const token = localStorage.getItem('token');
                 
                 const response = await fetch(`/api/dashclientes/jornadas/${clienteId}`, {
                     method: 'GET',

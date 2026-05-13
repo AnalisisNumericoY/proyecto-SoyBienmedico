@@ -30,7 +30,7 @@ $(document).ready(function() {
     }
     
     // Mostrar nombre de usuario
-    const user = JSON.parse(localStorage.getItem('dashclientesUser'));
+    const user = JSON.parse(localStorage.getItem('user'));
     $('#userName').text(user.email || user.nombre || 'Usuario');
     
     // Cargar datos de la jornada
@@ -46,7 +46,7 @@ async function loadJornada() {
         $('#errorState').hide();
         $('#jornadaContent').hide();
         
-        const token = localStorage.getItem('dashclientesToken');
+        const token = localStorage.getItem('token');
         
         const response = await fetch(`/api/dashclientes/jornada/${jornadaId}`, {
             method: 'GET',
