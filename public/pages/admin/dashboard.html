@@ -476,8 +476,10 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="programa">Programa *</label>
-                        <input type="text" id="programa" name="programa" required placeholder="Ej: Empresa ABC - Jornada Mayo 2026">
+                        <label for="programa_id">Programa *</label>
+                        <select id="programa_id" name="programa_id" required>
+                            <option value="">Cargando programas...</option>
+                        </select>
                     </div>
                 </div>
                 <div class="form-actions">
@@ -1282,6 +1284,48 @@ Equipo SoyBien`;
         function openCreatePacienteModal() {
             console.log('Abriendo modal de paciente');
             document.getElementById('pacienteModal').style.display = 'block';
+            
+            // Cargar programas desde API
+            cargarProgramas();
+        }
+
+        // Función para cargar programas disponibles
+        async function cargarProgramas() {
+            const selectPrograma = document.getElementById('programa_id');
+            
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/programas', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const result = await response.json();
+                
+                if (result.success && result.programas) {
+                    // Limpiar opciones existentes
+                    selectPrograma.innerHTML = '<option value="">Seleccionar programa...</option>';
+                    
+                    // Agregar programas como opciones
+                    result.programas.forEach(programa => {
+                        const option = document.createElement('option');
+                        option.value = programa.id;
+                        option.textContent = `${programa.nombre} (${programa.cliente_nombre})`;
+                        option.dataset.tipo = programa.tipo;
+                        option.dataset.colorHex = programa.color_hex;
+                        selectPrograma.appendChild(option);
+                    });
+                    
+                    console.log(`✅ ${result.programas.length} programas cargados`);
+                } else {
+                    console.error('❌ Error al cargar programas:', result.message);
+                    selectPrograma.innerHTML = '<option value="">Error al cargar programas</option>';
+                }
+            } catch (error) {
+                console.error('❌ Error de conexión al cargar programas:', error);
+                selectPrograma.innerHTML = '<option value="">Error de conexión</option>';
+            }
         }
 
         function openProgramarCitaModal() {

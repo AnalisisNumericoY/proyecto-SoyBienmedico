@@ -4,6 +4,7 @@ const path = require('path');
 const { verifyToken } = require('./auth');
 const sesionService = require('../services/sesion-service');
 const medicionService = require('../services/medicion-service');
+const supabase = require('../config/supabase');
 const router = express.Router();
 
 // File paths
@@ -571,6 +572,62 @@ function validarRangosMedicos(tipo, valores) {
 function generarUUID() {
   return 'med_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
 }
+
+// ---------------------------------------------------------------------------
+// GET /api/programas
+// Obtener lista de programas activos (para dropdown en formulario pacientes)
+// ---------------------------------------------------------------------------
+router.get('/programas', verifyToken, async (req, res) => {
+  try {
+    // Obtener programas activos con información del cliente
+    const { data: programas, error } = await supabase
+      .from('programas')
+      .select(`
+        id,
+        nombre,
+        tipo,
+        cliente_id,
+        clientes (
+          id,
+          nombre,
+          nombre_comercial,
+          color_hex
+        )
+      `)
+      .eq('activo', true)
+      .order('nombre', { ascending: true });
+
+    if (error) {
+      console.error('❌ Error al obtener programas:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Error al cargar programas'
+      });
+    }
+
+    // Formatear respuesta
+    const programasFormateados = programas.map(p => ({
+      id: p.id,
+      nombre: p.nombre,
+      tipo: p.tipo,
+      cliente_id: p.cliente_id,
+      cliente_nombre: p.clientes?.nombre_comercial || 'Sin cliente',
+      color_hex: p.clientes?.color_hex || '#667eea'
+    }));
+
+    res.json({
+      success: true,
+      programas: programasFormateados
+    });
+
+  } catch (error) {
+    console.error('❌ Error en /programas:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error interno del servidor'
+    });
+  }
+});
 
 // HEALTH CHECK
 router.get('/health', (req, res) => {
