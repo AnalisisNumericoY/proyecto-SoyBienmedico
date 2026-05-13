@@ -1,3 +1,10 @@
+para ver el dasshboard: 
+https://proyecto-soybienmedico-production.up.railway.app/pages/dashclientes/dashclientes-login.html
+Email: soybiendashboard@gmail.com
+Password: pass123
+
+
+
 https://claude.ai/chat/3a0ed444-bb95-470f-b8ca-d6aca5fe4a7e
 
 repositorio :https://github.com/AnalisisNumericoY/proyecto-SoyBienmedico

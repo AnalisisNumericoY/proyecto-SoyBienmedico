@@ -230,15 +230,19 @@ function renderProyectos(proyectos) {
 function verProyecto(proyectoId) {
     console.log('📊 Abriendo proyecto:', proyectoId);
     
+    // Obtener clienteId del usuario autenticado
+    const clienteId = localStorage.getItem('clienteId');
+    
+    if (!clienteId) {
+        alert('Error: No se encontró información del cliente');
+        return;
+    }
+    
     // Guardar proyecto seleccionado
     localStorage.setItem('proyectoActual', proyectoId);
     
-    // FASE 1: Mostrar alert (página overview aún no existe)
-    // FASE 2: Redirigir a overview
-    alert(`🚧 Próximamente: Dashboard de ${proyectoId}\n\nEsta pantalla se implementará en la siguiente fase con:\n• Mapa de sedes\n• KPIs principales\n• Módulos de salud (CV, SM, TC)`);
-    
-    // DESCOMENTAR EN FASE 2:
-    // window.location.href = `dashclientes-overview.html?proyecto=${proyectoId}`;
+    // FASE 2: Redirigir a overview ✅ ACTIVADO
+    window.location.href = `dashclientes-overview.html?clienteId=${clienteId}`;
 }
 
 // ---------------------------------------------------------------------------

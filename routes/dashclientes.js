@@ -99,35 +99,109 @@ router.get('/overview/:clienteId', verifyToken, checkClienteRole, async (req, re
             });
         }
         
-        // Obtener cliente
-        const { data: cliente, error } = await supabase
+        // 1. Obtener información del cliente
+        const { data: cliente, error: clienteError } = await supabase
             .from('clientes')
             .select('*')
             .eq('id', clienteId)
+            .eq('activo', true)
             .single();
         
-        if (error || !cliente) {
+        if (clienteError || !cliente) {
             return res.status(404).json({
                 success: false,
                 message: 'Cliente no encontrado'
             });
         }
         
-        // TODO: Implementar queries para:
-        // - Sedes del cliente
-        // - Estadísticas de pacientes
-        // - KPIs de salud (CV, SM, TC)
+        // 2. Obtener sedes del cliente
+        const { data: sedes, error: sedesError } = await supabase
+            .from('sedes')
+            .select('*')
+            .eq('cliente_id', clienteId)
+            .eq('activa', true)
+            .order('ciudad', { ascending: true })
+            .order('nombre', { ascending: true });
+        
+        if (sedesError) {
+            console.error('❌ Error al obtener sedes:', sedesError);
+        }
+        
+        const sedesData = sedes || [];
+        
+        // 3. Calcular KPIs básicos de sedes
+        const totalColaboradores = sedesData.reduce((sum, sede) => sum + (sede.colaboradores_objetivo || 0), 0);
+        const ciudadesUnicas = [...new Set(sedesData.map(s => s.ciudad))].length;
+        
+        // 4. Calcular KPIs de salud desde evaluaciones
+        // NOTA: Por ahora usaremos datos demo porque la tabla 'pacientes' 
+        // todavía no tiene cliente_id para filtrar evaluaciones por cliente.
+        // TODO: Cuando se agregue cliente_id a pacientes, calcular desde BD
+        
+        // Query para contar evaluaciones (sin filtro por cliente por ahora)
+        const { count: totalEvaluaciones, error: evalError } = await supabase
+            .from('evaluaciones')
+            .select('*', { count: 'exact', head: true });
+        
+        // Query para riesgo CV alto (evaluar tipo = 'riesgo_cardiovascular' y resultado)
+        const { data: evaluacionesCV, error: cvError } = await supabase
+            .from('evaluaciones')
+            .select('resultado')
+            .eq('tipo', 'riesgo_cardiovascular');
+        
+        // Contar riesgo CV alto/muy alto (resultado > 20% o texto contiene 'Alto')
+        let riesgoCVAlto = 0;
+        if (evaluacionesCV) {
+            riesgoCVAlto = evaluacionesCV.filter(e => {
+                const res = e.resultado;
+                if (typeof res === 'string') {
+                    return res.includes('Alto') || res.includes('Muy Alto');
+                }
+                if (typeof res === 'object' && res.riesgo_porcentaje) {
+                    return res.riesgo_porcentaje > 20;
+                }
+                return false;
+            }).length;
+        }
+        
+        // KPIs calculados y demo
+        const kpis = {
+            total_colaboradores: totalColaboradores,
+            sedes_activas: sedesData.length,
+            ciudades: ciudadesUnicas,
+            
+            // Datos reales de evaluaciones (sin filtro de cliente por ahora)
+            tamizados: totalEvaluaciones || 0,
+            riesgo_cv_alto: riesgoCVAlto,
+            
+            // Datos demo (hasta implementar citas y monitoreo por cliente)
+            teleconsultas: Math.floor(totalColaboradores * 0.046), // ~4.6% demo
+            en_monitoreo: Math.floor(totalColaboradores * 0.028)   // ~2.8% demo
+        };
         
         res.json({
             success: true,
-            cliente: cliente,
-            sedes: [], // TODO
-            kpis: {
-                tamizaje_cv: 0,
-                salud_mental: 0,
-                teleconsultas: 0,
-                en_monitoreo: 0
-            }
+            cliente: {
+                id: cliente.id,
+                nombre: cliente.nombre,
+                nombre_comercial: cliente.nombre_comercial,
+                nit: cliente.nit,
+                color_hex: cliente.color_hex,
+                industria: cliente.industria
+            },
+            sedes: sedesData.map(s => ({
+                id: s.id,
+                nombre: s.nombre,
+                ciudad: s.ciudad,
+                direccion: s.direccion,
+                latitud: s.latitud,
+                longitud: s.longitud,
+                responsable_sede: s.responsable_sede,
+                telefono_sede: s.telefono_sede,
+                colaboradores_objetivo: s.colaboradores_objetivo,
+                tipo_sede: s.tipo_sede
+            })),
+            kpis: kpis
         });
         
     } catch (error) {
