@@ -426,8 +426,8 @@ router.get('/jornada/:jornadaId', verifyToken, checkClienteRole, async (req, res
         
         evaluacionesCV.forEach(e => {
             const res = e.resultado;
-            if (res && res.riesgoCardiovascular) {
-                const categoria = res.riesgoCardiovascular.categoria || '';
+            if (res && res.categoria) {
+                const categoria = res.categoria || '';
                 if (categoria.includes('BAJO') || categoria.includes('Bajo')) {
                     distribucionCV.bajo++;
                 } else if (categoria.includes('MODERADO') || categoria.includes('Moderado')) {
@@ -493,7 +493,7 @@ router.get('/jornada/:jornadaId', verifyToken, checkClienteRole, async (req, res
             
             if (e.tipo === 'riesgo_cardiovascular') {
                 // Riesgo CV alto o muy alto
-                const cat = res?.riesgoCardiovascular?.categoria || '';
+                const cat = res?.categoria || '';
                 return cat.includes('ALTO') || cat.includes('Alto') || cat.includes('MUY ALTO') || cat.includes('Muy Alto');
             }
             
@@ -608,7 +608,7 @@ function obtenerMotivoSeguimiento(evaluacion) {
     const res = evaluacion.resultado;
     
     if (evaluacion.tipo === 'riesgo_cardiovascular') {
-        const cat = res?.riesgoCardiovascular?.categoria || '';
+        const cat = res?.categoria || '';
         if (cat.includes('MUY ALTO') || cat.includes('Muy Alto')) {
             motivos.push('Riesgo cardiovascular MUY ALTO');
         } else if (cat.includes('ALTO') || cat.includes('Alto')) {
@@ -644,8 +644,8 @@ function obtenerResumenResultado(evaluacion) {
     
     if (evaluacion.tipo === 'riesgo_cardiovascular') {
         return {
-            categoria: res?.riesgoCardiovascular?.categoria || 'N/A',
-            porcentaje: res?.riesgoCardiovascular?.porcentaje || 0,
+            categoria: res?.categoria || 'N/A',
+            porcentaje: res?.porcentaje || 0,
             imc: res?.imc?.valor || null,
             presion: res?.presionArterial?.categoria || 'N/A'
         };
