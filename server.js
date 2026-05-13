@@ -14,6 +14,7 @@ const pacienteRoutes = require('./routes/paciente');
 const apiRoutes = require('./routes/api');
 const sesionesRoutes = require('./routes/sesiones');
 const evaluacionesRoutes = require('./routes/evaluaciones');
+const dashclientesRoutes = require('./routes/dashclientes');
 
 const app = express();
 const server = http.createServer(app);
@@ -48,6 +49,7 @@ app.use('/paciente', pacienteRoutes);
 app.use('/api', apiRoutes);
 app.use('/api/sesiones', sesionesRoutes);
 app.use('/api/evaluaciones', evaluacionesRoutes);
+app.use('/api/dashclientes', dashclientesRoutes);
 
 // Debug endpoint directly in server
 app.get('/debug/data', async (req, res) => {

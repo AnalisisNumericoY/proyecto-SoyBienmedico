@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Proyectos - SoyBienmedico</title>
+    <link rel="stylesheet" href="css/dashclientes-main.css">
+    <link rel="stylesheet" href="css/dashclientes-proyectos.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="dashboard-body">
+    
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <i class="fas fa-heartbeat"></i>
+            <span>SoyBienmedico</span>
+            <span class="navbar-tag">Dashboard</span>
+        </div>
+        
+        <div class="navbar-right">
+            <div class="user-info">
+                <i class="fas fa-building"></i>
+                <span id="userName">Cargando...</span>
+            </div>
+            <button class="btn-logout" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i>
+                Cerrar sesión
+            </button>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-container">
+        
+        <!-- HEADER -->
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-briefcase"></i>
+                    Mis Proyectos
+                </h1>
+                <p class="page-subtitle">Seleccione un proyecto para ver estadísticas y gestión</p>
+            </div>
+        </div>
+
+        <!-- LOADING STATE -->
+        <div id="loadingState" class="loading-state">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Cargando proyectos...</p>
+        </div>
+
+        <!-- ERROR STATE -->
+        <div id="errorState" class="error-state" style="display: none;">
+            <i class="fas fa-exclamation-triangle"></i>
+            <p id="errorText">Error al cargar proyectos</p>
+            <button class="btn-retry" onclick="loadProyectos()">
+                <i class="fas fa-sync"></i> Reintentar
+            </button>
+        </div>
+
+        <!-- PROJECTS GRID -->
+        <div id="proyectosGrid" class="proyectos-grid" style="display: none;">
+            <!-- Los proyectos se cargarán aquí dinámicamente -->
+        </div>
+
+        <!-- EMPTY STATE -->
+        <div id="emptyState" class="empty-state" style="display: none;">
+            <i class="fas fa-folder-open"></i>
+            <h3>No hay proyectos disponibles</h3>
+            <p>Contacte a su administrador para obtener acceso a proyectos</p>
+        </div>
+
+    </div>
+
+    <script src="js/dashclientes-proyectos.js"></script>
+</body>
+</html>
