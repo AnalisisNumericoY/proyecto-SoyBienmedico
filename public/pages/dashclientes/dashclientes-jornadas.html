@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jornadas - SoyBienmedico Dashboard</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/dashclientes-main.css">
+    <link rel="stylesheet" href="css/dashclientes-overview.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <i class="fas fa-heartbeat"></i>
+            <span>SoyBienmedico</span>
+            <span class="navbar-badge">Dashboard Clientes</span>
+        </div>
+        <div class="navbar-user">
+            <i class="fas fa-user-circle"></i>
+            <span id="userName">Cargando...</span>
+            <button class="btn-logout" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i>
+                Salir
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="dashboard-body">
+        <!-- Breadcrumb -->
+        <div class="breadcrumb">
+            <a href="dashclientes-proyectos.html">
+                <i class="fas fa-building"></i> Proyectos
+            </a>
+            <i class="fas fa-chevron-right"></i>
+            <a href="#" id="breadcrumbOverview">
+                <span id="breadcrumbCliente">Cliente</span>
+            </a>
+            <i class="fas fa-chevron-right"></i>
+            <span>Jornadas de Salud</span>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loadingState" class="loading-state">
+            <div class="spinner"></div>
+            <p>Cargando jornadas...</p>
+        </div>
+
+        <!-- Error State -->
+        <div id="errorState" class="error-state" style="display: none;">
+            <i class="fas fa-exclamation-triangle"></i>
+            <h3>Error al cargar datos</h3>
+            <p id="errorMessage">Ocurrió un error al cargar la información</p>
+            <button class="btn-retry" onclick="loadJornadas()">
+                <i class="fas fa-refresh"></i>
+                Reintentar
+            </button>
+        </div>
+
+        <!-- Content -->
+        <div id="jornadasContent" style="display: none;">
+            <!-- Header -->
+            <div class="page-header" style="background: white; border-radius: 12px; padding: 2rem; margin-bottom: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                <h1 style="margin: 0 0 0.5rem 0; color: #2d3748; display: flex; align-items: center; gap: 0.75rem;">
+                    <i class="fas fa-clipboard-list" style="color: #667eea;"></i>
+                    Jornadas de Salud
+                </h1>
+                <p style="margin: 0; color: #718096; font-size: 1rem;">
+                    Historial completo de jornadas realizadas en <strong id="clienteNombre">-</strong>
+                </p>
+            </div>
+
+            <!-- Jornadas List -->
+            <div id="jornadasList">
+                <!-- Cards cargadas dinámicamente -->
+            </div>
+        </div>
+    </div>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- Custom JS -->
+    <script src="js/dashclientes-auth.js"></script>
+    <script>
+        let clienteId = null;
+        
+        $(document).ready(function() {
+            // Verificar autenticación
+            if (!checkAuth()) {
+                window.location.href = 'dashclientes-login.html';
+                return;
+            }
+            
+            // Obtener clienteId de URL
+            const urlParams = new URLSearchParams(window.location.search);
+            clienteId = urlParams.get('id');
+            
+            if (!clienteId) {
+                showError('No se especificó un cliente válido');
+                return;
+            }
+            
+            // Actualizar breadcrumb
+            $('#breadcrumbOverview').attr('href', `dashclientes-overview.html?id=${clienteId}`);
+            
+            // Mostrar nombre de usuario
+            const user = JSON.parse(localStorage.getItem('dashclientesUser'));
+            $('#userName').text(user.email || user.nombre || 'Usuario');
+            
+            // Cargar jornadas
+            loadJornadas();
+        });
+        
+        async function loadJornadas() {
+            try {
+                $('#loadingState').show();
+                $('#errorState').hide();
+                $('#jornadasContent').hide();
+                
+                const token = localStorage.getItem('dashclientesToken');
+                
+                const response = await fetch(`/api/dashclientes/jornadas/${clienteId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (!response.ok || !result.success) {
+                    throw new Error(result.message || 'Error al cargar jornadas');
+                }
+                
+                // Obtener nombre del cliente del primer resultado
+                if (result.jornadas.length > 0) {
+                    $('#clienteNombre').text(result.jornadas[0].programa.nombre || 'el programa');
+                }
+                
+                renderJornadas(result.jornadas);
+                
+                $('#loadingState').hide();
+                $('#jornadasContent').fadeIn(300);
+                
+                console.log('✅ Jornadas cargadas:', result);
+                
+            } catch (error) {
+                console.error('❌ Error cargando jornadas:', error);
+                showError(error.message);
+            }
+        }
+        
+        function renderJornadas(jornadas) {
+            const container = $('#jornadasList');
+            
+            if (jornadas.length === 0) {
+                container.html(`
+                    <div style="background: white; border-radius: 12px; padding: 4rem 2rem; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                        <i class="fas fa-clipboard-list" style="font-size: 4rem; color: #cbd5e0; margin-bottom: 1rem;"></i>
+                        <h3 style="color: #4a5568; margin: 0 0 0.5rem 0;">Sin jornadas registradas</h3>
+                        <p style="color: #718096; margin: 0;">Aún no se han creado jornadas para este cliente.</p>
+                    </div>
+                `);
+                return;
+            }
+            
+            let html = '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 1.5rem;">';
+            
+            jornadas.forEach(jornada => {
+                const estadoClass = jornada.activa ? 'badge-activa' : 'badge-inactiva';
+                const estadoLabel = jornada.activa ? 'ACTIVA' : 'FINALIZADA';
+                const fecha = formatFecha(jornada.fecha);
+                
+                html += `
+                    <div class="jornada-card" style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08); transition: transform 0.2s, box-shadow 0.2s; cursor: pointer;" onclick="verJornada('${jornada.id}')">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                            <h3 style="margin: 0; color: #2d3748; font-size: 1.1rem; flex: 1;">
+                                <i class="fas fa-clipboard-list" style="color: #667eea; margin-right: 0.5rem;"></i>
+                                ${jornada.programa.nombre}
+                            </h3>
+                            <span class="badge ${estadoClass}" style="padding: 0.3rem 0.7rem; border-radius: 16px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; flex-shrink: 0; margin-left: 0.5rem;">${estadoLabel}</span>
+                        </div>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.25rem;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem; color: #4a5568; font-size: 0.9rem;">
+                                <i class="fas fa-calendar" style="color: #667eea; width: 20px;"></i>
+                                <span>${fecha}</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem; color: #4a5568; font-size: 0.9rem;">
+                                <i class="fas fa-map-marker-alt" style="color: #667eea; width: 20px;"></i>
+                                <span>${jornada.sede.nombre}${jornada.sede.ciudad ? ` - ${jornada.sede.ciudad}` : ''}</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem; color: #4a5568; font-size: 0.9rem;">
+                                <i class="fas fa-user-tie" style="color: #667eea; width: 20px;"></i>
+                                <span>${jornada.responsable || 'No asignado'}</span>
+                            </div>
+                        </div>
+                        
+                        ${jornada.descripcion ? `
+                            <div style="background: #f7fafc; border-left: 3px solid #667eea; padding: 0.75rem; border-radius: 6px; margin-bottom: 1.25rem;">
+                                <p style="margin: 0; color: #4a5568; font-size: 0.85rem; line-height: 1.5;">${jornada.descripcion}</p>
+                            </div>
+                        ` : ''}
+                        
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 1rem; border-top: 1px solid #e2e8f0;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem; color: #718096; font-size: 0.85rem;">
+                                <i class="fas fa-clipboard-check"></i>
+                                <span><strong style="color: #2d3748; font-size: 1.1rem;">${jornada.total_evaluaciones}</strong> evaluaciones</span>
+                            </div>
+                            <button style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: transform 0.2s;" onclick="event.stopPropagation(); verJornada('${jornada.id}')">
+                                Ver detalles <i class="fas fa-arrow-right" style="margin-left: 0.4rem;"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            
+            container.html(html);
+            
+            // Hover effect
+            $('.jornada-card').hover(
+                function() {
+                    $(this).css({
+                        'transform': 'translateY(-4px)',
+                        'box-shadow': '0 8px 20px rgba(0,0,0,0.12)'
+                    });
+                },
+                function() {
+                    $(this).css({
+                        'transform': 'translateY(0)',
+                        'box-shadow': '0 2px 8px rgba(0,0,0,0.08)'
+                    });
+                }
+            );
+        }
+        
+        function verJornada(jornadaId) {
+            window.location.href = `dashclientes-jornada.html?id=${jornadaId}&clienteId=${clienteId}`;
+        }
+        
+        function formatFecha(fecha) {
+            if (!fecha) return 'N/A';
+            
+            try {
+                const [year, month, day] = fecha.split('T')[0].split('-');
+                const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+                return `${day} ${meses[parseInt(month) - 1]} ${year}`;
+            } catch (e) {
+                return fecha;
+            }
+        }
+        
+        function showError(message) {
+            $('#loadingState').hide();
+            $('#jornadasContent').hide();
+            $('#errorState').show();
+            $('#errorMessage').text(message);
+        }
+        
+        function logout() {
+            localStorage.removeItem('dashclientesToken');
+            localStorage.removeItem('dashclientesUser');
+            window.location.href = 'dashclientes-login.html';
+        }
+    </script>
+</body>
+</html>

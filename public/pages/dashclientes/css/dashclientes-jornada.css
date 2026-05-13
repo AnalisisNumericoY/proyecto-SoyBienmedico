@@ -1,0 +1,504 @@
+/* ============================================================================
+   DASHCLIENTES - JORNADA
+   Estilos específicos para vista de jornada
+   ============================================================================ */
+
+/* Jornada Header */
+.jornada-header {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 2rem;
+}
+
+.jornada-header-left {
+    flex: 1;
+}
+
+.jornada-header-right {
+    flex-shrink: 0;
+}
+
+.jornada-title {
+    font-size: 1.75rem;
+    color: #2d3748;
+    margin: 0 0 1rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.jornada-title i {
+    color: #667eea;
+    font-size: 1.5rem;
+}
+
+.jornada-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #4a5568;
+    font-size: 0.95rem;
+}
+
+.meta-item i {
+    color: #667eea;
+}
+
+.meta-item strong {
+    color: #2d3748;
+    font-weight: 600;
+}
+
+.jornada-descripcion {
+    background: #f7fafc;
+    border-left: 4px solid #667eea;
+    padding: 1rem;
+    border-radius: 6px;
+    color: #4a5568;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin-top: 1rem;
+}
+
+.jornada-descripcion:empty {
+    display: none;
+}
+
+/* Badges */
+.badge {
+    padding: 0.4rem 0.9rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.badge-activa {
+    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+    color: white;
+}
+
+.badge-inactiva {
+    background: #cbd5e0;
+    color: #4a5568;
+}
+
+/* KPI Header - Reutiliza de overview pero ajusta para 4 cards */
+.kpi-header {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.alert-card {
+    position: relative;
+    animation: pulse-subtle 2s ease-in-out infinite;
+}
+
+@keyframes pulse-subtle {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.02);
+    }
+}
+
+/* Charts Section */
+.charts-section {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.chart-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #f7fafc;
+}
+
+.chart-header h3 {
+    font-size: 1.1rem;
+    color: #2d3748;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.chart-header i {
+    color: #667eea;
+}
+
+.chart-count {
+    font-size: 0.85rem;
+    color: #718096;
+    font-weight: 500;
+}
+
+.chart-body {
+    padding: 0.5rem 0;
+}
+
+/* Progress Bars */
+.progress-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.progress-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.progress-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+}
+
+.label-text {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #4a5568;
+    font-weight: 500;
+}
+
+.label-value {
+    color: #2d3748;
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+.progress-bar {
+    height: 24px;
+    background: #edf2f7;
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+}
+
+.progress-fill {
+    height: 100%;
+    border-radius: 12px;
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 10px;
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.progress-fill.bajo {
+    background: linear-gradient(90deg, #48bb78 0%, #38a169 100%);
+}
+
+.progress-fill.leve {
+    background: linear-gradient(90deg, #ecc94b 0%, #d69e2e 100%);
+}
+
+.progress-fill.moderado {
+    background: linear-gradient(90deg, #ed8936 0%, #dd6b20 100%);
+}
+
+.progress-fill.alto {
+    background: linear-gradient(90deg, #f56565 0%, #e53e3e 100%);
+}
+
+.progress-fill.muy-alto {
+    background: linear-gradient(90deg, #e53e3e 0%, #c53030 100%);
+}
+
+/* Badge Riesgo (indicadores de color en labels) */
+.badge-riesgo {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.badge-riesgo.bajo {
+    background: #48bb78;
+}
+
+.badge-riesgo.leve {
+    background: #ecc94b;
+}
+
+.badge-riesgo.moderado {
+    background: #ed8936;
+}
+
+.badge-riesgo.alto {
+    background: #f56565;
+}
+
+.badge-riesgo.muy-alto {
+    background: #c53030;
+}
+
+/* Section Cards (para tablas) */
+.section-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #f7fafc;
+}
+
+.section-header h2 {
+    font-size: 1.25rem;
+    color: #2d3748;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.section-header i {
+    color: #667eea;
+}
+
+.section-count {
+    font-size: 0.9rem;
+    color: #718096;
+    font-weight: 600;
+    background: #f7fafc;
+    padding: 0.4rem 0.9rem;
+    border-radius: 20px;
+}
+
+.section-body {
+    overflow-x: auto;
+}
+
+/* Tables */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.data-table thead {
+    background: #f7fafc;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.data-table th {
+    text-align: left;
+    padding: 0.875rem 1rem;
+    color: #4a5568;
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.data-table tbody tr {
+    border-bottom: 1px solid #f7fafc;
+    transition: background-color 0.2s;
+}
+
+.data-table tbody tr:hover {
+    background: #fafbfc;
+}
+
+.data-table td {
+    padding: 0.875rem 1rem;
+    color: #2d3748;
+    vertical-align: middle;
+}
+
+.data-table td strong {
+    font-weight: 600;
+}
+
+/* Badge de tipo evaluación */
+.badge-tipo {
+    padding: 0.3rem 0.7rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.badge-tipo.riesgo {
+    background: #fef5e7;
+    color: #d97706;
+}
+
+.badge-tipo.hads {
+    background: #ede9fe;
+    color: #7c3aed;
+}
+
+/* Badge de resultado */
+.badge-resultado {
+    padding: 0.3rem 0.7rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.badge-resultado.bajo,
+.badge-resultado.normal {
+    background: #d1fae5;
+    color: #047857;
+}
+
+.badge-resultado.leve {
+    background: #fef3c7;
+    color: #b45309;
+}
+
+.badge-resultado.moderado {
+    background: #fed7aa;
+    color: #c2410c;
+}
+
+.badge-resultado.alto,
+.badge-resultado.severo {
+    background: #fecaca;
+    color: #b91c1c;
+}
+
+.badge-resultado.muy-alto {
+    background: #fca5a5;
+    color: #991b1b;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #718096;
+}
+
+.empty-state i {
+    font-size: 3rem;
+    color: #cbd5e0;
+    margin-bottom: 1rem;
+}
+
+.empty-state h3 {
+    color: #4a5568;
+    margin: 0 0 0.5rem 0;
+    font-size: 1.1rem;
+}
+
+.empty-state p {
+    margin: 0;
+    font-size: 0.95rem;
+}
+
+/* Buttons */
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 0.875rem 1.5rem;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+.btn-secondary {
+    background: white;
+    color: #667eea;
+    border: 2px solid #667eea;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+    background: #f7fafc;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .jornada-header {
+        flex-direction: column;
+    }
+    
+    .jornada-meta {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .charts-section {
+        grid-template-columns: 1fr;
+    }
+    
+    .data-table {
+        font-size: 0.85rem;
+    }
+    
+    .data-table th,
+    .data-table td {
+        padding: 0.625rem 0.75rem;
+    }
+}

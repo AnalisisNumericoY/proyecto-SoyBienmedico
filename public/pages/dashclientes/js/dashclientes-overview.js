@@ -274,6 +274,21 @@ function showSedesEmpty() {
 }
 
 // ---------------------------------------------------------------------------
+// VER JORNADAS
+// ---------------------------------------------------------------------------
+function verJornadas() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const clienteId = urlParams.get('clienteId') || urlParams.get('id');
+    
+    if (clienteId) {
+        window.location.href = `dashclientes-jornadas.html?id=${clienteId}`;
+    } else {
+        console.error('No se encontró clienteId');
+        alert('Error: No se pudo determinar el cliente');
+    }
+}
+
+// ---------------------------------------------------------------------------
 // INIT
 // ---------------------------------------------------------------------------
 document.addEventListener('DOMContentLoaded', () => {

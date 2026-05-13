@@ -214,4 +214,440 @@ router.get('/overview/:clienteId', verifyToken, checkClienteRole, async (req, re
     }
 });
 
+// ---------------------------------------------------------------------------
+// GET /api/dashclientes/jornadas/:clienteId
+// Obtener lista de jornadas de un cliente específico
+// ---------------------------------------------------------------------------
+router.get('/jornadas/:clienteId', verifyToken, checkClienteRole, async (req, res) => {
+    try {
+        const { clienteId } = req.params;
+        
+        // Verificar que el usuario tenga acceso a este cliente
+        if (req.user.cliente_id !== clienteId) {
+            return res.status(403).json({
+                success: false,
+                message: 'No tiene permiso para ver jornadas de este cliente'
+            });
+        }
+        
+        // Obtener jornadas del cliente (a través de programas)
+        const { data: jornadas, error: jornadasError } = await supabase
+            .from('jornadas')
+            .select(`
+                *,
+                programa:programas!inner (
+                    id,
+                    nombre,
+                    descripcion,
+                    cliente_id
+                ),
+                sede:sedes (
+                    id,
+                    nombre,
+                    ciudad,
+                    departamento,
+                    tipo_sede
+                )
+            `)
+            .eq('programa.cliente_id', clienteId)
+            .order('fecha', { ascending: false });
+        
+        if (jornadasError) {
+            console.error('❌ Error al obtener jornadas:', jornadasError);
+            return res.status(500).json({
+                success: false,
+                message: 'Error al cargar jornadas'
+            });
+        }
+        
+        // Contar evaluaciones por jornada
+        const jornadasConEvaluaciones = await Promise.all(
+            (jornadas || []).map(async (jornada) => {
+                const { count, error } = await supabase
+                    .from('evaluaciones')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('jornada_id', jornada.id);
+                
+                return {
+                    id: jornada.id,
+                    fecha: jornada.fecha,
+                    responsable: jornada.responsable,
+                    descripcion: jornada.descripcion,
+                    activa: jornada.activa,
+                    programa: {
+                        id: jornada.programa.id,
+                        nombre: jornada.programa.nombre
+                    },
+                    sede: jornada.sede ? {
+                        id: jornada.sede.id,
+                        nombre: jornada.sede.nombre,
+                        ciudad: jornada.sede.ciudad,
+                        departamento: jornada.sede.departamento,
+                        tipo: jornada.sede.tipo_sede
+                    } : {
+                        nombre: 'Virtual/Móvil',
+                        tipo: 'virtual'
+                    },
+                    total_evaluaciones: count || 0
+                };
+            })
+        );
+        
+        res.json({
+            success: true,
+            jornadas: jornadasConEvaluaciones
+        });
+        
+    } catch (error) {
+        console.error('❌ Error en /dashclientes/jornadas:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al cargar jornadas',
+            error: error.message
+        });
+    }
+});
+
+// ---------------------------------------------------------------------------
+// GET /api/dashclientes/jornada/:jornadaId
+// Obtener detalles y estadísticas de una jornada específica
+// ---------------------------------------------------------------------------
+router.get('/jornada/:jornadaId', verifyToken, checkClienteRole, async (req, res) => {
+    try {
+        const { jornadaId } = req.params;
+        const clienteId = req.user.cliente_id;
+        
+        // 1. Obtener información de la jornada con programa y sede
+        const { data: jornada, error: jornadaError } = await supabase
+            .from('jornadas')
+            .select(`
+                *,
+                programa:programas (
+                    id,
+                    nombre,
+                    descripcion,
+                    cliente_id,
+                    cliente:clientes (
+                        id,
+                        nombre,
+                        nombre_comercial,
+                        color_hex
+                    )
+                ),
+                sede:sedes (
+                    id,
+                    nombre,
+                    ciudad,
+                    departamento,
+                    direccion,
+                    tipo_sede,
+                    colaboradores_objetivo
+                )
+            `)
+            .eq('id', jornadaId)
+            .single();
+        
+        if (jornadaError || !jornada) {
+            console.error('❌ Error al obtener jornada:', jornadaError);
+            return res.status(404).json({
+                success: false,
+                message: 'Jornada no encontrada'
+            });
+        }
+        
+        // 2. Verificar que la jornada pertenece al cliente del usuario
+        if (jornada.programa?.cliente?.id !== clienteId) {
+            return res.status(403).json({
+                success: false,
+                message: 'No tiene permiso para ver esta jornada'
+            });
+        }
+        
+        // 3. Obtener todas las evaluaciones de la jornada
+        const { data: evaluaciones, error: evalError } = await supabase
+            .from('evaluaciones')
+            .select(`
+                id,
+                tipo,
+                fecha,
+                resultado,
+                datos_entrada,
+                paciente:pacientes (
+                    id,
+                    nombre,
+                    apellidos,
+                    identificacion,
+                    edad,
+                    sexo
+                )
+            `)
+            .eq('jornada_id', jornadaId)
+            .order('fecha', { ascending: false });
+        
+        if (evalError) {
+            console.error('❌ Error al obtener evaluaciones:', evalError);
+        }
+        
+        const evaluacionesData = evaluaciones || [];
+        
+        // 4. Calcular estadísticas por tipo
+        const porTipo = {
+            riesgo_cardiovascular: evaluacionesData.filter(e => e.tipo === 'riesgo_cardiovascular').length,
+            hads: evaluacionesData.filter(e => e.tipo === 'hads').length
+        };
+        
+        // 5. Analizar distribución de resultados RIESGO CARDIOVASCULAR
+        const evaluacionesCV = evaluacionesData.filter(e => e.tipo === 'riesgo_cardiovascular');
+        const distribucionCV = {
+            bajo: 0,
+            moderado: 0,
+            alto: 0,
+            muy_alto: 0
+        };
+        
+        evaluacionesCV.forEach(e => {
+            const res = e.resultado;
+            if (res && res.riesgoCardiovascular) {
+                const categoria = res.riesgoCardiovascular.categoria || '';
+                if (categoria.includes('BAJO') || categoria.includes('Bajo')) {
+                    distribucionCV.bajo++;
+                } else if (categoria.includes('MODERADO') || categoria.includes('Moderado')) {
+                    distribucionCV.moderado++;
+                } else if (categoria.includes('MUY ALTO') || categoria.includes('Muy Alto')) {
+                    distribucionCV.muy_alto++;
+                } else if (categoria.includes('ALTO') || categoria.includes('Alto')) {
+                    distribucionCV.alto++;
+                }
+            }
+        });
+        
+        // 6. Analizar distribución de resultados HADS (Ansiedad y Depresión)
+        const evaluacionesHADS = evaluacionesData.filter(e => e.tipo === 'hads');
+        const distribucionAnsiedad = {
+            normal: 0,
+            leve: 0,
+            moderado: 0,
+            severo: 0
+        };
+        const distribucionDepresion = {
+            normal: 0,
+            leve: 0,
+            moderado: 0,
+            severo: 0
+        };
+        
+        evaluacionesHADS.forEach(e => {
+            const res = e.resultado;
+            
+            // Ansiedad
+            if (res && res.ansiedad) {
+                const cat = res.ansiedad.categoria || res.ansiedad.clase || '';
+                if (cat.includes('NORMAL') || cat.includes('normal') || cat.includes('Normal')) {
+                    distribucionAnsiedad.normal++;
+                } else if (cat.includes('LEVE') || cat.includes('leve') || cat.includes('Leve')) {
+                    distribucionAnsiedad.leve++;
+                } else if (cat.includes('MODERADO') || cat.includes('moderado') || cat.includes('Moderado')) {
+                    distribucionAnsiedad.moderado++;
+                } else if (cat.includes('SEVERO') || cat.includes('severo') || cat.includes('GRAVE') || cat.includes('Grave')) {
+                    distribucionAnsiedad.severo++;
+                }
+            }
+            
+            // Depresión
+            if (res && res.depresion) {
+                const cat = res.depresion.categoria || res.depresion.clase || '';
+                if (cat.includes('NORMAL') || cat.includes('normal') || cat.includes('Normal')) {
+                    distribucionDepresion.normal++;
+                } else if (cat.includes('LEVE') || cat.includes('leve') || cat.includes('Leve')) {
+                    distribucionDepresion.leve++;
+                } else if (cat.includes('MODERADO') || cat.includes('moderado') || cat.includes('Moderado')) {
+                    distribucionDepresion.moderado++;
+                } else if (cat.includes('SEVERO') || cat.includes('severo') || cat.includes('GRAVE') || cat.includes('Grave')) {
+                    distribucionDepresion.severo++;
+                }
+            }
+        });
+        
+        // 7. Identificar casos que requieren seguimiento
+        const casosSeguimiento = evaluacionesData.filter(e => {
+            const res = e.resultado;
+            
+            if (e.tipo === 'riesgo_cardiovascular') {
+                // Riesgo CV alto o muy alto
+                const cat = res?.riesgoCardiovascular?.categoria || '';
+                return cat.includes('ALTO') || cat.includes('Alto') || cat.includes('MUY ALTO') || cat.includes('Muy Alto');
+            }
+            
+            if (e.tipo === 'hads') {
+                // Ansiedad o depresión moderada o severa
+                const ansiedadCat = res?.ansiedad?.categoria || res?.ansiedad?.clase || '';
+                const depresionCat = res?.depresion?.categoria || res?.depresion?.clase || '';
+                
+                const ansiedadAlta = ansiedadCat.includes('MODERADO') || ansiedadCat.includes('SEVERO') || 
+                                     ansiedadCat.includes('moderado') || ansiedadCat.includes('severo') ||
+                                     ansiedadCat.includes('GRAVE') || ansiedadCat.includes('Grave');
+                
+                const depresionAlta = depresionCat.includes('MODERADO') || depresionCat.includes('SEVERO') ||
+                                      depresionCat.includes('moderado') || depresionCat.includes('severo') ||
+                                      depresionCat.includes('GRAVE') || depresionCat.includes('Grave');
+                
+                return ansiedadAlta || depresionAlta;
+            }
+            
+            return false;
+        }).map(e => ({
+            evaluacion_id: e.id,
+            tipo: e.tipo,
+            fecha: e.fecha,
+            paciente: {
+                id: e.paciente?.id,
+                nombre: `${e.paciente?.nombre || ''} ${e.paciente?.apellidos || ''}`.trim(),
+                identificacion: e.paciente?.identificacion,
+                edad: e.paciente?.edad,
+                sexo: e.paciente?.sexo
+            },
+            motivo: obtenerMotivoSeguimiento(e)
+        }));
+        
+        // 8. Preparar respuesta
+        res.json({
+            success: true,
+            jornada: {
+                id: jornada.id,
+                fecha: jornada.fecha,
+                responsable: jornada.responsable,
+                descripcion: jornada.descripcion,
+                activa: jornada.activa,
+                programa: {
+                    id: jornada.programa?.id,
+                    nombre: jornada.programa?.nombre,
+                    descripcion: jornada.programa?.descripcion
+                },
+                sede: jornada.sede ? {
+                    id: jornada.sede.id,
+                    nombre: jornada.sede.nombre,
+                    ciudad: jornada.sede.ciudad,
+                    departamento: jornada.sede.departamento,
+                    direccion: jornada.sede.direccion,
+                    tipo: jornada.sede.tipo_sede,
+                    colaboradores_objetivo: jornada.sede.colaboradores_objetivo
+                } : {
+                    nombre: 'Virtual/Móvil',
+                    tipo: 'virtual'
+                },
+                cliente: {
+                    id: jornada.programa?.cliente?.id,
+                    nombre: jornada.programa?.cliente?.nombre_comercial,
+                    color_hex: jornada.programa?.cliente?.color_hex
+                }
+            },
+            estadisticas: {
+                total_evaluaciones: evaluacionesData.length,
+                por_tipo: porTipo,
+                distribucion_riesgo_cv: distribucionCV,
+                distribucion_ansiedad: distribucionAnsiedad,
+                distribucion_depresion: distribucionDepresion,
+                casos_seguimiento: casosSeguimiento.length
+            },
+            casos_seguimiento: casosSeguimiento,
+            evaluaciones: evaluacionesData.map(e => ({
+                id: e.id,
+                tipo: e.tipo,
+                fecha: e.fecha,
+                paciente: {
+                    id: e.paciente?.id,
+                    nombre: `${e.paciente?.nombre || ''} ${e.paciente?.apellidos || ''}`.trim(),
+                    identificacion: e.paciente?.identificacion,
+                    edad: e.paciente?.edad,
+                    sexo: e.paciente?.sexo
+                },
+                resultado_resumido: obtenerResumenResultado(e)
+            }))
+        });
+        
+    } catch (error) {
+        console.error('❌ Error en /dashclientes/jornada:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al cargar datos de jornada',
+            error: error.message
+        });
+    }
+});
+
+// ---------------------------------------------------------------------------
+// HELPER FUNCTIONS
+// ---------------------------------------------------------------------------
+
+/**
+ * Obtener motivo de seguimiento de una evaluación
+ */
+function obtenerMotivoSeguimiento(evaluacion) {
+    const motivos = [];
+    const res = evaluacion.resultado;
+    
+    if (evaluacion.tipo === 'riesgo_cardiovascular') {
+        const cat = res?.riesgoCardiovascular?.categoria || '';
+        if (cat.includes('MUY ALTO') || cat.includes('Muy Alto')) {
+            motivos.push('Riesgo cardiovascular MUY ALTO');
+        } else if (cat.includes('ALTO') || cat.includes('Alto')) {
+            motivos.push('Riesgo cardiovascular ALTO');
+        }
+    }
+    
+    if (evaluacion.tipo === 'hads') {
+        const ansiedadCat = res?.ansiedad?.categoria || res?.ansiedad?.clase || '';
+        const depresionCat = res?.depresion?.categoria || res?.depresion?.clase || '';
+        
+        if (ansiedadCat.includes('SEVERO') || ansiedadCat.includes('severo') || ansiedadCat.includes('GRAVE')) {
+            motivos.push('Ansiedad SEVERA');
+        } else if (ansiedadCat.includes('MODERADO') || ansiedadCat.includes('moderado')) {
+            motivos.push('Ansiedad MODERADA');
+        }
+        
+        if (depresionCat.includes('SEVERO') || depresionCat.includes('severo') || depresionCat.includes('GRAVE')) {
+            motivos.push('Depresión SEVERA');
+        } else if (depresionCat.includes('MODERADO') || depresionCat.includes('moderado')) {
+            motivos.push('Depresión MODERADA');
+        }
+    }
+    
+    return motivos.join(', ') || 'Requiere evaluación';
+}
+
+/**
+ * Obtener resumen de resultado de una evaluación
+ */
+function obtenerResumenResultado(evaluacion) {
+    const res = evaluacion.resultado;
+    
+    if (evaluacion.tipo === 'riesgo_cardiovascular') {
+        return {
+            categoria: res?.riesgoCardiovascular?.categoria || 'N/A',
+            porcentaje: res?.riesgoCardiovascular?.porcentaje || 0,
+            imc: res?.imc?.valor || null,
+            presion: res?.presionArterial?.categoria || 'N/A'
+        };
+    }
+    
+    if (evaluacion.tipo === 'hads') {
+        return {
+            ansiedad: {
+                categoria: res?.ansiedad?.categoria || res?.ansiedad?.clase || 'N/A',
+                puntuacion: res?.ansiedad?.puntuacion || 0
+            },
+            depresion: {
+                categoria: res?.depresion?.categoria || res?.depresion?.clase || 'N/A',
+                puntuacion: res?.depresion?.puntuacion || 0
+            },
+            burnout: {
+                categoria: res?.burnout?.categoria || res?.burnout?.clase || 'N/A',
+                puntuacion: res?.burnout?.puntuacion || 0
+            }
+        };
+    }
+    
+    return {};
+}
+
 module.exports = router;
