@@ -629,6 +629,253 @@ router.get('/programas', verifyToken, async (req, res) => {
   }
 });
 
+// ============================================================================
+// SEDES - Listar sedes disponibles
+// ============================================================================
+router.get('/sedes', verifyToken, async (req, res) => {
+  try {
+    const { data: sedes, error } = await supabase
+      .from('sedes')
+      .select(`
+        id,
+        nombre,
+        ciudad,
+        direccion,
+        cliente_id,
+        activa,
+        clientes (
+          nombre_comercial,
+          color_hex
+        )
+      `)
+      .eq('activa', true)
+      .order('ciudad', { ascending: true })
+      .order('nombre', { ascending: true });
+
+    if (error) throw error;
+
+    const sedesFormateadas = sedes.map(s => ({
+      id: s.id,
+      nombre: s.nombre,
+      ciudad: s.ciudad,
+      direccion: s.direccion,
+      cliente_id: s.cliente_id,
+      cliente_nombre: s.clientes?.nombre_comercial,
+      color_hex: s.clientes?.color_hex,
+      activa: s.activa
+    }));
+
+    res.json({
+      success: true,
+      sedes: sedesFormateadas
+    });
+
+  } catch (error) {
+    console.error('❌ Error en /sedes:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error interno del servidor'
+    });
+  }
+});
+
+// ============================================================================
+// JORNADAS - Listar jornadas
+// ============================================================================
+router.get('/jornadas', verifyToken, async (req, res) => {
+  try {
+    const { activas_solo } = req.query;
+
+    let query = supabase
+      .from('jornadas')
+      .select(`
+        id,
+        programa_id,
+        sede_id,
+        fecha,
+        responsable_jornada,
+        descripcion,
+        activa,
+        created_at,
+        programas (
+          nombre,
+          tipo,
+          cliente_id,
+          clientes (
+            nombre_comercial,
+            color_hex
+          )
+        ),
+        sedes (
+          nombre,
+          ciudad,
+          direccion
+        )
+      `)
+      .order('fecha', { ascending: false })
+      .order('created_at', { ascending: false });
+
+    // Filtrar solo activas si se solicita
+    if (activas_solo === 'true') {
+      query = query.eq('activa', true);
+    }
+
+    const { data: jornadas, error } = await query;
+
+    if (error) throw error;
+
+    const jornadasFormateadas = jornadas.map(j => ({
+      id: j.id,
+      programa_id: j.programa_id,
+      programa_nombre: j.programas?.nombre,
+      programa_tipo: j.programas?.tipo,
+      cliente_nombre: j.programas?.clientes?.nombre_comercial,
+      color_hex: j.programas?.clientes?.color_hex,
+      sede_id: j.sede_id,
+      sede_nombre: j.sedes?.nombre,
+      sede_ciudad: j.sedes?.ciudad,
+      sede_direccion: j.sedes?.direccion,
+      fecha: j.fecha,
+      responsable_jornada: j.responsable_jornada,
+      descripcion: j.descripcion,
+      activa: j.activa,
+      created_at: j.created_at
+    }));
+
+    res.json({
+      success: true,
+      jornadas: jornadasFormateadas
+    });
+
+  } catch (error) {
+    console.error('❌ Error en /jornadas:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error interno del servidor'
+    });
+  }
+});
+
+// ============================================================================
+// JORNADAS - Crear nueva jornada
+// ============================================================================
+router.post('/jornadas', verifyToken, async (req, res) => {
+  try {
+    const { programa_id, sede_id, fecha, responsable_jornada, descripcion } = req.body;
+
+    // Validar campos requeridos
+    if (!programa_id || !fecha) {
+      return res.status(400).json({
+        success: false,
+        message: 'programa_id y fecha son campos requeridos'
+      });
+    }
+
+    // Verificar que el programa existe
+    const { data: programa, error: programaError } = await supabase
+      .from('programas')
+      .select('id, nombre, activo')
+      .eq('id', programa_id)
+      .single();
+
+    if (programaError || !programa) {
+      return res.status(404).json({
+        success: false,
+        message: 'Programa no encontrado'
+      });
+    }
+
+    if (!programa.activo) {
+      return res.status(400).json({
+        success: false,
+        message: 'El programa seleccionado no está activo'
+      });
+    }
+
+    // Si se proporciona sede_id, verificar que existe
+    if (sede_id) {
+      const { data: sede, error: sedeError } = await supabase
+        .from('sedes')
+        .select('id, nombre, activa')
+        .eq('id', sede_id)
+        .single();
+
+      if (sedeError || !sede) {
+        return res.status(404).json({
+          success: false,
+          message: 'Sede no encontrada'
+        });
+      }
+
+      if (!sede.activa) {
+        return res.status(400).json({
+          success: false,
+          message: 'La sede seleccionada no está activa'
+        });
+      }
+    }
+
+    // Crear jornada
+    const nuevaJornada = {
+      programa_id,
+      sede_id: sede_id || null,
+      fecha,
+      responsable_jornada: responsable_jornada || null,
+      descripcion: descripcion || null,
+      activa: true
+    };
+
+    const { data: jornadaCreada, error: createError } = await supabase
+      .from('jornadas')
+      .insert([nuevaJornada])
+      .select(`
+        id,
+        programa_id,
+        sede_id,
+        fecha,
+        responsable_jornada,
+        descripcion,
+        activa,
+        programas (
+          nombre,
+          clientes (
+            nombre_comercial
+          )
+        ),
+        sedes (
+          nombre,
+          ciudad
+        )
+      `)
+      .single();
+
+    if (createError) throw createError;
+
+    res.json({
+      success: true,
+      message: 'Jornada creada exitosamente',
+      jornada: {
+        id: jornadaCreada.id,
+        programa_nombre: jornadaCreada.programas?.nombre,
+        cliente_nombre: jornadaCreada.programas?.clientes?.nombre_comercial,
+        sede_nombre: jornadaCreada.sedes?.nombre,
+        sede_ciudad: jornadaCreada.sedes?.ciudad,
+        fecha: jornadaCreada.fecha,
+        responsable_jornada: jornadaCreada.responsable_jornada,
+        descripcion: jornadaCreada.descripcion,
+        activa: jornadaCreada.activa
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Error en POST /jornadas:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error interno del servidor'
+    });
+  }
+});
+
 // HEALTH CHECK
 router.get('/health', (req, res) => {
   res.json({

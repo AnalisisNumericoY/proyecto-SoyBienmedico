@@ -299,6 +299,10 @@
                     <i class="fas fa-calendar-plus"></i>
                     Programar Cita
                 </button>
+                <button class="action-btn" onclick="openCreateJornadaModal()">
+                    <i class="fas fa-clipboard-list"></i>
+                    Crear Jornada
+                </button>
                 <button class="action-btn" onclick="verHistoriasClinicas()">
                     <i class="fas fa-file-medical"></i>
                     Ver Historias Clínicas
@@ -486,6 +490,51 @@
                     <button type="button" class="btn-cancel" onclick="closeModal('pacienteModal')">Cancelar</button>
                     <button type="submit" class="btn-submit">
                         <i class="fas fa-save"></i> Crear Paciente
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal para Crear Jornada -->
+    <div id="jornadaModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-clipboard-list"></i> Crear Nueva Jornada</h2>
+                <span class="close" onclick="closeModal('jornadaModal')">&times;</span>
+            </div>
+            <form id="createJornadaForm" class="modal-form">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="jornada_programa">Programa *</label>
+                        <select id="jornada_programa" name="programa_id" required>
+                            <option value="">Cargando programas...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="jornada_sede">Sede</label>
+                        <select id="jornada_sede" name="sede_id">
+                            <option value="">Cargando sedes...</option>
+                        </select>
+                        <small class="form-hint">Opcional - Dejar vacío para jornadas virtuales o móviles</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="jornada_fecha">Fecha *</label>
+                        <input type="date" id="jornada_fecha" name="fecha" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="jornada_responsable">Responsable</label>
+                        <input type="text" id="jornada_responsable" name="responsable_jornada" placeholder="Ej: Dra. María González">
+                    </div>
+                    <div class="form-group full-width">
+                        <label for="jornada_descripcion">Descripción</label>
+                        <textarea id="jornada_descripcion" name="descripcion" rows="3" placeholder="Descripción de la jornada o notas adicionales..."></textarea>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-cancel" onclick="closeModal('jornadaModal')">Cancelar</button>
+                    <button type="submit" class="btn-submit">
+                        <i class="fas fa-save"></i> Crear Jornada
                     </button>
                 </div>
             </form>
@@ -697,6 +746,14 @@
         .form-group textarea {
             resize: vertical;
             min-height: 80px;
+        }
+
+        .form-hint {
+            display: block;
+            font-size: 0.875rem;
+            color: #6c757d;
+            margin-top: 0.25rem;
+            font-style: italic;
         }
 
         .form-actions {
@@ -1356,12 +1413,14 @@ Equipo SoyBien`;
                     console.warn('⚠️ Error cerrando Select2:', e);
                 }
                 document.getElementById('programarCitaForm').reset();
+            } else if (modalId === 'jornadaModal') {
+                document.getElementById('createJornadaForm').reset();
             }
         }
 
         // Cerrar modal al hacer click fuera
         window.onclick = function(event) {
-            const modals = ['medicoModal', 'pacienteModal', 'citaModal'];
+            const modals = ['medicoModal', 'pacienteModal', 'citaModal', 'jornadaModal'];
             modals.forEach(modalId => {
                 const modal = document.getElementById(modalId);
                 if (event.target === modal) {
@@ -1500,6 +1559,131 @@ Equipo SoyBien`;
                 console.log('ℹ️ Los campos funcionarán como select normal');
             }
         }
+
+        // ====================================================================
+        // JORNADAS - Modal y funciones
+        // ====================================================================
+        function openCreateJornadaModal() {
+            console.log('Abriendo modal de jornada');
+            document.getElementById('jornadaModal').style.display = 'block';
+            
+            // Cargar programas y sedes
+            cargarProgramasParaJornada();
+            cargarSedesParaJornada();
+            
+            // Establecer fecha de hoy por defecto
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('jornada_fecha').value = today;
+        }
+
+        async function cargarProgramasParaJornada() {
+            const selectPrograma = document.getElementById('jornada_programa');
+            
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/programas', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const result = await response.json();
+                
+                if (result.success && result.programas) {
+                    selectPrograma.innerHTML = '<option value="">Seleccionar programa...</option>';
+                    
+                    result.programas.forEach(programa => {
+                        const option = document.createElement('option');
+                        option.value = programa.id;
+                        option.textContent = `${programa.nombre} (${programa.cliente_nombre})`;
+                        selectPrograma.appendChild(option);
+                    });
+                    
+                    console.log(`✅ ${result.programas.length} programas cargados para jornada`);
+                } else {
+                    console.error('❌ Error al cargar programas:', result.message);
+                    selectPrograma.innerHTML = '<option value="">Error al cargar programas</option>';
+                }
+            } catch (error) {
+                console.error('❌ Error de conexión al cargar programas:', error);
+                selectPrograma.innerHTML = '<option value="">Error de conexión</option>';
+            }
+        }
+
+        async function cargarSedesParaJornada() {
+            const selectSede = document.getElementById('jornada_sede');
+            
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/sedes', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const result = await response.json();
+                
+                if (result.success && result.sedes) {
+                    selectSede.innerHTML = '<option value="">Sin sede (jornada virtual/móvil)</option>';
+                    
+                    result.sedes.forEach(sede => {
+                        const option = document.createElement('option');
+                        option.value = sede.id;
+                        option.textContent = `${sede.nombre} - ${sede.ciudad}`;
+                        selectSede.appendChild(option);
+                    });
+                    
+                    console.log(`✅ ${result.sedes.length} sedes cargadas para jornada`);
+                } else {
+                    console.error('❌ Error al cargar sedes:', result.message);
+                    selectSede.innerHTML = '<option value="">Error al cargar sedes</option>';
+                }
+            } catch (error) {
+                console.error('❌ Error de conexión al cargar sedes:', error);
+                selectSede.innerHTML = '<option value="">Error de conexión</option>';
+            }
+        }
+
+        // Manejar envío de formulario de jornada
+        document.getElementById('createJornadaForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const jornadaData = {};
+            
+            // Convertir FormData a objeto, omitiendo sede_id si está vacío
+            for (const [key, value] of formData.entries()) {
+                if (key === 'sede_id' && !value) {
+                    continue; // Omitir sede_id vacío
+                }
+                jornadaData[key] = value;
+            }
+            
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/jornadas', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(jornadaData)
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    const sede = result.jornada.sede_nombre ? `en ${result.jornada.sede_nombre}, ${result.jornada.sede_ciudad}` : '(Jornada virtual/móvil)';
+                    alert(`✅ Jornada creada exitosamente!\n\nPrograma: ${result.jornada.programa_nombre}\nCliente: ${result.jornada.cliente_nombre}\nLugar: ${sede}\nFecha: ${result.jornada.fecha}`);
+                    closeModal('jornadaModal');
+                    // Aquí podrías recargar una lista de jornadas si existiera
+                } else {
+                    alert('❌ Error: ' + result.message);
+                }
+            } catch (error) {
+                alert('❌ Error de conexión: ' + error.message);
+            }
+        });
 
         // Manejar envío de formulario de médico
         document.getElementById('createMedicoForm').addEventListener('submit', async function(e) {
