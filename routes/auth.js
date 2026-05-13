@@ -66,7 +66,8 @@ router.post('/login', async (req, res) => {
         username: user.username, 
         role: user.role,
         medicoId: user.medico_id,
-        pacienteId: user.paciente_id
+        pacienteId: user.paciente_id,
+        cliente_id: user.cliente_id
       }, 
       JWT_SECRET, 
       { expiresIn: '24h' }
@@ -82,7 +83,8 @@ router.post('/login', async (req, res) => {
         role: user.role,
         email: user.email,
         medicoId: user.medico_id,
-        pacienteId: user.paciente_id
+        pacienteId: user.paciente_id,
+        clienteId: user.cliente_id
       }
     });
 

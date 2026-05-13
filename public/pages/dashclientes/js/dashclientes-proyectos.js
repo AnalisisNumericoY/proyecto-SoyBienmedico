@@ -108,9 +108,7 @@ async function loadProyectos() {
     showLoading();
     
     try {
-        // FASE 1: Usar datos hardcodeados
-        // FASE 2: Descomentar para usar API real
-        /*
+        // FASE 2: Usar API real ✅ ACTIVADO
         const token = localStorage.getItem('token');
         const response = await fetch('/api/dashclientes/proyectos', {
             headers: {
@@ -124,13 +122,10 @@ async function loadProyectos() {
         
         const data = await response.json();
         const proyectos = data.proyectos;
-        */
         
-        // SIMULACIÓN DE DELAY DE RED
-        await new Promise(resolve => setTimeout(resolve, 800));
-        
-        // FASE 1: Usar datos demo
-        const proyectos = PROYECTOS_DEMO;
+        // FASE 1: Datos hardcodeados (DESACTIVADO)
+        // await new Promise(resolve => setTimeout(resolve, 800));
+        // const proyectos = PROYECTOS_DEMO;
         
         // Renderizar proyectos
         if (proyectos && proyectos.length > 0) {

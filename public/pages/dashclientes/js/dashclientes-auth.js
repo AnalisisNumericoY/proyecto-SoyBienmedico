@@ -116,7 +116,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
             // Guardar token y datos en localStorage
             localStorage.setItem('token', data.token);
             localStorage.setItem('user', JSON.stringify(data.user));
-            localStorage.setItem('clienteId', data.user.cliente_id);
+            localStorage.setItem('clienteId', data.user.clienteId);
             
             // Mostrar mensaje de éxito
             console.log('✅ Login exitoso:', data.user.email);
