@@ -60,6 +60,41 @@ function validateEmail(email) {
 }
 
 // ---------------------------------------------------------------------------
+// CHECK AUTH - Verificar si el usuario está autenticado
+// ---------------------------------------------------------------------------
+function checkAuth() {
+    const token = localStorage.getItem('token');
+    const userStr = localStorage.getItem('user');
+
+    if (!token || !userStr) {
+        return false;
+    }
+
+    try {
+        const user = JSON.parse(userStr);
+        if (user.role !== 'cliente') {
+            return false;
+        }
+        return true;
+    } catch (error) {
+        console.error('Error al verificar autenticación:', error);
+        return false;
+    }
+}
+
+// ---------------------------------------------------------------------------
+// LOGOUT - Cerrar sesión
+// ---------------------------------------------------------------------------
+function logout() {
+    if (confirm('¿Está seguro que desea cerrar sesión?')) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        localStorage.removeItem('clienteId');
+        window.location.href = 'dashclientes-login.html';
+    }
+}
+
+// ---------------------------------------------------------------------------
 // MANEJO DE LOGIN
 // ---------------------------------------------------------------------------
 document.getElementById('loginForm').addEventListener('submit', async (e) => {
