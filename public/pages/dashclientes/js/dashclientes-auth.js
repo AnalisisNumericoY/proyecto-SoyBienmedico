@@ -97,7 +97,9 @@ function logout() {
 // ---------------------------------------------------------------------------
 // MANEJO DE LOGIN
 // ---------------------------------------------------------------------------
-document.getElementById('loginForm').addEventListener('submit', async (e) => {
+const loginForm = document.getElementById('loginForm');
+if (loginForm) {
+    loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     
     hideError();
@@ -169,40 +171,51 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
         hideLoading();
         showError('Error de conexión. Por favor intente nuevamente.');
     }
-});
+    });
+}
 
 // ---------------------------------------------------------------------------
-// VERIFICAR SI YA ESTÁ LOGUEADO
+// VERIFICAR SI YA ESTÁ LOGUEADO (solo en página de login)
 // ---------------------------------------------------------------------------
 document.addEventListener('DOMContentLoaded', () => {
-    const token = localStorage.getItem('token');
-    const user = localStorage.getItem('user');
+    const loginForm = document.getElementById('loginForm');
     
-    if (token && user) {
-        try {
-            const userData = JSON.parse(user);
-            
-            // Si ya está logueado como cliente, redirigir a proyectos
-            if (userData.role === 'cliente') {
-                console.log('✅ Usuario ya logueado, redirigiendo...');
-                window.location.href = 'dashclientes-proyectos.html';
+    // Solo ejecutar lógica de login si estamos en la página de login
+    if (loginForm) {
+        const token = localStorage.getItem('token');
+        const user = localStorage.getItem('user');
+        
+        if (token && user) {
+            try {
+                const userData = JSON.parse(user);
+                
+                // Si ya está logueado como cliente, redirigir a proyectos
+                if (userData.role === 'cliente') {
+                    console.log('✅ Usuario ya logueado, redirigiendo...');
+                    window.location.href = 'dashclientes-proyectos.html';
+                    return;
+                }
+            } catch (error) {
+                console.error('❌ Error al parsear usuario:', error);
+                // Si hay error, limpiar storage
+                localStorage.clear();
             }
-        } catch (error) {
-            console.error('❌ Error al parsear usuario:', error);
-            // Si hay error, limpiar storage
-            localStorage.clear();
         }
-    }
-    
-    // Focus en campo email
-    document.getElementById('email').focus();
-});
-
-// ---------------------------------------------------------------------------
-// MANEJO DE TECLA ENTER
-// ---------------------------------------------------------------------------
-document.getElementById('password').addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        document.getElementById('loginForm').dispatchEvent(new Event('submit'));
+        
+        // Focus en campo email
+        const emailInput = document.getElementById('email');
+        if (emailInput) {
+            emailInput.focus();
+        }
+        
+        // Manejo de tecla Enter en password
+        const passwordInput = document.getElementById('password');
+        if (passwordInput) {
+            passwordInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    loginForm.dispatchEvent(new Event('submit'));
+                }
+            });
+        }
     }
 });

@@ -243,9 +243,7 @@ router.get('/jornadas/:clienteId', verifyToken, checkClienteRole, async (req, re
                 sede:sedes (
                     id,
                     nombre,
-                    ciudad,
-                    departamento,
-                    tipo_sede
+                    ciudad
                 )
             `)
             .eq('programa.cliente_id', clienteId)
@@ -336,9 +334,6 @@ router.get('/jornada/:jornadaId', verifyToken, checkClienteRole, async (req, res
                     id,
                     nombre,
                     ciudad,
-                    departamento,
-                    direccion,
-                    tipo_sede,
                     colaboradores_objetivo
                 )
             `)
