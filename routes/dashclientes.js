@@ -22,6 +22,24 @@ function checkClienteRole(req, res, next) {
 }
 
 // ---------------------------------------------------------------------------
+// HELPER: Calcular edad desde fecha de nacimiento
+// ---------------------------------------------------------------------------
+function calcularEdad(fechaNacimiento) {
+    if (!fechaNacimiento) return null;
+    
+    const hoy = new Date();
+    const nacimiento = new Date(fechaNacimiento);
+    let edad = hoy.getFullYear() - nacimiento.getFullYear();
+    const mes = hoy.getMonth() - nacimiento.getMonth();
+    
+    if (mes < 0 || (mes === 0 && hoy.getDate() < nacimiento.getDate())) {
+        edad--;
+    }
+    
+    return edad;
+}
+
+// ---------------------------------------------------------------------------
 // GET /api/dashclientes/proyectos
 // Obtener lista de proyectos del cliente autenticado
 // ---------------------------------------------------------------------------
@@ -365,12 +383,14 @@ router.get('/jornada/:jornadaId', verifyToken, checkClienteRole, async (req, res
                 fecha,
                 resultado,
                 datos_entrada,
-                paciente:pacientes (
+                paciente_id,
+                pacientes!paciente_id (
                     id,
                     nombre,
                     apellidos,
-                    identificacion,
-                    edad,
+                    numero_documento,
+                    tipo_documento,
+                    fecha_nacimiento,
                     sexo
                 )
             `)
@@ -379,6 +399,12 @@ router.get('/jornada/:jornadaId', verifyToken, checkClienteRole, async (req, res
         
         if (evalError) {
             console.error('❌ Error al obtener evaluaciones:', evalError);
+            return res.status(500).json({
+                success: false,
+                message: 'Error al obtener evaluaciones',
+                error: evalError.message,
+                details: evalError
+            });
         }
         
         const evaluacionesData = evaluaciones || [];
@@ -493,11 +519,12 @@ router.get('/jornada/:jornadaId', verifyToken, checkClienteRole, async (req, res
             tipo: e.tipo,
             fecha: e.fecha,
             paciente: {
-                id: e.paciente?.id,
-                nombre: `${e.paciente?.nombre || ''} ${e.paciente?.apellidos || ''}`.trim(),
-                identificacion: e.paciente?.identificacion,
-                edad: e.paciente?.edad,
-                sexo: e.paciente?.sexo
+                id: e.pacientes?.id,
+                nombre: `${e.pacientes?.nombre || ''} ${e.pacientes?.apellidos || ''}`.trim(),
+                identificacion: e.pacientes?.numero_documento,
+                tipo_documento: e.pacientes?.tipo_documento,
+                edad: calcularEdad(e.pacientes?.fecha_nacimiento),
+                sexo: e.pacientes?.sexo
             },
             motivo: obtenerMotivoSeguimiento(e)
         }));
@@ -548,11 +575,12 @@ router.get('/jornada/:jornadaId', verifyToken, checkClienteRole, async (req, res
                 tipo: e.tipo,
                 fecha: e.fecha,
                 paciente: {
-                    id: e.paciente?.id,
-                    nombre: `${e.paciente?.nombre || ''} ${e.paciente?.apellidos || ''}`.trim(),
-                    identificacion: e.paciente?.identificacion,
-                    edad: e.paciente?.edad,
-                    sexo: e.paciente?.sexo
+                    id: e.pacientes?.id,
+                    nombre: `${e.pacientes?.nombre || ''} ${e.pacientes?.apellidos || ''}`.trim(),
+                    identificacion: e.pacientes?.numero_documento,
+                    tipo_documento: e.pacientes?.tipo_documento,
+                    edad: calcularEdad(e.pacientes?.fecha_nacimiento),
+                    sexo: e.pacientes?.sexo
                 },
                 resultado_resumido: obtenerResumenResultado(e)
             }))
