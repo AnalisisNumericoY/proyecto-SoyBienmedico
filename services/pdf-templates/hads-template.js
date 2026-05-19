@@ -33,8 +33,8 @@ const generarPDFHADS = async (evaluacion, pacienteData) => {
       // Extraer datos del resultado
       const resultado = evaluacion.resultado;
 
-      // ==================== HEADER CON GRADIENTE PÚRPURA ====================
-      agregarHeaderHADS(doc);
+      // ==================== HEADER CON LOGO Y AZUL ====================
+      helpers.agregarHeader(doc);
 
       // ==================== INFORMACIÓN DEL PACIENTE ====================
       helpers.agregarInfoPaciente(doc, pacienteData, evaluacion);
@@ -43,7 +43,7 @@ const generarPDFHADS = async (evaluacion, pacienteData) => {
       const margin = doc.page.margins.left;
       doc.fontSize(16)
         .font('Helvetica-Bold')
-        .fillColor('#8e44ad')
+        .fillColor('#667eea')
         .text('📋 EVALUACIÓN HADS + BURNOUT', margin, doc.y);
       
       doc.fontSize(11)
@@ -72,44 +72,6 @@ const generarPDFHADS = async (evaluacion, pacienteData) => {
       reject(error);
     }
   });
-};
-
-/**
- * Agregar header específico para HADS (gradiente púrpura-rosa)
- */
-const agregarHeaderHADS = (doc) => {
-  const pageWidth = doc.page.width;
-  const margin = doc.page.margins.left;
-  
-  // Rectángulo de header con color púrpura
-  const headerHeight = 80;
-  const colorPrimario = '#8e44ad'; // Púrpura
-  
-  // Fondo principal
-  doc.rect(0, 0, pageWidth, headerHeight)
-    .fill(colorPrimario);
-  
-  // Texto del header
-  doc.fillColor('#FFFFFF')
-    .fontSize(24)
-    .font('Helvetica-Bold')
-    .text('SOYBIENMÉDICO', margin, 20, { align: 'left' });
-  
-  doc.fontSize(12)
-    .font('Helvetica')
-    .text('Plataforma de Telemedicina y Evaluaciones Médicas', margin, 50);
-  
-  // Línea separadora
-  doc.moveTo(margin, headerHeight + 5)
-    .lineTo(pageWidth - margin, headerHeight + 5)
-    .strokeColor('#8e44ad')
-    .lineWidth(2)
-    .stroke();
-  
-  doc.y = headerHeight + 25;
-  
-  // Reset color
-  doc.fillColor('#000000');
 };
 
 /**
@@ -193,7 +155,7 @@ const agregarCardsHADS = (doc, resultado) => {
   // Verificar si necesitamos nueva página para Burnout
   if (currentY > 550) {
     doc.addPage();
-    agregarHeaderHADS(doc);
+    helpers.agregarHeader(doc);
     currentY = doc.y + 20;
   }
 
