@@ -2,6 +2,8 @@
  * Funciones auxiliares reutilizables para generación de PDFs
  * Compartidas entre diferentes templates de evaluaciones
  */
+const path = require('path');
+const fs = require('fs');
 
 /**
  * Agregar header con branding SoyBienmedico
@@ -20,15 +22,30 @@ const agregarHeader = (doc, titulo = 'EVALUACIÓN MÉDICA') => {
   doc.rect(0, 0, pageWidth, headerHeight)
     .fill(colorPrimario);
   
-  // Texto del header
+  // Logo a la izquierda
+  try {
+    const logoPath = path.join(__dirname, '../../public/membrete.jpg');
+    if (fs.existsSync(logoPath)) {
+      doc.image(logoPath, margin + 5, 15, { 
+        width: 120,
+        height: 50
+      });
+    }
+  } catch (error) {
+    console.warn('⚠️ Logo no cargado en header:', error.message);
+  }
+  
+  // Texto del header (a la derecha del logo)
+  const textoX = margin + 135; // Después del logo
+  
   doc.fillColor('#FFFFFF')
     .fontSize(24)
     .font('Helvetica-Bold')
-    .text('SOYBIENMÉDICO', margin, 20, { align: 'left' });
+    .text('SOYBIENMÉDICO', textoX, 20, { align: 'left' });
   
   doc.fontSize(12)
     .font('Helvetica')
-    .text('Plataforma de Telemedicina y Evaluaciones Médicas', margin, 50);
+    .text('Plataforma de Telemedicina y Evaluaciones Médicas', textoX, 50);
   
   // Línea separadora
   doc.moveTo(margin, headerHeight + 5)
