@@ -1,5 +1,6 @@
 const path = require('path');
 const { loadJsonFile, saveJsonFile } = require('../utils/file-handler');
+const supabase = require('../config/supabase');
 
 const PACIENTES_FILE = path.join(__dirname, '../data/pacientes.json');
 
@@ -18,13 +19,28 @@ const getAllPacientes = async () => {
 };
 
 /**
- * Obtiene un paciente por ID
+ * Obtiene un paciente por ID desde Supabase
  * @param {string} pacienteId - ID del paciente
  * @returns {Promise<Object|null>}
  */
 const getPacienteById = async (pacienteId) => {
-  const pacientes = await getAllPacientes();
-  return pacientes.find(p => p.id === pacienteId) || null;
+  try {
+    const { data, error } = await supabase
+      .from('pacientes')
+      .select('*')
+      .eq('id', pacienteId)
+      .single();
+    
+    if (error) {
+      console.error(`Error buscando paciente ${pacienteId}:`, error.message);
+      return null;
+    }
+    
+    return data;
+  } catch (error) {
+    console.error(`Error en getPacienteById(${pacienteId}):`, error);
+    return null;
+  }
 };
 
 /**
