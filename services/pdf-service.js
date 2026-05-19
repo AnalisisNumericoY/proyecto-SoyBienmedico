@@ -3,6 +3,25 @@ const fs = require('fs');
 const PDFDocument = require('pdfkit');
 const { ensureDirectory } = require('../utils/file-handler');
 
+// ==================== TEMPLATES PROFESIONALES (FASE 2A) ====================
+// Importar templates mejorados si existen
+let templateHADS = null;
+let templateRiesgoCV = null;
+
+try {
+  templateHADS = require('./pdf-templates/hads-template');
+  console.log('✅ Template HADS profesional cargado');
+} catch (error) {
+  console.warn('⚠️ Template HADS profesional no disponible, usando versión legacy');
+}
+
+try {
+  templateRiesgoCV = require('./pdf-templates/riesgo-cv-template');
+  console.log('✅ Template Riesgo CV profesional cargado');
+} catch (error) {
+  console.warn('⚠️ Template Riesgo CV profesional no disponible, usando versión legacy');
+}
+
 /**
  * Servicio para generación de PDFs
  */
@@ -55,6 +74,29 @@ const generarPDFRiesgoCardiovascular = async (evaluacion, pacienteData = null) =
   const filename = `${evaluacion.id}.pdf`;
   const pdfPath = path.join(pdfDir, filename);
 
+  // ==================== INTENTAR USAR TEMPLATE PROFESIONAL (FASE 2A) ====================
+  if (templateRiesgoCV && pacienteData) {
+    try {
+      console.log('📄 Generando PDF Riesgo CV con template profesional...');
+      
+      // Generar PDF con template profesional (retorna Buffer)
+      const pdfBuffer = await templateRiesgoCV.generarPDFRiesgoCardiovascular(evaluacion, pacienteData);
+      
+      // Guardar buffer a archivo
+      fs.writeFileSync(pdfPath, pdfBuffer);
+      
+      console.log(`✅ PDF Riesgo CV profesional generado: ${filename}`);
+      return `/pdfs/evaluaciones/${filename}`;
+      
+    } catch (error) {
+      console.error('⚠️ Error con template profesional, usando versión legacy:', error.message);
+      // Continuar con código legacy abajo
+    }
+  }
+
+  // ==================== CÓDIGO LEGACY (FALLBACK) ====================
+  console.log('📄 Generando PDF Riesgo CV con versión legacy...');
+  
   return new Promise((resolve, reject) => {
     try {
       const doc = new PDFDocument({ margin: 50, size: 'LETTER' });
@@ -320,6 +362,29 @@ const generarPDFHADS = async (evaluacion, pacienteData) => {
 
   const filename = `${evaluacion.id}.pdf`;
   const pdfPath = path.join(pdfDir, filename);
+
+  // ==================== INTENTAR USAR TEMPLATE PROFESIONAL (FASE 2A) ====================
+  if (templateHADS && pacienteData) {
+    try {
+      console.log('📄 Generando PDF HADS con template profesional...');
+      
+      // Generar PDF con template profesional (retorna Buffer)
+      const pdfBuffer = await templateHADS.generarPDFHADS(evaluacion, pacienteData);
+      
+      // Guardar buffer a archivo
+      fs.writeFileSync(pdfPath, pdfBuffer);
+      
+      console.log(`✅ PDF HADS profesional generado: ${filename}`);
+      return `/pdfs/evaluaciones/${filename}`;
+      
+    } catch (error) {
+      console.error('⚠️ Error con template profesional, usando versión legacy:', error.message);
+      // Continuar con código legacy abajo
+    }
+  }
+
+  // ==================== CÓDIGO LEGACY (FALLBACK) ====================
+  console.log('📄 Generando PDF HADS con versión legacy...');
 
   return new Promise((resolve, reject) => {
     try {
