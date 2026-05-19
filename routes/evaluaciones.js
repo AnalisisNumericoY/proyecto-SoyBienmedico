@@ -11,6 +11,7 @@ const path = require('path');
 const { verifyToken } = require('./auth');
 const evaluacionService = require('../services/evaluacion-service');
 const pdfService = require('../services/pdf-service');
+const pacienteService = require('../services/paciente-service');
 const { validarEvaluacionRiesgo } = require('../utils/validators');
 
 const PACIENTES_FILE = path.join(__dirname, '../data/pacientes.json');
@@ -63,12 +64,10 @@ router.post('/riesgo-cardiovascular', verifyToken, async (req, res) => {
         // Guardar evaluación en BD/JSON
         const evaluacion = await evaluacionService.crearEvaluacion(evaluacionData);
 
-        // Buscar datos completos del paciente
+        // Buscar datos completos del paciente desde Supabase
         let pacienteData = null;
         try {
-            const pacientesFile = await fs.readFile(PACIENTES_FILE, 'utf8');
-            const pacientesJson = JSON.parse(pacientesFile);
-            pacienteData = pacientesJson.pacientes?.find(p => p.id === paciente_id);
+            pacienteData = await pacienteService.getPacienteById(paciente_id);
             
             if (!pacienteData) {
                 console.warn(`⚠️ Paciente ${paciente_id} no encontrado en BD`);
@@ -151,12 +150,10 @@ router.post('/hads', verifyToken, async (req, res) => {
         // Guardar evaluación en BD/JSON
         const evaluacion = await evaluacionService.crearEvaluacion(evaluacionData);
 
-        // Buscar datos completos del paciente
+        // Buscar datos completos del paciente desde Supabase
         let pacienteData = null;
         try {
-            const pacientesFile = await fs.readFile(PACIENTES_FILE, 'utf8');
-            const pacientesJson = JSON.parse(pacientesFile);
-            pacienteData = pacientesJson.pacientes?.find(p => p.id === paciente_id);
+            pacienteData = await pacienteService.getPacienteById(paciente_id);
             
             if (!pacienteData) {
                 console.warn(`⚠️ Paciente ${paciente_id} no encontrado en BD`);
