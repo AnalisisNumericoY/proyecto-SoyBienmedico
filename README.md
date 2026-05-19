@@ -62,6 +62,19 @@
 - **Duración token**: 24 horas
 - **Payload**: `{userId, username, role, medicoId, pacienteId, cliente_id}`
 
+### 🆕 PDF API Service (Microservicio Independiente)
+- **Ubicación**: `services/pdf-api/`
+- **Puerto**: 3001
+- **Framework**: Express independiente
+- **Función**: Generación profesional de PDFs médicos
+- **Autenticación**: JWT (compartido con servidor principal)
+- **Endpoints**:
+  - ✅ `POST /api/internal/pdf/riesgo-cardiovascular` - PDF Riesgo Cardiovascular
+  - ⏳ `POST /api/internal/pdf/hads` - PDF HADS (próximamente)
+  - ⏳ `POST /api/internal/pdf/historia-clinica` - Historia Clínica (próximamente)
+- **Documentación**: [`services/pdf-api/API_DOCS.md`](services/pdf-api/API_DOCS.md)
+- **Estado**: FASE 1A completada (Mayo 2026)
+
 ---
 
 ## 👥 Roles de Usuario

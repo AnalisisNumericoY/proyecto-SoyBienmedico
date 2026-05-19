@@ -1043,7 +1043,7 @@
                         <button onclick="nuevaEvaluacion()" class="btn btn-primary">
                             <i class="fas fa-redo"></i> Nueva Evaluación
                         </button>
-                        <button onclick="descargarReporte()" class="btn btn-success">
+                        <button onclick="descargarReporte()" class="btn btn-success" disabled style="opacity: 0.5; cursor: not-allowed;">
                             <i class="fas fa-download"></i> Descargar Reporte
                         </button>
                         <button onclick="solicitarCita()" class="btn btn-warning">
@@ -1121,112 +1121,60 @@
 
         async function descargarReporte() {
             try {
-                // Verificar que hay resultados calculados
-                if (!resultadosHADS || !resultadosHADS.ansiedad) {
+                // Verificar que hay evaluación guardada
+                if (!window.evaluacionId && !evaluacionId) {
                     alert('⚠️ Primero debe completar y calcular la evaluación');
                     return;
                 }
 
-                // Obtener datos del usuario
-                const user = JSON.parse(localStorage.getItem('user') || '{}');
+                const evalId = window.evaluacionId || evaluacionId;
                 const token = localStorage.getItem('token');
 
-                if (!user.pacienteId || !token) {
-                    alert('⚠️ Error: No se encontró información del paciente');
+                if (!token) {
+                    alert('⚠️ Error: No hay sesión activa');
                     return;
                 }
 
-                // Preparar datos para enviar
-                const datos = {
-                    paciente_id: user.pacienteId,
-                    jornada_id: document.getElementById('jornada_id')?.value || null,
-                    resultado: {
-                        ansiedad: resultadosHADS.ansiedad,
-                        depresion: resultadosHADS.depresion,
-                        burnout: resultadosHADS.burnout,
-                        recomendaciones: obtenerTodasRecomendaciones()
-                    },
-                    respuestas: obtenerDatosFormularioHADS()
-                };
-
-                // Enviar al servidor
-                const response = await fetch('/api/evaluaciones/hads', {
-                    method: 'POST',
+                console.log('📥 Descargando PDF de evaluación:', evalId);
+                
+                // Descargar el PDF usando blob
+                fetch(`/api/evaluaciones/${evalId}/pdf`, {
+                    method: 'GET',
                     headers: {
-                        'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify(datos)
+                    }
+                })
+                .then(res => {
+                    if (!res.ok) {
+                        throw new Error('Error al obtener el PDF');
+                    }
+                    return res.blob();
+                })
+                .then(blob => {
+                    // Crear URL del blob y descargar
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `evaluacion_hads_${evalId}.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                    
+                    console.log('✅ PDF descargado exitosamente');
+                })
+                .catch(error => {
+                    console.error('❌ Error descargando PDF:', error);
+                    alert('No se pudo descargar el reporte. Intente nuevamente.');
                 });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    alert('✅ Evaluación guardada correctamente');
-                    
-                    // Descargar el PDF usando blob (igual que Riesgo Cardiovascular)
-                    const evaluacionId = result.data.evaluacion_id;
-                    console.log('📥 Descargando PDF de evaluación:', evaluacionId);
-                    
-                    fetch(`/api/evaluaciones/${evaluacionId}/pdf`, {
-                        method: 'GET',
-                        headers: {
-                            'Authorization': `Bearer ${token}`
-                        }
-                    })
-                    .then(res => {
-                        if (!res.ok) {
-                            throw new Error('Error al obtener el PDF');
-                        }
-                        return res.blob();
-                    })
-                    .then(blob => {
-                        // Crear URL del blob y descargar
-                        const url = window.URL.createObjectURL(blob);
-                        const a = document.createElement('a');
-                        a.href = url;
-                        a.download = `evaluacion_hads_${evaluacionId}.pdf`;
-                        document.body.appendChild(a);
-                        a.click();
-                        document.body.removeChild(a);
-                        window.URL.revokeObjectURL(url);
-                        
-                        console.log('✅ PDF descargado exitosamente');
-                    })
-                    .catch(error => {
-                        console.error('❌ Error descargando PDF:', error);
-                        alert('No se pudo descargar el reporte. Intente nuevamente.');
-                    });
-                } else {
-                    throw new Error(result.error || 'Error al generar reporte');
-                }
 
             } catch (error) {
                 console.error('Error al descargar reporte:', error);
-                alert('❌ Error al generar el reporte: ' + error.message);
+                alert('❌ Error al descargar el reporte: ' + error.message);
             }
         }
 
-        function obtenerTodasRecomendaciones() {
-            const recomendaciones = [];
-            
-            // Obtener recomendaciones de ansiedad
-            if (resultadosHADS.ansiedad) {
-                recomendaciones.push(...obtenerRecomendacionesAnsiedad(resultadosHADS.ansiedad));
-            }
-            
-            // Obtener recomendaciones de depresión
-            if (resultadosHADS.depresion) {
-                recomendaciones.push(...obtenerRecomendacionesDepresion(resultadosHADS.depresion));
-            }
-            
-            // Obtener recomendaciones de burnout
-            if (resultadosHADS.burnout) {
-                recomendaciones.push(...obtenerRecomendacionesBurnout(resultadosHADS.burnout));
-            }
-            
-            return recomendaciones;
-        }
+        // La función obtenerTodasRecomendaciones() ahora está en hads-ansiedad-depresion.js
 
         function solicitarCita() {
             alert('La funcionalidad para solicitar cita con especialista estará disponible próximamente.');

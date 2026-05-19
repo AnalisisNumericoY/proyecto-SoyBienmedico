@@ -6,6 +6,7 @@
 
 // Variables globales para los resultados
 let resultadosHADS = {};
+let evaluacionId = null; // ID de la evaluación guardada
 
 /**
  * Cargar jornadas activas del día actual
@@ -66,7 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
 /**
  * Función principal para calcular resultados HADS + Burnout
  */
-function calcularResultadosHADS() {
+async function calcularResultadosHADS() {
     try {
         // Obtener datos del formulario
         const datos = obtenerDatosFormularioHADS();
@@ -89,6 +90,9 @@ function calcularResultadosHADS() {
         // Scroll a resultados
         document.getElementById('resultados').style.display = 'block';
         document.getElementById('resultados').scrollIntoView({ behavior: 'smooth' });
+
+        // NUEVO: Guardar evaluación en el backend ANTES de permitir descarga
+        await guardarEvaluacionBackend(datos, resultadosHADS);
 
     } catch (error) {
         console.error('Error en cálculo HADS:', error);
@@ -446,6 +450,163 @@ function obtenerRecomendacionesBurnout(burnout) {
             break;
     }
 
+    return recomendaciones;
+}
+
+/**
+ * Guardar evaluación en el backend (ANTES de descargar PDF)
+ */
+async function guardarEvaluacionBackend(datosFormulario, resultados) {
+    try {
+        // Obtener usuario y token
+        const token = localStorage.getItem('token');
+        const user = JSON.parse(localStorage.getItem('user'));
+        
+        if (!token || !user || !user.pacienteId) {
+            console.error('No hay sesión de paciente activa');
+            // No bloquear la UI, solo no guardar en backend
+            return;
+        }
+
+        // Preparar datos para backend
+        const datosBackend = {
+            paciente_id: user.pacienteId,
+            jornada_id: document.getElementById('jornada_id')?.value || null,
+            resultado: {
+                ansiedad: resultados.ansiedad,
+                depresion: resultados.depresion,
+                burnout: resultados.burnout,
+                recomendaciones: obtenerTodasRecomendaciones()
+            },
+            respuestas: datosFormulario
+        };
+
+        // Enviar al backend
+        console.log('📤 Enviando evaluación HADS al backend...', datosBackend);
+        
+        const response = await fetch('/api/evaluaciones/hads', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(datosBackend)
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Error al guardar evaluación');
+        }
+
+        const data = await response.json();
+        
+        if (data.success && data.data) {
+            // Guardar ID de evaluación globalmente
+            evaluacionId = data.data.evaluacion_id;
+            
+            console.log('✅ Evaluación HADS guardada exitosamente. ID:', evaluacionId);
+            
+            // Mostrar mensaje de éxito discreto
+            mostrarNotificacion('Evaluación guardada correctamente', 'success');
+            
+            // Habilitar botón de descarga de PDF
+            habilitarBotonDescarga();
+        }
+
+    } catch (error) {
+        console.error('❌ Error guardando evaluación en backend:', error);
+        mostrarNotificacion('La evaluación se calculó pero no se pudo guardar en el servidor', 'warning');
+        // No bloquear la UI, el usuario ve los resultados de todos modos
+    }
+}
+
+/**
+ * Habilitar botón de descarga de PDF
+ */
+function habilitarBotonDescarga() {
+    // Actualizar variable global en window
+    window.evaluacionId = evaluacionId;
+    
+    const btnDescargar = document.querySelector('button[onclick="descargarReporte()"]');
+    if (btnDescargar) {
+        btnDescargar.disabled = false;
+        btnDescargar.style.opacity = '1';
+        btnDescargar.style.cursor = 'pointer';
+    }
+}
+
+/**
+ * Mostrar notificación temporal
+ */
+function mostrarNotificacion(mensaje, tipo = 'info') {
+    // Crear elemento de notificación
+    const notif = document.createElement('div');
+    notif.className = `notificacion notificacion-${tipo}`;
+    notif.innerHTML = `
+        <i class="fas fa-${tipo === 'success' ? 'check-circle' : tipo === 'warning' ? 'exclamation-triangle' : 'info-circle'}"></i>
+        <span>${mensaje}</span>
+    `;
+    
+    // Estilos inline
+    notif.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${tipo === 'success' ? '#27ae60' : tipo === 'warning' ? '#f39c12' : '#3498db'};
+        color: white;
+        padding: 15px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.9rem;
+        z-index: 10000;
+        animation: slideIn 0.3s ease-out;
+    `;
+    
+    document.body.appendChild(notif);
+    
+    // Auto-remover después de 4 segundos
+    setTimeout(() => {
+        notif.style.animation = 'slideOut 0.3s ease-out';
+        setTimeout(() => notif.remove(), 300);
+    }, 4000);
+}
+
+/**
+ * Obtener todas las recomendaciones del resultado
+ */
+function obtenerTodasRecomendaciones() {
+    if (!resultadosHADS) return [];
+    
+    const recomendaciones = [];
+    
+    // Agregar recomendaciones de cada escala
+    if (resultadosHADS.ansiedad) {
+        recomendaciones.push({
+            categoria: 'Ansiedad',
+            nivel: resultadosHADS.ansiedad.clase,
+            items: obtenerRecomendacionesAnsiedad(resultadosHADS.ansiedad)
+        });
+    }
+    
+    if (resultadosHADS.depresion) {
+        recomendaciones.push({
+            categoria: 'Depresión',
+            nivel: resultadosHADS.depresion.clase,
+            items: obtenerRecomendacionesDepresion(resultadosHADS.depresion)
+        });
+    }
+    
+    if (resultadosHADS.burnout) {
+        recomendaciones.push({
+            categoria: 'Burnout',
+            nivel: resultadosHADS.burnout.clase,
+            items: obtenerRecomendacionesBurnout(resultadosHADS.burnout)
+        });
+    }
+    
     return recomendaciones;
 }
 

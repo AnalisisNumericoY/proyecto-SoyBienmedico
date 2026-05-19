@@ -1,0 +1,76 @@
+{
+  "paciente": {
+    "id": "123e4567-e89b-12d3-a456-426614174000",
+    "nombre": "Juan Carlos",
+    "apellidos": "Pérez García",
+    "tipo_documento": "CC",
+    "numero_documento": "123456789",
+    "fecha_nacimiento": "1978-05-15T00:00:00.000Z",
+    "sexo": "hombre",
+    "rh": "O+",
+    "ocupacion": "Ingeniero"
+  },
+  "evaluacion": {
+    "id": "987fcdeb-51a2-43d7-8f9e-123456789abc",
+    "fecha": "2026-05-19T10:30:00.000Z",
+    "datos_entrada": {
+      "edad": 48,
+      "sexo": "masculino",
+      "fumador": true,
+      "diabetes": false,
+      "hipertension": true,
+      "cardiovascular": false,
+      "renal": false,
+      "sistolica": {
+        "valor": 145,
+        "fuente": "dispositivo",
+        "medicion_id": "med-001"
+      },
+      "diastolica": {
+        "valor": 92,
+        "fuente": "dispositivo",
+        "medicion_id": "med-001"
+      },
+      "frecuencia": {
+        "valor": 78,
+        "fuente": "dispositivo",
+        "medicion_id": "med-001"
+      },
+      "conoceColesterol": true,
+      "colesterolTotal": {
+        "valor": 210,
+        "fuente": "laboratorio"
+      },
+      "hdl": {
+        "valor": 45,
+        "fuente": "laboratorio"
+      },
+      "peso": {
+        "valor": 85,
+        "fuente": "dispositivo",
+        "medicion_id": "med-002"
+      },
+      "talla": {
+        "valor": 172,
+        "fuente": "manual"
+      }
+    },
+    "version_algoritmo": "1.0"
+  },
+  "resultado": {
+    "categoria": "MODERADO",
+    "riesgo": "Riesgo moderado de evento cardiovascular a 10 años: 5%",
+    "puntuacion": 12,
+    "clasificacionPA": "Hipertensión Grado 1",
+    "recomendaciones": [
+      "Consulte con su médico cardiovascular en las próximas semanas",
+      "Monitoree regularmente su presión arterial y colesterol",
+      "Reduzca el consumo de sal y alimentos procesados",
+      "Inicie un programa de ejercicio regular (150 minutos por semana)",
+      "Deje de fumar - es el factor de riesgo más importante que puede controlar",
+      "Mantenga control estricto de la presión arterial",
+      "Consuma una dieta rica en frutas, verduras y pescado",
+      "Mantenga un patrón de sueño regular (7-8 horas por noche)"
+    ]
+  }
+}
